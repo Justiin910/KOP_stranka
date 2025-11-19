@@ -43,7 +43,7 @@
           <ul class="space-y-2 text-sm">
             <li>
               <router-link
-                to="/orders/status"
+                to="/orders"
                 class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition"
               >
                 Stav objednávky

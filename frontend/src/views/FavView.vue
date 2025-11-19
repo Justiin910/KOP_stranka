@@ -1,30 +1,55 @@
 <template>
 	<div class="min-h-screen bg-white dark:bg-gray-900">
 		<div class="max-w-7xl mx-auto px-6 py-12">
-			<div class="flex items-center justify-between mb-8">
-				<div>
-					<h1 class="text-3xl font-bold text-gray-900 dark:text-white">Obľúbené</h1>
-					<p class="text-gray-600 dark:text-gray-400 mt-2">{{ favorites.length }} produktov</p>
+			<div class="mb-8">
+				<div class="flex items-center justify-between mb-6">
+					<div>
+						<h1 class="text-3xl font-bold text-gray-900 dark:text-white">Obľúbené</h1>
+						<p class="text-gray-600 dark:text-gray-400 mt-2">{{ favorites.length }} produktov</p>
+					</div>
+					
+					<div class="flex gap-3">
+						<button 
+							@click="viewMode = 'grid'"
+							class="p-2 rounded-lg transition-colors"
+							:class="viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'"
+						>
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+							</svg>
+						</button>
+						<button 
+							@click="viewMode = 'list'"
+							class="p-2 rounded-lg transition-colors"
+							:class="viewMode === 'list' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'"
+						>
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+							</svg>
+						</button>
+					</div>
 				</div>
-				
-				<div class="flex gap-3">
+
+				<!-- Total Price Bar -->
+				<div v-if="favorites.length > 0" class="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border border-green-200 dark:border-green-800 rounded-lg p-4 flex items-center justify-between">
+					<div class="flex items-center gap-6">
+						<div>
+							<p class="text-sm text-gray-600 dark:text-gray-400">Celkovo bez DPH</p>
+							<p class="text-xl font-bold text-gray-900 dark:text-white">{{ formatPrice(totalPriceWithoutVAT) }} €</p>
+						</div>
+						<div>
+							<p class="text-sm text-gray-600 dark:text-gray-400">Celkovo s DPH</p>
+							<p class="text-2xl font-bold text-green-700 dark:text-green-400">{{ formatPrice(totalPriceWithVAT) }} €</p>
+						</div>
+					</div>
 					<button 
-						@click="viewMode = 'grid'"
-						class="p-2 rounded-lg transition-colors"
-						:class="viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'"
+						@click="addAllToCart"
+						class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors flex items-center gap-2 shadow-lg"
 					>
 						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
 						</svg>
-					</button>
-					<button 
-						@click="viewMode = 'list'"
-						class="p-2 rounded-lg transition-colors"
-						:class="viewMode === 'list' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'"
-					>
-						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-						</svg>
+						Pridať všetko do košíka
 					</button>
 				</div>
 			</div>
@@ -37,7 +62,10 @@
 				<h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Žiadne obľúbené produkty</h3>
 				<p class="text-gray-600 dark:text-gray-400 mb-6">Pridajte si produkty do obľúbených pre rýchly prístup</p>
 				<button class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">
+					<router-link to="/" class="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 font-semibold">
+
 					Prejsť na nákup
+					</router-link>
 				</button>
 			</div>
 
@@ -153,6 +181,7 @@ export default {
 	data() {
 		return {
 			viewMode: 'grid', // 'grid' or 'list'
+			vatRate: 0.20, // 20% DPH
 			favorites: [
 				{
 					id: 1,
@@ -237,13 +266,32 @@ export default {
 			]
 		}
 	},
+	computed: {
+		totalPriceWithVAT() {
+			return this.favorites
+				.filter(item => item.inStock)
+				.reduce((sum, item) => sum + item.price, 0)
+		},
+		totalPriceWithoutVAT() {
+			return this.totalPriceWithVAT / (1 + this.vatRate)
+		}
+	},
 	methods: {
+		formatPrice(price) {
+			return price.toFixed(2)
+		},
 		removeFromFavorites(itemId) {
 			this.favorites = this.favorites.filter(item => item.id !== itemId)
 		},
 		addToCart(itemId) {
 			console.log('Adding to cart:', itemId)
 			// Tu pridáš logiku pre pridanie do košíka
+		},
+		addAllToCart() {
+			const availableItems = this.favorites.filter(item => item.inStock)
+			console.log('Adding all to cart:', availableItems)
+			// Tu pridáš logiku pre pridanie všetkých dostupných produktov do košíka
+			alert(`Pridaných ${availableItems.length} produktov do košíka!`)
 		}
 	}
 }
