@@ -2,6 +2,7 @@
 import { RouterLink, RouterView } from 'vue-router'
 import NavbarComponent from './components/NavbarComponent.vue'
 import FooterComponent from './components/FooterComponent.vue'  
+import ProductCard from './components/ProductCard.vue';
 //import HelloWorld from './components/HelloWorld.vue'
 </script>
 
@@ -14,6 +15,7 @@ import FooterComponent from './components/FooterComponent.vue'
 
   
   <RouterView />
+
 
   <footer>
     <FooterComponent />

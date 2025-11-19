@@ -1,6 +1,6 @@
 <template>
 
-	<aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 min-h-screen">
+	<aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 h-full top-15">
 		<nav aria-label="Kategórie" >
 			<ul class="space-y-1 pt-5 px-3">
 				<li v-for="item in items" :key="item.key">

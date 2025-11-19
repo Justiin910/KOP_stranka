@@ -12,6 +12,7 @@ import RefundView from '@/views/Footer/RefundView.vue'
 import AboutusView from '@/views/Footer/AboutusView.vue'
 import DeliveryView from '@/views/Footer/DeliveryView.vue'
 import PrivacyView from '@/views/Footer/PrivacyView.vue'
+import ProductView from '@/views/ProductView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -80,6 +81,12 @@ const router = createRouter({
       path: '/privacy-policy',
       name: 'privacy-policy',
       component: PrivacyView
+    },
+    {
+      path: '/product/:slug',
+      name: 'product',
+      component: ProductView,
+      props: true,
     }
   ],
 })
