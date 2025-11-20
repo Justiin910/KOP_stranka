@@ -1,50 +1,233 @@
 <template>
   <div class="flex bg-gray-100 dark:bg-gray-900 min-h-screen">
     <!-- Sidebar -->
-    <aside>
+    <aside class="left-0 top-0 h-full z-50">
       <SideBarComponent />
     </aside>
 
-    <!-- Products Section -->
-    <section class="flex-1 px-10 py-12">
-      <!-- SORT BAR (Alza style) -->
-      <div class="mb-6">
-        <p class="text-sm text-white mb-3">{{ products.length }} položiek</p>
-
+    <!-- Main Content -->
+    <main class="ml-12 mr-12 flex-1 px-6 py-8">
+      <!-- Hero Banner Section -->
+      <section class="mb-8">
         <div
-          class="flex items-center gap-2 border-b border-gray-300 dark:border-gray-700 overflow-x-auto pb-2"
+          class="relative rounded-2xl overflow-hidden p-8 md:p-12 h-72 md:h-96 flex items-center"
         >
-          <button
-            v-for="option in sortOptions"
-            :key="option.value"
-            @click="setSort(option.value)"
-            class="ml-1 px-5 py-2 text-sm sm:text-base font-medium rounded-full transition-all duration-200 ease-in-out whitespace-nowrap focus:outline-none"
-            :class="[
-              currentSort === option.value
-                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md hover:shadow-lg scale-105'
-                : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700',
-            ]"
-          >
-            {{ option.label }}
-          </button>
-        </div>
-      </div>
-      <!-- END SORT BAR -->
+          <img
+            src="https://picsum.photos/1500/900?random=1"
+            class="absolute inset-0 w-full h-full object-cover"
+          />
+          <div class="absolute inset-0 bg-black/40"></div>
 
-      <!-- PRODUCTS GRID -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-        <ProductCard
-          v-for="product in products"
-          :key="product.id"
-          :product="product"
-          @add-to-cart="addToCart"
-        />
-      </div>
-    </section>
+          <div class="relative z-10">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
+              Vianočné darčeky 2025
+            </h1>
+            <p class="text-xl text-white/90 mb-6">Najlepšie technológie za skvelé ceny</p>
+            <button
+              class="bg-white text-indigo-600 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition"
+            >
+              Pozrieť ponuku
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- News/Events Grid -->
+      <section class="mb-12">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+          Novinky a udalosti
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Event Card 1 -->
+          <div
+            class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition cursor-pointer"
+          >
+            <img
+              src="https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?w=1000&q=80&auto=format&fit=crop"
+              class="h-48 w-full object-cover"
+            />
+            <div class="p-6">
+              <span class="text-xs font-semibold text-indigo-600 dark:text-indigo-400"
+                >UDALOSŤ</span
+              >
+              <h3 class="text-lg font-bold text-gray-900 dark:text-white mt-2 mb-2">
+                Nové telefóny Google Pixel 9
+              </h3>
+              <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                Objavte najnovšiu generáciu smartfónov s AI funkciami a vylepšeným
+                fotoaparátom.
+              </p>
+              <span class="text-sm text-indigo-600 dark:text-indigo-400 font-medium"
+                >Zistiť viac →</span
+              >
+            </div>
+          </div>
+
+          <!-- Event Card 2 -->
+          <div
+            class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition cursor-pointer"
+          >
+            <img
+              src="https://picsum.photos/1500/900?random=2"
+              class="h-48 w-full object-cover"
+            />
+            <div class="p-6">
+              <span class="text-xs font-semibold text-purple-600 dark:text-purple-400"
+                >NOVINKA</span
+              >
+              <h3 class="text-lg font-bold text-gray-900 dark:text-white mt-2 mb-2">
+                Apple AirPods Pro (3. gen)
+              </h3>
+              <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                Luxusné bezdrôtové slúchadlá s adaptívnym zvukom a vylepšeným ANC.
+              </p>
+              <span class="text-sm text-purple-600 dark:text-purple-400 font-medium"
+                >Predĺžený predpredaj →</span
+              >
+            </div>
+          </div>
+
+          <!-- Event Card 3 -->
+          <div
+            class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition cursor-pointer"
+          >
+            <img
+              src="https://images.unsplash.com/photo-1593642532973-d31b6557fa68?w=1000&q=80&auto=format&fit=crop"
+              class="h-48 w-full object-cover"
+            />
+            <div class="p-6">
+              <span class="text-xs font-semibold text-orange-600 dark:text-orange-400"
+                >Gaming</span
+              >
+              <h3 class="text-lg font-bold text-gray-900 dark:text-white mt-2 mb-2">
+                Gaming week - Až -30%
+              </h3>
+              <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                Herné konzoly, príslušenstvo a PC komponenty za bezkonkurenčné ceny.
+              </p>
+              <span class="text-sm text-orange-600 dark:text-orange-400 font-medium"
+                >Do akcie →</span
+              >
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Information Banners -->
+      <section class="mb-12">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Info Banner 1 -->
+          <div class="relative rounded-xl overflow-hidden">
+            <div
+              class="absolute inset-0 bg-gradient-to-r from-green-600 to-green-500"
+            ></div>
+
+            <div
+              class="absolute inset-0 bg-[url('https://picsum.photos/1500/900?random=3')] bg-cover bg-right opacity-25"
+            ></div>
+
+            <div class="relative p-6 text-white">
+              <h3 class="text-2xl font-bold mb-2">Doprava zdarma</h3>
+              <p class="text-white/90 mb-4">Pri nákupe nad 50€ doprava úplne zadarmo!</p>
+              <button
+                class="bg-white text-green-600 px-6 py-2 rounded-full font-semibold text-sm hover:bg-gray-100 transition"
+              >
+                Zistiť viac
+              </button>
+            </div>
+          </div>
+
+          <!-- Info Banner 2 -->
+          <div class="relative rounded-xl overflow-hidden">
+            <div
+              class="absolute inset-0 bg-gradient-to-r from-yellow-600 to-orange-600"
+            ></div>
+
+            <div
+              class="absolute inset-0 bg-[url('https://picsum.photos/id/1025/800/600')] bg-cover bg-right opacity-25"
+            ></div>
+
+            <div class="relative p-6 text-white">
+              <h3 class="text-2xl font-bold mb-2">Rozšírená záruka</h3>
+              <p class="text-white/90 mb-4">
+                Rozšírte si záruku až na 5 rokov s TechStore+
+              </p>
+              <button
+                class="bg-white text-orange-600 px-6 py-2 rounded-full font-semibold text-sm hover:bg-gray-100 transition"
+              >
+                Aktivovať
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Recommended Products Section -->
+      <section class="mb-12">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+            Odporúčame pre vás
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+          <ProductCard
+            v-for="product in recommendedProducts"
+            :key="product.id"
+            :product="product"
+            @add-to-cart="addToCart"
+          />
+        </div>
+      </section>
+
+      <!-- Bottom Info Section -->
+      <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 text-center">
+          <div
+            class="w-16 h-16 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center mx-auto mb-4"
+          >
+            <i
+              class="fa-solid fa-truck text-indigo-600 dark:text-indigo-400 text-2xl"
+            ></i>
+          </div>
+          <h3 class="font-bold text-gray-900 dark:text-white mb-2">Rýchle dodanie</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-300">
+            Z vašej objednávky sa môžete tešiť už zajtra!
+          </p>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 text-center">
+          <div
+            class="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4"
+          >
+            <i
+              class="fa-solid fa-shield-halved text-green-600 dark:text-green-400 text-2xl"
+            ></i>
+          </div>
+          <h3 class="font-bold text-gray-900 dark:text-white mb-2">Záručný servis</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-300">
+            Vlastná servisná sieť po celom Slovensku
+          </p>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 text-center">
+          <div
+            class="w-16 h-16 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mx-auto mb-4"
+          >
+            <i class="fa-solid fa-star text-purple-600 dark:text-purple-400 text-2xl"></i>
+          </div>
+          <h3 class="font-bold text-gray-900 dark:text-white mb-2">Overené recenzie</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-300">
+            Hodnotenia od skutočných zákazníkov
+          </p>
+        </div>
+      </section>
+    </main>
   </div>
 </template>
 
 <script>
+import api from "@/api";
 import ProductCard from "../components/ProductCard.vue";
 import SideBarComponent from "../components/SideBarComponent.vue";
 
@@ -55,250 +238,27 @@ export default {
     SideBarComponent,
   },
   data() {
-    const now = Date.now();
-
     return {
-      currentSort: "recommended",
-
-      sortOptions: [
-        { label: "Odporúčame", value: "recommended" },
-        { label: "Najpredávanejšie", value: "bestsellers" },
-        { label: "Najlacnejšie", value: "cheapest" },
-        { label: "Najdrahšie", value: "expensive" },
-        { label: "Podľa recenzií", value: "reviews" },
-        { label: "Od najnovších", value: "newest" },
-      ],
-
-      email: "",
-      products: [
-        {
-          id: 1,
-          title: "iPhone 15 Pro",
-          brand: "Apple",
-          price: 1299,
-          oldPrice: 1499,
-          image:
-            "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600&q=80&auto=format&fit=crop",
-          rating: 4.7,
-          reviews: 128,
-          category: "phones",
-          stock: 10,
-          monthlyPrice: "28,50",
-          description: 'Displej 6.7", A17 Pro, 256GB, Titanium Black, Action button',
-          service: "Do polnoci objednáš, ráno v AlzaBoxe máš!",
-          topBadge: null,
-          addedAt: now - 1000,
-        },
-        {
-          id: 2,
-          title: "AirPods Pro (2. gen)",
-          brand: "Apple",
-          price: 279,
-          oldPrice: null,
-          image:
-            "https://images.unsplash.com/photo-1606841837239-c5a1a4a07af7?w=600&q=80&auto=format&fit=crop",
-          rating: 4.6,
-          reviews: 342,
-          category: "phones",
-          stock: 15,
-          monthlyPrice: null,
-          description: "Adaptívny zvuk, aktívna tlmenie hluku, bezdrôtové nabíjanie",
-          service: "Do polnoci objednáš, ráno v AlzaBoxe máš!",
-          topBadge: null,
-          addedAt: now - 2000,
-        },
-        {
-          id: 3,
-          title: "MacBook Air M2",
-          brand: "Apple",
-          price: 1199,
-          oldPrice: 1399,
-          image:
-            "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600&q=80&auto=format&fit=crop",
-          rating: 4.8,
-          reviews: 203,
-          category: "notebooks",
-          stock: 5,
-          monthlyPrice: "26,35",
-          description: 'Chip M2, 8GB RAM, 512GB SSD, Space Gray, 13,6" Retina',
-          service: "Do polnoci objednáš, ráno v AlzaBoxe máš!",
-          topBadge: "TOP 2",
-          addedAt: now - 3000,
-        },
-        {
-          id: 4,
-          title: "Samsung Galaxy S24",
-          brand: "Samsung",
-          price: 999,
-          oldPrice: null,
-          image:
-            "https://images.unsplash.com/photo-1681592744820-6a0f4f1d3b5b?w=600&q=80&auto=format&fit=crop",
-          rating: 4.5,
-          reviews: 156,
-          category: "phones",
-          stock: 8,
-          monthlyPrice: "21,95",
-          description: 'Displej 6.1" AMOLED, Snapdragon 8 Gen 3, 128GB, Phantom Black',
-          service: "Do polnoci objednáš, ráno v AlzaBoxe máš!",
-          topBadge: null,
-          addedAt: now - 4000,
-        },
-        {
-          id: 5,
-          title: "Dell XPS 13",
-          brand: "Dell",
-          price: 1099,
-          oldPrice: 1299,
-          image:
-            "https://images.unsplash.com/photo-1541807084-5c52b6b1f88b?w=600&q=80&auto=format&fit=crop",
-          rating: 4.4,
-          reviews: 87,
-          category: "notebooks",
-          stock: 12,
-          monthlyPrice: "24,15",
-          description: 'Intel Core i5, 8GB RAM, 512GB SSD, 13.4" FHD+ InfinityEdge',
-          service: "Do polnoci objednáš, ráno v AlzaBoxe máš!",
-          topBadge: null,
-          addedAt: now - 5000,
-        },
-        {
-          id: 6,
-          title: 'iPad Pro 12.9"',
-          brand: "Apple",
-          price: 1199,
-          oldPrice: null,
-          image:
-            "https://images.unsplash.com/photo-1566241842506-59d440a1b006?w=600&q=80&auto=format&fit=crop",
-          rating: 4.7,
-          reviews: 71,
-          category: "tablets",
-          stock: 7,
-          monthlyPrice: "26,35",
-          description: 'M2 Chip, 8GB RAM, 128GB, 12,9" Liquid Retina XDR, USB-C',
-          service: "Do polnoci objednáš, ráno v AlzaBoxe máš!",
-          topBadge: "TOP 4",
-          addedAt: now - 6000,
-        },
-        {
-          id: 7,
-          title: "Samsung Galaxy Tab S9",
-          brand: "Samsung",
-          price: 899,
-          oldPrice: null,
-          image:
-            "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=600&q=80&auto=format&fit=crop",
-          rating: 4.5,
-          reviews: 95,
-          category: "tablets",
-          stock: 9,
-          monthlyPrice: "19,75",
-          description: 'Snapdragon 8 Gen 2, 8GB RAM, 128GB, 11" AMOLED, S Pen',
-          service: "Do polnoci objednáš, ráno v AlzaBoxe máš!",
-          topBadge: null,
-          addedAt: now - 7000,
-        },
-        {
-          id: 8,
-          title: "ASUS ROG Gaming PC",
-          brand: "ASUS",
-          price: 2499,
-          oldPrice: 2799,
-          image:
-            "https://images.unsplash.com/photo-1587829191301-59a37e7af0a5?w=600&q=80&auto=format&fit=crop",
-          rating: 4.9,
-          reviews: 512,
-          category: "pcs",
-          stock: 3,
-          monthlyPrice: "54,95",
-          description: "RTX 4090, Intel i9-13900K, 32GB RAM, 2TB SSD, RGB",
-          service: "Do polnoci objednáš, ráno v AlzaBoxe máš!",
-          topBadge: null,
-          addedAt: now - 8000,
-        },
-        {
-          id: 9,
-          title: "Anker PowerCore 20000",
-          brand: "Anker",
-          price: 45,
-          oldPrice: 65,
-          image:
-            "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=600&q=80&auto=format&fit=crop",
-          rating: 4.6,
-          reviews: 512,
-          category: "powerbanks",
-          stock: 50,
-          monthlyPrice: null,
-          description: "20000mAh, USB-C, rýchle nabíjanie, kompaktný dizajn",
-          service: "Do polnoci objednáš, ráno v AlzaBoxe máš!",
-          topBadge: null,
-          addedAt: now - 9000,
-        },
-        {
-          id: 10,
-          title: "Xiaomi Mi 11T Pro",
-          brand: "Xiaomi",
-          price: 599,
-          oldPrice: null,
-          image:
-            "https://images.unsplash.com/photo-1592286927505-1def25115558?w=600&q=80&auto=format&fit=crop",
-          rating: 4.3,
-          reviews: 234,
-          category: "phones",
-          stock: 20,
-          monthlyPrice: "13,15",
-          description: 'Displej 6.67" AMOLED, Snapdragon 888, 8GB RAM, 128GB',
-          service: "Do polnoci objednáš, ráno v AlzaBoxe máš!",
-          topBadge: null,
-          addedAt: now - 10000,
-        },
-        {
-          id: 11,
-          title: "Lenovo ThinkPad X1",
-          brand: "Lenovo",
-          price: 1399,
-          oldPrice: null,
-          image:
-            "https://images.unsplash.com/photo-1593642632823-8f36a24f0c88?w=600&q=80&auto=format&fit=crop",
-          rating: 4.4,
-          reviews: 145,
-          category: "notebooks",
-          stock: 6,
-          monthlyPrice: "30,75",
-          description: 'Intel Core i7, 16GB RAM, 512GB SSD, 14" FHD, Thunderbolt',
-          service: "Do polnoci objednáš, ráno v AlzaBoxe máš!",
-          topBadge: null,
-          addedAt: now - 11000,
-        },
-        {
-          id: 12,
-          title: "Sony WH-1000XM5",
-          brand: "Sony",
-          price: 379,
-          oldPrice: 399,
-          image:
-            "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80&auto=format&fit=crop",
-          rating: 4.8,
-          reviews: 678,
-          category: "phones",
-          stock: 25,
-          monthlyPrice: "8,35",
-          description: "Aktívna tlmenie hluku, bezdrôtové, čas hrania 30 hodín",
-          service: "Do polnoci objednáš, ráno v AlzaBoxe máš!",
-          topBadge: null,
-          addedAt: now - 12000,
-        },
-      ],
+      recommendedProducts: [],
+      // ostatné ...
     };
   },
+  async mounted() {
+    await this.loadRecommended();
+  },
   methods: {
+    async loadRecommended() {
+      try {
+        const response = await api.get("api/products/recommended");
+        this.recommendedProducts = response.data;
+      } catch (error) {
+        console.error("Error loading recommended products:", error);
+        this.recommendedProducts = [];
+      }
+    },
     addToCart(product) {
       console.log("Adding to cart:", product);
       alert(`${product.title} pridané do košíka!`);
-    },
-
-    setSort(type) {
-      this.currentSort = type;
-      console.log("Sorting by:", type);
     },
   },
 };

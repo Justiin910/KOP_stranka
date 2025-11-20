@@ -14,6 +14,7 @@ import DeliveryView from '@/views/Footer/DeliveryView.vue'
 import PrivacyView from '@/views/Footer/PrivacyView.vue'
 import ProductView from '@/views/ProductView.vue'
 import AdminView from '@/views/AdminView.vue'
+import ProductsGridView from '@/views/ProductsGridView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -93,6 +94,12 @@ const router = createRouter({
       path: '/admin/dashboard',
       name: 'admin-dashboard',
       component: AdminView,
+      props: true,
+    },
+    {
+      path: '/category/:catkey',
+      name: 'category',
+      component: ProductsGridView,
       props: true,
     }
 
