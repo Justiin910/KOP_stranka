@@ -240,7 +240,6 @@ export default {
   data() {
     return {
       recommendedProducts: [],
-      // ostatné ...
     };
   },
   async mounted() {

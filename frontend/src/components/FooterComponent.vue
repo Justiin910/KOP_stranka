@@ -3,14 +3,15 @@
     <div class="max-w-7xl mx-auto px-6 py-12">
       <!-- Main footer grid -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-
         <!-- Brand column -->
         <div class="text-center">
           <h3 class="font-semibold text-gray-900 dark:text-white mb-4">TechShop</h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400">Kvalitné technológie na dosah.</p>
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            Kvalitné technológie na dosah.
+          </p>
           <div class="flex gap-3 mt-5 justify-center">
-            <img src="@/assets/mastercardLogo.png" alt="Mastercard" class="h-6">
-            <img src="@/assets/VisaLogo.png" alt="Visa" class="h-6">
+            <img src="@/assets/mastercardLogo.png" alt="Mastercard" class="h-6" />
+            <img src="@/assets/VisaLogo.png" alt="Visa" class="h-6" />
           </div>
         </div>
 
@@ -39,7 +40,9 @@
 
         <!-- Orders -->
         <div class="text-center">
-          <h4 class="font-semibold text-gray-900 dark:text-white mb-4 text-sm">Objednávky</h4>
+          <h4 class="font-semibold text-gray-900 dark:text-white mb-4 text-sm">
+            Objednávky
+          </h4>
           <ul class="space-y-2 text-sm">
             <li>
               <router-link
@@ -62,7 +65,9 @@
 
         <!-- Company -->
         <div class="text-center">
-          <h4 class="font-semibold text-gray-900 dark:text-white mb-4 text-sm">Spoločnosť</h4>
+          <h4 class="font-semibold text-gray-900 dark:text-white mb-4 text-sm">
+            Spoločnosť
+          </h4>
           <ul class="space-y-2 text-sm">
             <li>
               <router-link
@@ -82,7 +87,6 @@
             </li>
           </ul>
         </div>
-
       </div>
 
       <!-- Divider -->
@@ -91,15 +95,14 @@
           © 2025 TechShop s.r.o. Všetky práva vyhradené.
         </p>
       </div>
-
     </div>
   </footer>
 </template>
 
 <script>
 export default {
-  name: 'FooterComponent'
-}
+  name: "FooterComponent",
+};
 </script>
 
 <style scoped>

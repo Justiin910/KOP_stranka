@@ -4,7 +4,6 @@
     <aside>
       <SideBarComponent />
     </aside>
-
     <!-- Products Section -->
     <section class="flex-1 px-10 py-12">
       <!-- SORT BAR (Alza style) -->
@@ -60,7 +59,6 @@ export default {
       products: [],
       currentSort: "recommended",
       sortOptions: [
-        { label: "Odporúčame", value: "recommended" },
         { label: "Najpredávanejšie", value: "bestsellers" },
         { label: "Najlacnejšie", value: "cheapest" },
         { label: "Najdrahšie", value: "expensive" },
@@ -79,20 +77,55 @@ export default {
     async loadProducts() {
       const category = this.$route.params.catkey;
       try {
-        const response = await api.get(`api/category/${category}`); // Adjust API path to match your backend route!
+        const response = await api.get(`api/category/${category}`);
         this.products = response.data;
+
+        // po načítaní hneď sortni podľa defaultu
+        this.applySort();
       } catch (error) {
         console.error("Error loading products:", error);
         this.products = [];
       }
     },
+
     addToCart(product) {
       console.log("Adding to cart:", product);
       alert(`${product.title} pridané do košíka!`);
     },
+
     setSort(type) {
       this.currentSort = type;
-      console.log("Sorting by:", type);
+      this.applySort();
+    },
+
+    applySort() {
+      switch (this.currentSort) {
+        case "bestsellers":
+          this.products.sort((a, b) => b.reviews - a.reviews);
+          break;
+
+        case "cheapest":
+          this.products.sort((a, b) => a.price - b.price);
+          break;
+
+        case "expensive":
+          this.products.sort((a, b) => b.price - a.price);
+          break;
+
+        case "reviews":
+          this.products.sort((a, b) => b.rating - a.rating);
+          break;
+
+        case "newest":
+          this.products.sort((a, b) => {
+            return new Date(b.created_at) - new Date(a.created_at);
+          });
+          break;
+
+        default:
+          // pôvodné poradie z backendu
+          break;
+      }
     },
   },
 };
