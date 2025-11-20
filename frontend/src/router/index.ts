@@ -13,6 +13,7 @@ import AboutusView from '@/views/Footer/AboutusView.vue'
 import DeliveryView from '@/views/Footer/DeliveryView.vue'
 import PrivacyView from '@/views/Footer/PrivacyView.vue'
 import ProductView from '@/views/ProductView.vue'
+import AdminView from '@/views/AdminView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -87,7 +88,14 @@ const router = createRouter({
       name: 'product',
       component: ProductView,
       props: true,
+    },
+    {
+      path: '/admin/dashboard',
+      name: 'admin-dashboard',
+      component: AdminView,
+      props: true,
     }
+
   ],
 })
 
