@@ -220,11 +220,14 @@ export default {
     async handleLogin() {
       this.loginError = "";
       try {
-        const res = await api.post("api/login", {
-          email: this.form.email,
-          password: this.form.password,
-        });
-        localStorage.setItem("token", res.data.token);
+        const res = await api.post(
+          "/api/login",
+          {
+            email: this.form.email,
+            password: this.form.password,
+          },
+          { withCredentials: true }
+        );
         localStorage.setItem("user", JSON.stringify(res.data.user));
         this.$router.push("/");
       } catch (err) {

@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
@@ -39,17 +40,27 @@ class AuthController extends Controller
         ]);
 
         $user = User::where('email', $request->email)->first();
+
         if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Zlý email alebo heslo'], 401);
+            return response()->json(['message' => 'Nesprávny email alebo heslo'], 401);
         }
 
-        // Vygeneruj token (príklad - môže byť Passport, Sanctum atď.)
-        $token = $user->createToken('api')->plainTextToken;
+        // Pracuješ so session/cookies (čiže Auth::login)
+        Auth::login($user);
 
-        return response()->json([
-            'token' => $token,
-            'user' => $user
-        ]);
+        return response()->json(['user' => $user]);
     }
 
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return response()->json(['message' => 'Odhlásený']);
+    }
+
+    public function me()
+    {
+        return response()->json(['user' => Auth::user()]);
+    }
 }
