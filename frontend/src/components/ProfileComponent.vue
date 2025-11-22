@@ -6,7 +6,12 @@
       class="group inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-800 hover:bg-gray-700 transition transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500"
       title="Profile"
     >
-      <font-awesome-icon icon="fa-regular fa-circle-user" />
+      <font-awesome-icon
+        v-if="isLoggedIn && user.name"
+        icon="fa-solid fa-user"
+        class="text-white"
+      />
+      <font-awesome-icon v-else icon="fa-regular fa-circle-user" class="text-white" />
     </button>
 
     <!-- Dropdown Menu -->
@@ -20,13 +25,13 @@
     >
       <div
         v-if="showProfileDropdown"
-        class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2"
+        class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50"
       >
         <!-- Not Logged In -->
         <template v-if="!isLoggedIn">
           <button
             @click="goToLogin"
-            class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3"
+            class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 transition-colors"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -40,7 +45,7 @@
           </button>
           <button
             @click="goToRegister"
-            class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3"
+            class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 transition-colors"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -57,17 +62,17 @@
         <!-- Logged In -->
         <template v-else>
           <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-            <p class="text-sm font-semibold text-gray-900 dark:text-white">
-              {{ user.name }}
+            <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">
+              {{ user.name || "Používateľ" }}
             </p>
             <p class="text-xs text-gray-600 dark:text-gray-400 truncate">
-              {{ user.email }}
+              {{ user.email || "" }}
             </p>
           </div>
 
           <button
             @click="goToProfile"
-            class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3"
+            class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 transition-colors"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -82,7 +87,7 @@
 
           <button
             @click="goToOrders"
-            class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3"
+            class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 transition-colors"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -97,7 +102,7 @@
 
           <button
             @click="goToSettings"
-            class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3"
+            class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 transition-colors"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -119,9 +124,16 @@
           <div class="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
             <button
               @click="logout"
-              class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3"
+              :disabled="isLoggingOut"
+              class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                v-if="!isLoggingOut"
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -129,7 +141,22 @@
                   d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                 />
               </svg>
-              Odhlásiť sa
+              <svg v-else class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              {{ isLoggingOut ? "Odhlasovanie..." : "Odhlásiť sa" }}
             </button>
           </div>
         </template>
@@ -139,21 +166,32 @@
 </template>
 
 <script>
+import api from "@/api";
+
 export default {
+  name: "ProfileDropdown",
   data() {
     return {
       showProfileDropdown: false,
       isLoggedIn: false,
       user: {},
+      isLoggingOut: false,
     };
   },
   mounted() {
     document.addEventListener("click", this.handleClickOutside);
-    // Fetch user info on mount
+
+    // Check login status on mount
     this.checkLogin();
+
+    // Listen for login events
+    window.addEventListener("user-logged-in", this.checkLogin);
+    window.addEventListener("user-logged-out", this.handleLoggedOut);
   },
   beforeUnmount() {
     document.removeEventListener("click", this.handleClickOutside);
+    window.removeEventListener("user-logged-in", this.checkLogin);
+    window.removeEventListener("user-logged-out", this.handleLoggedOut);
   },
   methods: {
     toggleProfileDropdown() {
@@ -167,18 +205,36 @@ export default {
     },
     async checkLogin() {
       try {
-        const res = await this.$axios.get("/api/me", { withCredentials: true });
-        if (res.data.user) {
+        // Skús načítať user data z localStorage najprv
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          this.user = JSON.parse(storedUser);
           this.isLoggedIn = true;
-          this.user = res.data.user;
-        } else {
-          this.isLoggedIn = false;
-          this.user = {};
         }
-      } catch {
-        this.isLoggedIn = false;
-        this.user = {};
+
+        // Potom over zo servera
+        const response = await api.get("/api/user", {
+          withCredentials: true,
+        });
+
+        if (response.data) {
+          this.isLoggedIn = true;
+          this.user = response.data;
+          // Aktualizuj localStorage
+          localStorage.setItem("user", JSON.stringify(response.data));
+        } else {
+          this.handleLoggedOut();
+        }
+      } catch (error) {
+        console.error("Check login error:", error);
+        // Ak zlyhá request, user nie je prihlásený
+        this.handleLoggedOut();
       }
+    },
+    handleLoggedOut() {
+      this.isLoggedIn = false;
+      this.user = {};
+      localStorage.removeItem("user");
     },
     goToLogin() {
       this.$router.push("/login");
@@ -201,13 +257,38 @@ export default {
       this.showProfileDropdown = false;
     },
     async logout() {
+      if (this.isLoggingOut) return;
+
+      this.isLoggingOut = true;
+
       try {
-        await this.$axios.post("/api/logout", {}, { withCredentials: true });
-      } catch {}
-      this.isLoggedIn = false;
-      this.user = {};
-      this.showProfileDropdown = false;
-      this.$router.push("/");
+        // Zavolaj logout endpoint
+        await api.post(
+          "/logout",
+          {},
+          {
+            withCredentials: true,
+          }
+        );
+
+        // Vyčisti local state
+        this.handleLoggedOut();
+        this.showProfileDropdown = false;
+
+        // Emit logout event
+        window.dispatchEvent(new Event("user-logged-out"));
+
+        // Presmeruj na home
+        this.$router.push("/");
+      } catch (error) {
+        console.error("Logout error:", error);
+        // Aj pri chybe vyčisti state
+        this.handleLoggedOut();
+        this.showProfileDropdown = false;
+        this.$router.push("/");
+      } finally {
+        this.isLoggingOut = false;
+      }
     },
   },
 };

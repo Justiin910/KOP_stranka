@@ -55,7 +55,8 @@
                 type="email"
                 required
                 placeholder="vas.email@priklad.sk"
-                class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                :disabled="isSubmitting"
+                class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
           </div>
@@ -92,12 +93,14 @@
                 :type="showPassword ? 'text' : 'password'"
                 required
                 placeholder="••••••••"
-                class="w-full pl-10 pr-12 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                :disabled="isSubmitting"
+                class="w-full pl-10 pr-12 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               />
               <button
                 type="button"
                 @click="showPassword = !showPassword"
-                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                :disabled="isSubmitting"
+                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-50"
               >
                 <svg
                   v-if="!showPassword"
@@ -143,33 +146,73 @@
               <input
                 v-model="form.remember"
                 type="checkbox"
-                class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                :disabled="isSubmitting"
+                class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 disabled:opacity-50"
               />
               <span class="ml-2 text-sm text-gray-700 dark:text-gray-300"
                 >Zapamätať si ma</span
               >
             </label>
             <router-link
-              to="/Passwordreset"
+              to="/password-reset"
               class="text-sm text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium"
             >
               Zabudli ste heslo?
             </router-link>
           </div>
 
+          <!-- Error Message -->
+          <div
+            v-if="loginError"
+            class="mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3"
+          >
+            <div class="flex items-start gap-2">
+              <svg
+                class="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <p class="text-sm text-red-800 dark:text-red-200">{{ loginError }}</p>
+            </div>
+          </div>
+
           <!-- Submit Button -->
           <button
             type="submit"
-            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg transition-colors shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]"
+            :disabled="isSubmitting"
+            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg transition-colors shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
-            Prihlásiť sa
+            <span v-if="isSubmitting" class="flex items-center justify-center gap-2">
+              <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              Prihlasovanie...
+            </span>
+            <span v-else>Prihlásiť sa</span>
           </button>
-          <p v-if="loginError" class="text-red-500 text-sm text-center mt-3">
-            {{ loginError }}
-          </p>
         </form>
 
-        <!-- Divider & Social login (optional) -->
+        <!-- Divider -->
         <div class="relative my-6">
           <div class="absolute inset-0 flex items-center">
             <div class="w-full border-t border-gray-300 dark:border-gray-600"></div>
@@ -180,7 +223,6 @@
             </span>
           </div>
         </div>
-        <!-- Social login buttons ... -->
 
         <!-- Sign Up Link -->
         <p class="text-center text-sm text-gray-600 dark:text-gray-400 mt-6">
@@ -199,7 +241,9 @@
 
 <script>
 import api from "@/api";
+
 export default {
+  name: "LoginView",
   data() {
     return {
       form: {
@@ -209,6 +253,7 @@ export default {
       },
       showPassword: false,
       loginError: "",
+      isSubmitting: false,
     };
   },
   mounted() {
@@ -218,30 +263,69 @@ export default {
   },
   methods: {
     async handleLogin() {
+      if (this.isSubmitting) return;
+
       this.loginError = "";
+      this.isSubmitting = true;
+
       try {
-        const res = await api.post(
-          "/api/login",
+        // 1. Najprv získaj CSRF token
+        await api.get("/sanctum/csrf-cookie", { withCredentials: true });
+
+        // 2. Potom sa prihlás
+        const response = await api.post(
+          "api/login",
           {
             email: this.form.email,
             password: this.form.password,
+            remember: this.form.remember,
           },
-          { withCredentials: true }
+          {
+            withCredentials: true,
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+          }
         );
-        localStorage.setItem("user", JSON.stringify(res.data.user));
+
+        // 3. Získaj user data
+        const userResponse = await api.get("/api/user", {
+          withCredentials: true,
+        });
+
+        // 4. Ulož usera do localStorage
+        localStorage.setItem("user", JSON.stringify(userResponse.data));
+
+        // 5. Emit event pre navbar refresh
+        window.dispatchEvent(new Event("user-logged-in"));
+
+        // 6. Presmeruj na home
         this.$router.push("/");
       } catch (err) {
-        if (err.response && err.response.data && err.response.data.message) {
+        console.error("Login error:", err);
+
+        if (err.response?.status === 422) {
+          // Validation errors
+          const errors = err.response.data.errors;
+          if (errors?.email) {
+            this.loginError = errors.email[0];
+          } else if (errors?.password) {
+            this.loginError = errors.password[0];
+          } else {
+            this.loginError = "Nesprávny email alebo heslo.";
+          }
+        } else if (err.response?.status === 429) {
+          this.loginError = "Príliš mnoho pokusov. Skúste znova neskôr.";
+        } else if (err.response?.data?.message) {
           this.loginError = err.response.data.message;
         } else {
-          this.loginError = "Chyba prihlásenia.";
+          this.loginError = "Chyba pri prihlasovaní. Skúste to znova.";
         }
+      } finally {
+        this.isSubmitting = false;
       }
     },
   },
 };
 </script>
-
-<style scoped>
-/* Your custom CSS here */
-</style>

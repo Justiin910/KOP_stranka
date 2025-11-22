@@ -6,6 +6,8 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RecommendedProductController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\ProfileController;
 
 
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
@@ -17,6 +19,16 @@ Route::get('/category/{category}', [ProductController::class, 'byCategory']);
 Route::get('/products/recommended', [RecommendedProductController::class, 'recommended']);
 
 Route::get('/me', [AuthController::class, 'me']);
+
+
+Route::middleware('web')->group(function () {
+    Route::post('/login', [AuthenticatedSessionController::class, 'store']);
+    Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
+});
+
+    Route::put('/user/profile', [ProfileController::class, 'updateProfile']);
+    Route::put('/user/password', [ProfileController::class, 'updatePassword']);
+
 
 /*
 Route::post('/login', [AuthController::class, 'login']);
