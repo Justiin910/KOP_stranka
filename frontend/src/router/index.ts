@@ -15,6 +15,8 @@ import PrivacyView from '@/views/Footer/PrivacyView.vue'
 import ProductView from '@/views/ProductView.vue'
 import AdminView from '@/views/AdminView.vue'
 import ProductsGridView from '@/views/ProductsGridView.vue'
+import NewPasswordView from '@/views/NewPasswordView.vue'
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -50,8 +52,8 @@ const router = createRouter({
       component: RegisterView,
     },
     {
-      path: '/PasswordReset',
-      name: 'PasswordReset',
+      path: '/password-reset',
+      name: 'password-reset',
       component: PasswordresetView,
     },
     {
@@ -101,8 +103,13 @@ const router = createRouter({
       name: 'category',
       component: ProductsGridView,
       props: true,
-    }
-
+    },
+    {
+    path: '/password-reset/:hash',
+      name: 'newpassword-reset',
+      component: NewPasswordView,
+      props: true,
+   }
   ],
 })
 

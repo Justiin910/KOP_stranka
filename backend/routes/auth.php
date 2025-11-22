@@ -10,14 +10,16 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 
+
 // Registrácia a login
-Route::post('api/register', [RegisteredUserController::class, 'store'])->middleware('guest');
-Route::post('api/login', [AuthenticatedSessionController::class, 'store'])->middleware('guest');
-Route::post('api/logout', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth');
+Route::post('/register', [RegisteredUserController::class, 'store'])->middleware('guest');
+Route::post('/login', [AuthenticatedSessionController::class, 'store'])->middleware('guest');
+Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth');
 
 // Reset hesla
-Route::post('api/forgot-password', [PasswordResetLinkController::class, 'store'])->middleware('guest');
-Route::post('api/reset-password', [NewPasswordController::class, 'store'])->middleware('guest');
+Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])->middleware('guest');
+Route::post('/reset-password', [NewPasswordController::class, 'store'])->middleware('guest');
+
 
 // Overenie emailu
 Route::get('/verify-email/{id}/{hash}', VerifyEmailController::class)

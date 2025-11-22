@@ -27,14 +27,20 @@ class NewPasswordController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        // Here we will attempt to reset the user's password. If it is successful we
-        // will update the password on an actual user model and persist it to the
-        // database. Otherwise we will parse the error and return the response.
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user) use ($request) {
+                $newPassword = $request->string('password');
+
+                // 🔒 kontrola: nové heslo nesmie byť rovnaké ako staré
+                if (Hash::check($newPassword, $user->password)) {
+                    throw ValidationException::withMessages([
+                        'password' => ['Nové heslo nesmie byť rovnaké ako aktuálne heslo.'],
+                    ]);
+                }
+
                 $user->forceFill([
-                    'password' => Hash::make($request->string('password')),
+                    'password' => Hash::make($newPassword),
                     'remember_token' => Str::random(60),
                 ])->save();
 

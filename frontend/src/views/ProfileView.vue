@@ -919,7 +919,7 @@ export default {
       try {
         // Laravel Breeze API endpoint pre reset link
         await api.post(
-          "/forgot-password",
+          "api/forgot-password",
           {
             email: this.user.email,
           },
