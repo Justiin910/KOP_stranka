@@ -3,58 +3,33 @@
     class="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-indigo-950 dark:to-purple-950 flex items-center justify-center px-4 py-12"
   >
     <div class="w-full max-w-md relative">
-      <!-- Verification Popup -->
+      <!-- Success Message after Registration -->
       <div
-        v-if="showVerificationDialog"
-        class="fixed inset-0 flex items-center justify-center z-50"
+        v-if="showSuccessMessage"
+        class="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4"
       >
-        <div
-          class="absolute inset-0 bg-black/30 backdrop-blur-sm"
-          @click="showVerificationDialog = false"
-        ></div>
-        <div
-          class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-8 w-full max-w-md scale-105"
-        >
-          <h3 class="text-xl font-bold text-white mb-2 text-center">Overenie e-mailu</h3>
-          <p class="text-gray-200 mb-4 text-center text-sm">
-            Overovací kód bol odoslaný na: <strong>{{ form.email }}</strong>
-          </p>
-          <p class="text-gray-600 dark:text-gray-300 mb-6 text-center">
-            Zadajte 6-miestny kód, ktorý ste dostali.
-          </p>
-
-          <input
-            v-model="verificationCode"
-            type="text"
-            maxlength="6"
-            class="w-full p-3 border text-white rounded-lg mb-4 dark:bg-gray-800 dark:border-gray-700 text-center text-2xl tracking-widest"
-            placeholder="000000"
-            @input="verificationCode = verificationCode.replace(/\D/g, '')"
-          />
-
-          <p v-if="verifyError" class="text-red-500 text-sm mb-4 text-center">
-            {{ verifyError }}
-          </p>
-
-          <button
-            @click="submitVerification"
-            :disabled="verificationCode.length !== 6 || isVerifying"
-            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed transition"
+        <div class="flex items-center gap-3">
+          <svg
+            class="w-6 h-6 text-green-600 dark:text-green-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
           >
-            <span v-if="isVerifying">Overujem...</span>
-            <span v-else>Overiť kód</span>
-          </button>
-
-          <button
-            @click="resendCode"
-            :disabled="resendCooldown > 0"
-            class="w-full mt-3 text-indigo-600 dark:text-indigo-400 hover:underline text-sm disabled:text-gray-400 disabled:no-underline"
-          >
-            <span v-if="resendCooldown > 0"
-              >Znovu poslať kód ({{ resendCooldown }}s)</span
-            >
-            <span v-else>Znovu poslať kód</span>
-          </button>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <div>
+            <h3 class="font-semibold text-green-900 dark:text-green-100">
+              Účet vytvorený!
+            </h3>
+            <p class="text-sm text-green-700 dark:text-green-300">
+              Overovací email bol odoslaný na <strong>{{ form.email }}</strong>
+            </p>
+          </div>
         </div>
       </div>
 
@@ -76,32 +51,36 @@
       <div
         class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-8"
       >
-        <form @submit.prevent="openPopup">
+        <form @submit.prevent="handleRegister">
           <!-- Name -->
           <div class="mb-5">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-              >Meno a priezvisko</label
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
+              Meno a priezvisko
+            </label>
             <input
               v-model="form.name"
               required
               placeholder="Ján Novák"
-              class="w-full py-3 px-4 border rounded-lg dark:bg-gray-700 dark:text-white"
+              class="w-full py-3 px-4 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
           <!-- Email -->
           <div class="mb-5">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-              >Email</label
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
+              Email
+            </label>
             <input
               v-model="form.email"
               @input="validateEmail"
               type="email"
               required
               placeholder="vas.email@priklad.sk"
-              class="w-full py-3 px-4 border rounded-lg dark:bg-gray-700 dark:text-white"
+              class="w-full py-3 px-4 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:ring-2 focus:ring-indigo-500"
             />
             <p v-if="form.email && !validEmail" class="text-red-500 text-sm mt-1">
               Neplatný email
@@ -110,13 +89,15 @@
 
           <!-- Phone -->
           <div class="mb-5">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-              >Telefón</label
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
+              Telefón
+            </label>
             <div class="flex gap-3">
               <select
                 v-model="form.country"
-                class="py-3 px-3 border rounded-lg dark:bg-gray-700 dark:text-white w-28"
+                class="py-3 px-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 w-28 focus:ring-2 focus:ring-indigo-500"
               >
                 <option v-for="c in countries" :key="c.code" :value="c.code">
                   {{ c.flag }} {{ c.code }}
@@ -128,7 +109,7 @@
                 type="tel"
                 required
                 placeholder="912 345 678"
-                class="flex-1 py-3 px-4 border rounded-lg dark:bg-gray-700 dark:text-white"
+                class="flex-1 py-3 px-4 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:ring-2 focus:ring-indigo-500"
               />
             </div>
             <p v-if="form.phone && phoneDigits !== 9" class="text-red-500 text-sm mt-1">
@@ -136,7 +117,7 @@
             </p>
           </div>
 
-          <!-- PASSWORD -->
+          <!-- Password -->
           <div class="mb-5">
             <label
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
@@ -149,7 +130,7 @@
                 v-model="form.password"
                 required
                 placeholder="••••••••"
-                class="w-full py-3 px-4 border rounded-lg dark:bg-gray-700 dark:text-white pr-12"
+                class="w-full py-3 px-4 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 pr-12 focus:ring-2 focus:ring-indigo-500"
               />
               <button
                 type="button"
@@ -201,8 +182,7 @@
             </p>
           </div>
 
-          <!-- Confirm -->
-          <!-- CONFIRM PASSWORD -->
+          <!-- Confirm Password -->
           <div class="mb-5">
             <label
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
@@ -211,20 +191,20 @@
             </label>
             <div class="relative">
               <input
-                :type="showconfirmpassword ? 'text' : 'password'"
-                v-model="form.confirmpassword"
+                :type="showConfirmPassword ? 'text' : 'password'"
+                v-model="form.confirmPassword"
                 required
                 placeholder="••••••••"
-                class="w-full py-3 px-4 border rounded-lg dark:bg-gray-700 dark:text-white pr-12"
+                class="w-full py-3 px-4 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 pr-12 focus:ring-2 focus:ring-indigo-500"
               />
               <button
                 type="button"
                 class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-indigo-600"
-                @click="showconfirmpassword = !showconfirmpassword"
+                @click="showConfirmPassword = !showConfirmPassword"
                 tabindex="-1"
               >
                 <svg
-                  v-if="!showconfirmpassword"
+                  v-if="!showConfirmPassword"
                   class="w-5 h-5"
                   fill="none"
                   stroke="currentColor"
@@ -260,7 +240,7 @@
               </button>
             </div>
             <p
-              v-if="form.confirmpassword && form.password !== form.confirmpassword"
+              v-if="form.confirmPassword && form.password !== form.confirmPassword"
               class="text-red-500 text-sm mt-1"
             >
               Heslá sa nezhodujú
@@ -276,7 +256,7 @@
                 type="checkbox"
                 v-model="form.acceptTerms"
                 required
-                class="w-4 h-4"
+                class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
               />
               Súhlasím s podmienkami
             </label>
@@ -284,23 +264,25 @@
 
           <button
             type="submit"
-            :disabled="!isFormValid"
-            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg shadow-lg disabled:bg-gray-300 disabled:cursor-not-allowed"
+            :disabled="!isFormValid || isSubmitting"
+            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg shadow-lg disabled:bg-gray-300 disabled:cursor-not-allowed transition"
           >
-            Vytvoriť účet
+            <span v-if="isSubmitting">Vytváram účet...</span>
+            <span v-else>Vytvoriť účet</span>
           </button>
+
+          <p v-if="registerError" class="text-red-500 text-sm text-center mt-3">
+            {{ registerError }}
+          </p>
+
           <div class="mt-6 text-center">
-             
-            <span class="text-sm text-gray-600 dark:text-gray-400">
-                  Už máte účet?  
-            </span>
-             
+            <span class="text-sm text-gray-600 dark:text-gray-400">Už máte účet?</span>
             <button
               @click="$router.push('/login')"
               type="button"
               class="ml-2 text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-semibold"
             >
-                  Prihlásiť sa  
+              Prihlásiť sa
             </button>
           </div>
         </form>
@@ -315,11 +297,6 @@ import api from "@/api";
 export default {
   data() {
     return {
-      showVerificationDialog: false,
-      verificationCode: "",
-      verifyError: "",
-      isVerifying: false,
-      resendCooldown: 0,
       countries: [
         { code: "+421", flag: "🇸🇰" },
         { code: "+420", flag: "🇨🇿" },
@@ -332,12 +309,15 @@ export default {
         country: "+421",
         phone: "",
         password: "",
-        confirmpassword: "",
+        confirmPassword: "",
         acceptTerms: false,
       },
       validEmail: true,
       showPassword: false,
-      showconfirmpassword: false,
+      showConfirmPassword: false,
+      registerError: "",
+      isSubmitting: false,
+      showSuccessMessage: false,
     };
   },
   computed: {
@@ -350,85 +330,12 @@ export default {
         this.validEmail &&
         this.phoneDigits === 9 &&
         this.form.password.length >= 8 &&
-        this.form.password === this.form.confirmpassword &&
+        this.form.password === this.form.confirmPassword &&
         this.form.acceptTerms
       );
     },
   },
-  mounted() {
-    // On every page load, check if there's a pending registration.
-    const pendingEmail = localStorage.getItem("pendingEmail");
-    if (pendingEmail && !this.showVerificationDialog) {
-      api
-        .post("/api/pending-users/remove", { email: pendingEmail })
-        .then(() => {
-          localStorage.removeItem("pendingEmail");
-        })
-        .catch(() => {
-          localStorage.removeItem("pendingEmail");
-        });
-    }
-  },
   methods: {
-    async openPopup() {
-      if (!this.isFormValid) return;
-      try {
-        await api.post("/api/startregister", {
-          name: this.form.name,
-          email: this.form.email,
-          phone: `${this.form.country}${this.form.phone.replace(/\D/g, "")}`,
-          password: this.form.password,
-        });
-        // Store pending email to clean up if page is refreshed
-        localStorage.setItem("pendingEmail", this.form.email);
-        this.showVerificationDialog = true;
-        this.startResendCooldown();
-      } catch (err) {
-        alert("Chyba pri registrácii.");
-      }
-    },
-    async submitVerification() {
-      if (this.verificationCode.length !== 6) return;
-      this.isVerifying = true;
-      this.verifyError = "";
-      try {
-        const res = await api.post("/api/verify-register", {
-          email: this.form.email,
-          code: this.verificationCode,
-        });
-        // Remove pending email after successful verification
-        localStorage.removeItem("pendingEmail");
-        alert("Účet úspešne vytvorený! Prihlasujem...");
-        this.$router.push("/login");
-      } catch (err) {
-        this.verifyError = "Nesprávny overovací kód.";
-      } finally {
-        this.isVerifying = false;
-      }
-    },
-    async resendCode() {
-      try {
-        await api.post("/api/resend", {
-          name: this.form.name,
-          email: this.form.email,
-          phone: `${this.form.country}${this.form.phone.replace(/\D/g, "")}`,
-          password: this.form.password,
-        });
-        this.verificationCode = "";
-        this.verifyError = "";
-        this.startResendCooldown();
-        alert("Overovací kód bol znovu odoslaný!");
-      } catch (err) {
-        alert("Chyba pri opätovnom odoslaní kódu.");
-      }
-    },
-    startResendCooldown() {
-      this.resendCooldown = 60;
-      const interval = setInterval(() => {
-        this.resendCooldown--;
-        if (this.resendCooldown <= 0) clearInterval(interval);
-      }, 1000);
-    },
     validateEmail() {
       const regex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
       this.validEmail = regex.test(this.form.email);
@@ -441,10 +348,52 @@ export default {
       if (num.length > 6) parts.push(num.substring(6));
       this.form.phone = parts.join(" ");
     },
+    async handleRegister() {
+      this.registerError = "";
+      if (!this.isFormValid || this.isSubmitting) return;
+
+      this.isSubmitting = true;
+
+      try {
+        // Získaj CSRF token
+        await api.get("/sanctum/csrf-cookie", { withCredentials: true });
+
+        // Registrácia s telefónom
+        const fullPhone = `${this.form.country}${this.form.phone.replace(/\D/g, "")}`;
+
+        const response = await api.post(
+          "api/register",
+          {
+            name: this.form.name,
+            email: this.form.email,
+            phone: fullPhone,
+            password: this.form.password,
+            password_confirmation: this.form.confirmPassword,
+          },
+          { withCredentials: true }
+        );
+
+        // Ukáž success message
+        this.showSuccessMessage = true;
+
+        // Počkaj 3 sekundy a presmeruj na verification notice
+        setTimeout(() => {
+          this.$router.push({
+            name: "verify-email",
+            query: { email: this.form.email },
+          });
+        }, 3000);
+      } catch (err) {
+        console.error("Registration error:", err);
+        this.registerError =
+          err.response?.data?.message ||
+          err.response?.data?.errors?.email?.[0] ||
+          err.response?.data?.errors?.phone?.[0] ||
+          "Chyba pri registrácii.";
+      } finally {
+        this.isSubmitting = false;
+      }
+    },
   },
 };
 </script>
-
-<style scoped>
-/* Your styles here */
-</style>

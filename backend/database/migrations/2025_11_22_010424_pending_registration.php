@@ -9,17 +9,18 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up()
+    public function up(): void
     {
-        Schema::create('pending_users', function (Blueprint $table) {
+        Schema::create('pending_registrations', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
             $table->string('phone');
-            $table->string('password'); // hash
+            $table->string('password');
             $table->string('verification_code');
-            $table->timestamps();
+            $table->timestamp('created_at')->nullable();
         });
+
     }
 
     /**
@@ -27,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('pending_users');
+        Schema::dropIfExists('pending_registrations');
     }
 };
