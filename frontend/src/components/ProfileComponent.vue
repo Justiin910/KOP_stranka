@@ -264,7 +264,7 @@ export default {
       try {
         // Zavolaj logout endpoint
         await api.post(
-          "/logout",
+          "api/logout",
           {},
           {
             withCredentials: true,

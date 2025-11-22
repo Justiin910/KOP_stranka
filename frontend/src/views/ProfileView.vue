@@ -124,7 +124,38 @@
               <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
                 {{ user.name }}
               </h1>
-              <p class="text-gray-600 dark:text-gray-400 mt-1">{{ user.email }}</p>
+              <div class="flex items-center gap-2 mt-1">
+                <p class="text-gray-600 dark:text-gray-400">{{ user.email }}</p>
+                <span
+                  v-if="user.email_verified_at"
+                  class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800 rounded-full dark:bg-green-900 dark:text-green-200"
+                >
+                  Overené
+                </span>
+                <span
+                  v-else
+                  class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full dark:bg-yellow-900 dark:text-yellow-200"
+                >
+                  Neoverené
+                  <button
+                    @click="resendVerification"
+                    :disabled="verificationSent"
+                    class="ml-2 underline text-xs font-medium"
+                    :class="{
+                      'text-blue-700 dark:text-blue-300 cursor-pointer hover:text-blue-900 dark:hover:text-blue-200': !verificationSent,
+                      'text-gray-400 cursor-not-allowed': verificationSent,
+                    }"
+                    :title="
+                      verificationSent
+                        ? 'Email už bol odoslaný'
+                        : 'Znovu odoslať overovací email'
+                    "
+                  >
+                    {{ verificationSent ? "Odoslané!" : "Znovu odoslať" }}
+                  </button>
+                </span>
+              </div>
+
               <div class="flex gap-2 mt-3">
                 <span
                   class="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm font-medium rounded-full"
@@ -332,9 +363,16 @@
         <div
           class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 mt-6"
         >
-          <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
-            Zmena hesla
-          </h2>
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white">Zmena hesla</h2>
+            <button
+              @click="sendPasswordResetEmail"
+              :disabled="isSendingResetLink"
+              class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium disabled:opacity-50"
+            >
+              {{ isSendingResetLink ? "Odosiela sa..." : "Zabudli ste heslo?" }}
+            </button>
+          </div>
 
           <form @submit.prevent="changePassword">
             <div class="space-y-6">
@@ -456,6 +494,126 @@
             </div>
           </div>
         </div>
+
+        <!-- Danger Zone - Delete Account -->
+        <div
+          class="bg-red-50 dark:bg-red-900/10 rounded-lg shadow-sm border-2 border-red-200 dark:border-red-800 p-8 mt-6"
+        >
+          <h2 class="text-xl font-bold text-red-900 dark:text-red-400 mb-2">
+            Nebezpečná zóna
+          </h2>
+          <p class="text-sm text-red-700 dark:text-red-300 mb-6">
+            Po zmazaní účtu stratíte prístup ku všetkým vašim údajom a objednávkam. Táto
+            akcia je <strong>nevratná</strong>.
+          </p>
+
+          <button
+            @click="showDeleteConfirmation = true"
+            class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
+            </svg>
+            Zmazať účet
+          </button>
+        </div>
+
+        <!-- Delete Confirmation Modal -->
+        <div
+          v-if="showDeleteConfirmation"
+          class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          @click.self="showDeleteConfirmation = false"
+        >
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+            <div class="flex items-start gap-4 mb-6">
+              <div
+                class="flex-shrink-0 w-12 h-12 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center"
+              >
+                <svg
+                  class="w-6 h-6 text-red-600 dark:text-red-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                  Naozaj chcete zmazať účet?
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  Táto akcia je nevratná. Všetky vaše údaje, objednávky a história budú
+                  permanentne zmazané.
+                </p>
+
+                <div class="mb-4">
+                  <label
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    Pre potvrdenie zadajte svoje heslo:
+                  </label>
+                  <input
+                    v-model="deleteAccountPassword"
+                    type="password"
+                    placeholder="Vaše heslo"
+                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="flex gap-3">
+              <button
+                @click="deleteAccount"
+                :disabled="isDeletingAccount || !deleteAccountPassword"
+                class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <svg
+                  v-if="isDeletingAccount"
+                  class="animate-spin h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                {{ isDeletingAccount ? "Mažem..." : "Áno, zmazať účet" }}
+              </button>
+              <button
+                @click="
+                  showDeleteConfirmation = false;
+                  deleteAccountPassword = '';
+                "
+                :disabled="isDeletingAccount"
+                class="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+              >
+                Zrušiť
+              </button>
+            </div>
+          </div>
+        </div>
       </template>
     </div>
   </div>
@@ -471,7 +629,11 @@ export default {
       loading: true,
       editMode: false,
       isSaving: false,
+      verificationSent: false,
+      resendTimeout: null,
       isChangingPassword: false,
+      isSendingResetLink: false,
+      isDeletingAccount: false,
       successMessage: "",
       errorMessage: "",
       user: {},
@@ -499,6 +661,8 @@ export default {
         password_confirmation: "",
       },
       orders: [],
+      showDeleteConfirmation: false,
+      deleteAccountPassword: "",
     };
   },
   async mounted() {
@@ -512,13 +676,11 @@ export default {
     formattedPhoneDisplay() {
       if (!this.formData.phone) return "";
 
-      // Rozdeľ country code a číslo
       const match = this.formData.phone.match(/^(\+\d{2,3})(.*)$/);
       if (match) {
         const code = match[1];
         const num = match[2].replace(/\D/g, "");
 
-        // Formátuj číslo XXX XXX XXX
         let formatted = "";
         if (num.length > 0) formatted += num.substring(0, 3);
         if (num.length > 3) formatted += " " + num.substring(3, 6);
@@ -546,7 +708,6 @@ export default {
           zip: this.user.zip || "",
         };
 
-        // Parse phone number
         this.parsePhoneNumber(this.formData.phone);
 
         try {
@@ -569,6 +730,25 @@ export default {
         this.loading = false;
       }
     },
+    async resendVerification() {
+      if (this.verificationSent) return; // prevent spam
+      this.verificationSent = true;
+      try {
+        await api.post("/email/verification-notification", {}, { withCredentials: true });
+        this.successMessage = "Overovací email bol znovu odoslaný.";
+        // Reset "Odoslané" po 8 sekundách
+        this.resendTimeout = setTimeout(() => {
+          this.verificationSent = false;
+        }, 8000);
+      } catch (error) {
+        this.errorMessage =
+          error.response?.data?.message || "Nepodarilo sa odoslať overenie.";
+        this.verificationSent = false;
+      }
+    },
+    beforeUnmount() {
+      if (this.resendTimeout) clearTimeout(this.resendTimeout);
+    },
     parsePhoneNumber(phone) {
       if (!phone) {
         this.phoneCountryCode = "+421";
@@ -576,7 +756,6 @@ export default {
         return;
       }
 
-      // Hľadaj country code
       const match = phone.match(/^(\+\d{2,3})(.*)$/);
       if (match) {
         this.phoneCountryCode = match[1];
@@ -617,7 +796,6 @@ export default {
     async saveProfile() {
       if (this.isSaving) return;
 
-      // Skontroluj phone validation ak je vyplnený
       if (this.phoneNumber && this.phoneDigits !== 9) {
         this.errorMessage = "Telefón musí mať presne 9 číslic.";
         return;
@@ -627,7 +805,6 @@ export default {
       this.successMessage = "";
       this.errorMessage = "";
 
-      // Spoj country code a číslo
       const fullPhone = this.phoneNumber
         ? `${this.phoneCountryCode}${this.phoneNumber.replace(/\D/g, "")}`
         : "";
@@ -673,7 +850,6 @@ export default {
     async changePassword() {
       if (this.isChangingPassword) return;
 
-      // Validácia
       if (
         !this.passwordForm.current_password ||
         !this.passwordForm.password ||
@@ -692,26 +868,29 @@ export default {
         this.errorMessage = "Heslo musí mať aspoň 8 znakov.";
         return;
       }
+      if (this.passwordForm.current_password === this.passwordForm.password) {
+        this.errorMessage = "Nové heslo nesmie byť rovnaké ako aktuálne heslo.";
+        return;
+      }
 
       this.isChangingPassword = true;
       this.successMessage = "";
       this.errorMessage = "";
 
       try {
-        await api.put("/api/user/password", this.passwordForm, {
+        // Laravel Breeze API endpoint pre zmenu hesla
+        await api.put("api/user/password", this.passwordForm, {
           withCredentials: true,
         });
 
         this.successMessage = "Heslo bolo úspešne zmenené!";
 
-        // Vyčisti formulár
         this.passwordForm = {
           current_password: "",
           password: "",
           password_confirmation: "",
         };
 
-        // Skry success message po 5 sekundách
         setTimeout(() => {
           this.successMessage = "";
         }, 5000);
@@ -730,10 +909,96 @@ export default {
         this.isChangingPassword = false;
       }
     },
+    async sendPasswordResetEmail() {
+      if (this.isSendingResetLink) return;
+
+      this.isSendingResetLink = true;
+      this.successMessage = "";
+      this.errorMessage = "";
+
+      try {
+        // Laravel Breeze API endpoint pre reset link
+        await api.post(
+          "/forgot-password",
+          {
+            email: this.user.email,
+          },
+          {
+            withCredentials: true,
+          }
+        );
+
+        this.successMessage = "Link na resetovanie hesla bol odoslaný na váš email!";
+
+        setTimeout(() => {
+          this.successMessage = "";
+        }, 10000);
+      } catch (error) {
+        console.error("Error sending reset link:", error);
+
+        if (error.response?.data?.errors) {
+          const errors = error.response.data.errors;
+          const firstError = Object.values(errors)[0];
+          this.errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
+        } else {
+          this.errorMessage =
+            error.response?.data?.message || "Nepodarilo sa odoslať reset link.";
+        }
+      } finally {
+        this.isSendingResetLink = false;
+      }
+    },
+    async deleteAccount() {
+      if (this.isDeletingAccount || !this.deleteAccountPassword) return;
+
+      this.isDeletingAccount = true;
+      this.errorMessage = "";
+
+      try {
+        // Laravel Breeze API endpoint pre zmazanie účtu
+        // Musíš vytvoriť tento endpoint v Laravel Breeze
+        await api.delete("/api/user", {
+          data: {
+            password: this.deleteAccountPassword,
+          },
+          withCredentials: true,
+        });
+
+        // Vyčisti local storage
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+
+        // Zobraz success správu
+        alert("Váš účet bol úspešne zmazaný.");
+
+        // Presmeruj na homepage
+        this.$router.push("/");
+
+        // Trigger logout event
+        window.dispatchEvent(new Event("user-logged-out"));
+      } catch (error) {
+        console.error("Error deleting account:", error);
+
+        if (error.response?.data?.errors) {
+          const errors = error.response.data.errors;
+          const firstError = Object.values(errors)[0];
+          this.errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
+        } else if (error.response?.status === 403) {
+          this.errorMessage = "Nesprávne heslo.";
+        } else {
+          this.errorMessage =
+            error.response?.data?.message || "Nepodarilo sa zmazať účet.";
+        }
+
+        this.showDeleteConfirmation = false;
+        this.deleteAccountPassword = "";
+      } finally {
+        this.isDeletingAccount = false;
+      }
+    },
     handleAvatarChange(event) {
       const file = event.target.files[0];
       if (file) {
-        // TODO: Implementovať upload avatara
         console.log("Avatar file:", file);
         alert("Funkcia uploadu avatara bude implementovaná neskôr.");
       }
@@ -765,19 +1030,9 @@ export default {
     formatPrice(price) {
       return parseFloat(price).toFixed(2);
     },
-    formatPhone() {
-      let num = this.form.phone.replace(/\D/g, "").substring(0, 9);
-      let parts = [];
-      if (num.length > 0) parts.push(num.substring(0, 3));
-      if (num.length > 3) parts.push(num.substring(3, 6));
-      if (num.length > 6) parts.push(num.substring(6));
-      this.form.phone = parts.join(" ");
-    },
     formatZip() {
-      // Only allow digits (and optionally auto add a space after third digit, for visual style "XXX XX")
       let num = this.formData.zip.replace(/\D/g, "").substring(0, 5);
       if (num.length > 3) {
-        // Insert a space after the third digit, for standard Slovak format
         num = num.slice(0, 3) + " " + num.slice(3);
       }
       this.formData.zip = num;
