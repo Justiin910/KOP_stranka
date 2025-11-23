@@ -292,7 +292,7 @@
 </template>
 
 <script>
-import api from "@/api";
+import api, { setSessionToken } from "@/api";
 
 export default {
   data() {
@@ -355,33 +355,36 @@ export default {
       this.isSubmitting = true;
 
       try {
-        // Získaj CSRF token
-        await api.get("/sanctum/csrf-cookie", { withCredentials: true });
-
-        // Registrácia s telefónom
+        // Registration with phone
         const fullPhone = `${this.form.country}${this.form.phone.replace(/\D/g, "")}`;
 
         const response = await api.post(
-          "api/register",
+          "/api/register",
           {
             name: this.form.name,
             email: this.form.email,
             phone: fullPhone,
             password: this.form.password,
             password_confirmation: this.form.confirmPassword,
-          },
-          { withCredentials: true }
+          }
         );
 
-        // Ukáž success message
+        // Store token (new users get 30-day default - persistent login)
+        localStorage.setItem("token", response.data.token);
+        setSessionToken(null); // Clear in-memory token
+
+        // Store user data
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+
+        // Emit login event
+        window.dispatchEvent(new Event("user-logged-in"));
+
+        // Show success message
         this.showSuccessMessage = true;
 
-        // Počkaj 3 sekundy a presmeruj na verification notice
+        // After 3 seconds, redirect to home or verification page
         setTimeout(() => {
-          this.$router.push({
-            name: "verify-email",
-            query: { email: this.form.email },
-          });
+          this.$router.push("/");
         }, 3000);
       } catch (err) {
         console.error("Registration error:", err);

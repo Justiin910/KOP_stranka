@@ -162,9 +162,17 @@ export default {
       this.showProfileDropdown = false;
     },
     logout() {
+      // Clear tokens from all storage types
+      localStorage.removeItem("token");
+      setSessionToken(null); // Clear in-memory token
+      localStorage.removeItem("user");
+
       this.isLoggedIn = false;
       this.showProfileDropdown = false;
-      console.log("Logging out...");
+      
+      // Emit logout event
+      window.dispatchEvent(new Event("user-logged-out"));
+      
       this.$router.push("/");
     },
   },

@@ -99,7 +99,7 @@
 </template>
 
 <script>
-import api from "@/api";
+import api, { setSessionToken } from "@/api";
 
 export default {
   data() {
@@ -121,7 +121,7 @@ export default {
   methods: {
     async getUserEmail() {
       try {
-        const response = await api.get("/user", { withCredentials: true });
+        const response = await api.get("/api/user");
         this.userEmail = response.data.email;
       } catch (err) {
         console.error("Error getting user email:", err);
@@ -135,7 +135,7 @@ export default {
       this.verificationSent = false;
 
       try {
-        await api.post("/email/verification-notification", {}, { withCredentials: true });
+        await api.post("/api/email/verification-notification", {});
 
         this.verificationSent = true;
         this.startCooldown();
@@ -157,10 +157,19 @@ export default {
     },
     async logout() {
       try {
-        await api.post("/logout", {}, { withCredentials: true });
-        this.$router.push("/login");
+        await api.post("/api/logout", {});
       } catch (err) {
         console.error("Logout error:", err);
+      } finally {
+        // Clear tokens from all storage types
+        localStorage.removeItem("token");
+        setSessionToken(null); // Clear in-memory token
+        localStorage.removeItem("user");
+
+        // Emit logout event
+        window.dispatchEvent(new Event("user-logged-out"));
+
+        // Redirect to login
         this.$router.push("/login");
       }
     },

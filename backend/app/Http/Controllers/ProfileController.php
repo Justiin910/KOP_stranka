@@ -55,4 +55,35 @@ class ProfileController extends Controller
             'message' => 'Heslo bolo úspešne zmenené.'
         ]);
     }
+
+    /**
+     * Delete user account
+     */
+    public function deleteAccount(Request $request)
+    {
+        $validated = $request->validate([
+            'password' => ['required', 'string'],
+        ]);
+
+        $user = $request->user();
+
+        // Verify password
+        if (!Hash::check($validated['password'], $user->password)) {
+            return response()->json([
+                'message' => 'Nesprávne heslo.'
+            ], 403);
+        }
+
+        try {
+            $user->delete();
+
+            return response()->json([
+                'message' => 'Váš účet bol úspešne zmazaný.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Chyba pri mazaní účtu: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

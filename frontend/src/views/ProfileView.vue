@@ -31,6 +31,7 @@
       <template v-else>
         <!-- Success Message -->
         <div
+          ref="messageContainer"
           v-if="successMessage"
           class="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4"
         >
@@ -54,6 +55,7 @@
 
         <!-- Error Message -->
         <div
+          ref="messageContainer"
           v-if="errorMessage"
           class="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4"
         >
@@ -620,7 +622,7 @@
 </template>
 
 <script>
-import api from "@/api";
+import api, { setSessionToken } from "@/api";
 
 export default {
   name: "ProfileView",
@@ -667,7 +669,14 @@ export default {
   },
   async mounted() {
     window.scrollTo({ top: 0, behavior: "smooth" });
-    await this.loadUserData();
+    
+    // Check if user is logged in by trying to get user data
+    try {
+      await this.loadUserData();
+    } catch (error) {
+      console.error("Not authenticated, redirecting to login");
+      this.$router.push("/login");
+    }
   },
   computed: {
     phoneDigits() {
@@ -693,10 +702,18 @@ export default {
     },
   },
   methods: {
+    scrollToMessages() {
+      this.$nextTick(() => {
+        const messageContainer = this.$refs.messageContainer;
+        if (messageContainer) {
+          messageContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
+    },
     async loadUserData() {
       this.loading = true;
       try {
-        const userResponse = await api.get("/api/user", { withCredentials: true });
+        const userResponse = await api.get("/api/user");
         this.user = userResponse.data;
 
         this.formData = {
@@ -711,9 +728,7 @@ export default {
         this.parsePhoneNumber(this.formData.phone);
 
         try {
-          const ordersResponse = await api.get("/api/user/orders", {
-            withCredentials: true,
-          });
+          const ordersResponse = await api.get("/api/user/orders");
           this.orders = ordersResponse.data;
         } catch (err) {
           console.log("Orders endpoint not available");
@@ -722,10 +737,7 @@ export default {
       } catch (error) {
         console.error("Error loading user data:", error);
         this.errorMessage = "Nepodarilo sa načítať údaje profilu.";
-
-        if (error.response?.status === 401) {
-          this.$router.push("/login");
-        }
+        throw error; // Re-throw so mounted() can handle redirect
       } finally {
         this.loading = false;
       }
@@ -734,7 +746,7 @@ export default {
       if (this.verificationSent) return; // prevent spam
       this.verificationSent = true;
       try {
-        await api.post("/email/verification-notification", {}, { withCredentials: true });
+        await api.post("/api/email/verification-notification", {});
         this.successMessage = "Overovací email bol znovu odoslaný.";
         // Reset "Odoslané" po 8 sekundách
         this.resendTimeout = setTimeout(() => {
@@ -815,9 +827,7 @@ export default {
       };
 
       try {
-        const response = await api.put("/api/user/profile", dataToSave, {
-          withCredentials: true,
-        });
+        const response = await api.put("/api/user/profile", dataToSave);
 
         this.user = { ...this.user, ...response.data.user };
         this.formData.phone = fullPhone;
@@ -828,6 +838,7 @@ export default {
         this.successMessage = "Profil bol úspešne aktualizovaný!";
         this.editMode = false;
         this.originalFormData = null;
+        this.scrollToMessages();
 
         setTimeout(() => {
           this.successMessage = "";
@@ -861,15 +872,18 @@ export default {
 
       if (this.passwordForm.password !== this.passwordForm.password_confirmation) {
         this.errorMessage = "Nové heslá sa nezhodujú.";
+        this.scrollToMessages();
         return;
       }
 
       if (this.passwordForm.password.length < 8) {
         this.errorMessage = "Heslo musí mať aspoň 8 znakov.";
+        this.scrollToMessages();
         return;
       }
       if (this.passwordForm.current_password === this.passwordForm.password) {
         this.errorMessage = "Nové heslo nesmie byť rovnaké ako aktuálne heslo.";
+        this.scrollToMessages();
         return;
       }
 
@@ -879,11 +893,10 @@ export default {
 
       try {
         // Laravel Breeze API endpoint pre zmenu hesla
-        await api.put("api/user/password", this.passwordForm, {
-          withCredentials: true,
-        });
+        await api.put("/api/user/password", this.passwordForm);
 
         this.successMessage = "Heslo bolo úspešne zmenené!";
+        this.scrollToMessages();
 
         this.passwordForm = {
           current_password: "",
@@ -905,6 +918,7 @@ export default {
           this.errorMessage =
             error.response?.data?.message || "Nepodarilo sa zmeniť heslo.";
         }
+        this.scrollToMessages();
       } finally {
         this.isChangingPassword = false;
       }
@@ -919,16 +933,14 @@ export default {
       try {
         // Laravel Breeze API endpoint pre reset link
         await api.post(
-          "api/forgot-password",
+          "/api/forgot-password",
           {
             email: this.user.email,
-          },
-          {
-            withCredentials: true,
           }
         );
 
         this.successMessage = "Link na resetovanie hesla bol odoslaný na váš email!";
+        this.scrollToMessages();
 
         setTimeout(() => {
           this.successMessage = "";
@@ -944,6 +956,7 @@ export default {
           this.errorMessage =
             error.response?.data?.message || "Nepodarilo sa odoslať reset link.";
         }
+        this.scrollToMessages();
       } finally {
         this.isSendingResetLink = false;
       }
@@ -960,13 +973,14 @@ export default {
         await api.delete("/api/user", {
           data: {
             password: this.deleteAccountPassword,
-          },
-          withCredentials: true,
+          }
         });
-
-        // Vyčisti local storage
-        localStorage.removeItem("user");
+        
+        // Clear tokens on successful delete
         localStorage.removeItem("token");
+        setSessionToken(null); // Clear in-memory token
+        localStorage.removeItem("user");
+        window.dispatchEvent(new Event("user-logged-out"));
 
         // Zobraz success správu
         alert("Váš účet bol úspešne zmazaný.");
@@ -990,6 +1004,7 @@ export default {
             error.response?.data?.message || "Nepodarilo sa zmazať účet.";
         }
 
+        this.scrollToMessages();
         this.showDeleteConfirmation = false;
         this.deleteAccountPassword = "";
       } finally {

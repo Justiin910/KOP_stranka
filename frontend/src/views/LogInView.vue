@@ -240,7 +240,7 @@
 </template>
 
 <script>
-import api from "@/api";
+import api, { setSessionToken } from "@/api";
 
 export default {
   name: "LoginView",
@@ -269,38 +269,32 @@ export default {
       this.isSubmitting = true;
 
       try {
-        // 1. Najprv získaj CSRF token
-        await api.get("/sanctum/csrf-cookie", { withCredentials: true });
-
-        // 2. Potom sa prihlás
+        // 1. Post login credentials
         const response = await api.post(
-          "api/login",
+          "/api/login",
           {
             email: this.form.email,
             password: this.form.password,
             remember: this.form.remember,
-          },
-          {
-            withCredentials: true,
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-            },
           }
         );
 
-        // 3. Získaj user data
-        const userResponse = await api.get("/api/user", {
-          withCredentials: true,
-        });
+        // 2. Store token based on "remember me"
+        if (this.form.remember) {
+          localStorage.setItem("token", response.data.token);
+          setSessionToken(null); // Clear in-memory token
+        } else {
+          setSessionToken(response.data.token); // Store in memory only
+          localStorage.removeItem("token"); // Clear persistent token if exists
+        }
 
-        // 4. Ulož usera do localStorage
-        localStorage.setItem("user", JSON.stringify(userResponse.data));
+        // 3. Store user data
+        localStorage.setItem("user", JSON.stringify(response.data.user));
 
-        // 5. Emit event pre navbar refresh
+        // 4. Emit event for navbar refresh
         window.dispatchEvent(new Event("user-logged-in"));
 
-        // 6. Presmeruj na home
+        // 5. Redirect to home
         this.$router.push("/");
       } catch (err) {
         console.error("Login error:", err);

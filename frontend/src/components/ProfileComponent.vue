@@ -166,7 +166,7 @@
 </template>
 
 <script>
-import api from "@/api";
+import api, { setSessionToken } from "@/api";
 
 export default {
   name: "ProfileDropdown",
@@ -262,31 +262,26 @@ export default {
       this.isLoggingOut = true;
 
       try {
-        // Zavolaj logout endpoint
-        await api.post(
-          "api/logout",
-          {},
-          {
-            withCredentials: true,
-          }
-        );
+        // Call logout endpoint
+        await api.post("/api/logout", {});
+      } catch (error) {
+        console.error("Logout error:", error);
+      } finally {
+        // Clear tokens from all storage types
+        localStorage.removeItem("token");
+        setSessionToken(null); // Clear in-memory token
+        localStorage.removeItem("user");
 
-        // Vyčisti local state
+        // Clear local state
         this.handleLoggedOut();
         this.showProfileDropdown = false;
 
         // Emit logout event
         window.dispatchEvent(new Event("user-logged-out"));
 
-        // Presmeruj na home
+        // Redirect to home
         this.$router.push("/");
-      } catch (error) {
-        console.error("Logout error:", error);
-        // Aj pri chybe vyčisti state
-        this.handleLoggedOut();
-        this.showProfileDropdown = false;
-        this.$router.push("/");
-      } finally {
+        
         this.isLoggingOut = false;
       }
     },
