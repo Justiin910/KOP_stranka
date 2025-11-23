@@ -17,9 +17,22 @@ class PasswordResetLinkController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        // Require RFC + DNS validation for the provided email
         $request->validate([
-            'email' => ['required', 'email'],
+            'email' => ['required', 'email:rfc,dns'],
         ]);
+
+        // Extra DNS check: ensure the domain has MX or A records
+        $email = $request->input('email');
+        $domain = substr(strrchr($email, '@'), 1);
+        if ($domain) {
+            $hasMx = function_exists('checkdnsrr') && (checkdnsrr($domain, 'MX') || checkdnsrr($domain, 'A'));
+            if (!$hasMx) {
+                throw ValidationException::withMessages([
+                    'email' => ['Email domain appears invalid or has no DNS records.'],
+                ]);
+            }
+        }
 
         // We will send the password reset link to this user. Once we have attempted
         // to send the link, we will examine the response then see the message we

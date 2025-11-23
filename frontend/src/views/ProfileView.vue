@@ -808,6 +808,13 @@ export default {
     async saveProfile() {
       if (this.isSaving) return;
 
+      // Client-side plausibility check for email
+      if (!this.isValidEmail(this.formData.email)) {
+        this.errorMessage = "Neplatný email.";
+        this.scrollToMessages();
+        return;
+      }
+
       if (this.phoneNumber && this.phoneDigits !== 9) {
         this.errorMessage = "Telefón musí mať presne 9 číslic.";
         return;
@@ -857,6 +864,14 @@ export default {
       } finally {
         this.isSaving = false;
       }
+    },
+    // Basic client-side plausibility check for email addresses.
+    // This is for user feedback only — server enforces stricter checks (RFC/DNS).
+    isValidEmail(email) {
+      if (!email || typeof email !== 'string') return false;
+      // Require an @ and a dot in the domain part with at least 2 char TLD
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+      return re.test(email);
     },
     async changePassword() {
       if (this.isChangingPassword) return;

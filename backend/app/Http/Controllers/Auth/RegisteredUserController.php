@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use Illuminate\Validation\ValidationException;
 
 class RegisteredUserController extends Controller
 {
@@ -21,12 +22,25 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        // Always use RFC + DNS validation for emails (reject clearly bogus domains)
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            "phone" => "required",
+            'email' => ['required', 'string', 'email:rfc,dns', 'max:255', 'unique:'.User::class],
+            'phone' => ['required'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
+
+        // Extra safeguard: explicit DNS check for domain (MX or A record)
+        $email = $request->string('email');
+        $domain = substr(strrchr($email, '@'), 1);
+        if ($domain) {
+            $hasMx = function_exists('checkdnsrr') && (checkdnsrr($domain, 'MX') || checkdnsrr($domain, 'A'));
+            if (!$hasMx) {
+                throw ValidationException::withMessages([
+                    'email' => ['Email domain appears invalid or has no DNS records.'],
+                ]);
+            }
+        }
 
         $user = User::create([
             'name' => $request->name,

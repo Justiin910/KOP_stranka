@@ -21,11 +21,24 @@ class NewPasswordController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        // Require RFC + DNS validation for the provided email
         $request->validate([
             'token' => ['required'],
-            'email' => ['required', 'email'],
+            'email' => ['required', 'email:rfc,dns'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
+
+        // Extra DNS check: ensure the domain has MX or A records
+        $email = $request->input('email');
+        $domain = substr(strrchr($email, '@'), 1);
+        if ($domain) {
+            $hasMx = function_exists('checkdnsrr') && (checkdnsrr($domain, 'MX') || checkdnsrr($domain, 'A'));
+            if (!$hasMx) {
+                throw ValidationException::withMessages([
+                    'email' => ['Email domain appears invalid or has no DNS records.'],
+                ]);
+            }
+        }
 
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),

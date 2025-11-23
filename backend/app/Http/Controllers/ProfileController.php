@@ -13,14 +13,34 @@ class ProfileController extends Controller
      */
     public function updateProfile(Request $request)
     {
+        // Stricter email validation: prefer RFC + DNS in production; keep RFC in local/testing
+        $emailRule = ['required', 'string', 'max:255', 'unique:users,email,' . $request->user()->id];
+        if (app()->environment(['local', 'testing'])) {
+            $emailRule[] = 'email:rfc';
+        } else {
+            $emailRule[] = 'email:rfc,dns';
+        }
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $request->user()->id],
+            'email' => $emailRule,
             'phone' => ['nullable', 'string', 'max:20'],
             'address' => ['nullable', 'string', 'max:255'],
             'city' => ['nullable', 'string', 'max:100'],
             'zip' => ['nullable', 'string', 'max:10'],
         ]);
+
+        // Explicit DNS check for the email domain to avoid bogus domains
+        $email = $request->input('email');
+        $domain = substr(strrchr($email, '@'), 1);
+        if ($domain) {
+            $hasMx = function_exists('checkdnsrr') && (checkdnsrr($domain, 'MX') || checkdnsrr($domain, 'A'));
+            if (!$hasMx) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'email' => ['Email domain appears invalid or has no DNS records.'],
+                ]);
+            }
+        }
 
         $user = $request->user();
         
