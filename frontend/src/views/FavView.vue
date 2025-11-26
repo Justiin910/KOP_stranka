@@ -285,102 +285,14 @@
 </template>
 
 <script>
+import api, { getSessionToken } from "@/api";
+
 export default {
   data() {
     return {
       viewMode: "grid", // 'grid' or 'list'
       vatRate: 0.2, // 20% DPH
-      favorites: [
-        {
-          id: 1,
-          name: "iPhone 15 Pro Max",
-          description:
-            "256GB, Natural Titanium, najpokročilejší iPhone s titánovým dizajnom",
-          category: "Mobilné telefóny",
-          price: 1299.0,
-          originalPrice: 1499.0,
-          image:
-            "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400&h=400&fit=crop",
-          inStock: true,
-        },
-        {
-          id: 2,
-          name: 'MacBook Pro 14"',
-          description: "M3 Pro chip, 18GB RAM, 512GB SSD, Space Black",
-          category: "Notebooky",
-          price: 2299.0,
-          originalPrice: null,
-          image:
-            "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&h=400&fit=crop",
-          inStock: true,
-        },
-        {
-          id: 3,
-          name: "AirPods Pro (2. generácia)",
-          description: "S USB-C nabíjaním, adaptívne potlačenie hluku",
-          category: "Audio",
-          price: 279.0,
-          originalPrice: null,
-          image:
-            "https://images.unsplash.com/photo-1606841837239-c5a1a4a07af7?w=400&h=400&fit=crop",
-          inStock: true,
-        },
-        {
-          id: 4,
-          name: "Apple Watch Series 9",
-          description: "45mm, GPS + Cellular, Midnight Aluminum",
-          category: "Smart hodinky",
-          price: 499.0,
-          originalPrice: 549.0,
-          image:
-            "https://images.unsplash.com/photo-1434494878577-86c23bcb06b9?w=400&h=400&fit=crop",
-          inStock: false,
-        },
-        {
-          id: 5,
-          name: 'iPad Air 11"',
-          description: "M2 chip, 128GB, Wi-Fi, Space Gray",
-          category: "Tablety",
-          price: 699.0,
-          originalPrice: null,
-          image:
-            "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400&h=400&fit=crop",
-          inStock: true,
-        },
-        {
-          id: 6,
-          name: "Sony WH-1000XM5",
-          description: "Prémiové bezdrôtové slúchadlá s najlepším ANC",
-          category: "Audio",
-          price: 349.0,
-          originalPrice: 399.0,
-          image:
-            "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=400&h=400&fit=crop",
-          inStock: true,
-        },
-        {
-          id: 7,
-          name: "Samsung Galaxy S24 Ultra",
-          description: "512GB, Titanium Gray, S Pen v balení",
-          category: "Mobilné telefóny",
-          price: 1399.0,
-          originalPrice: null,
-          image:
-            "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400&h=400&fit=crop",
-          inStock: true,
-        },
-        {
-          id: 8,
-          name: "DJI Mini 4 Pro",
-          description: "4K video, 34 min letového času, obstacle avoidance",
-          category: "Drony",
-          price: 759.0,
-          originalPrice: 849.0,
-          image:
-            "https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=400&h=400&fit=crop",
-          inStock: false,
-        },
-      ],
+      favorites: [],
     };
   },
   computed: {
@@ -397,19 +309,177 @@ export default {
     formatPrice(price) {
       return price.toFixed(2);
     },
-    removeFromFavorites(itemId) {
+    async removeFromFavorites(itemId) {
+      const loggedIn = !!(localStorage.getItem("token") || getSessionToken());
+
+      if (loggedIn) {
+        try {
+          await api.delete(`/api/favorites/${itemId}`).catch(async () => {
+            await api.delete("/api/favorites", { data: { product_id: itemId } });
+          });
+          // refresh from server
+          await this.loadFavorites();
+          return;
+        } catch (e) {
+          console.warn("Failed to remove favorite on server, falling back to local", e);
+          // continue to fallback to local
+        }
+      }
+
+      // Fallback: remove locally and persist
       this.favorites = this.favorites.filter((item) => item.id !== itemId);
+      try {
+        const ids = this.favorites.map((p) => p.id);
+        localStorage.setItem("favorites", JSON.stringify(ids));
+        window.dispatchEvent(new CustomEvent("favorites-updated", { detail: ids }));
+      } catch (e) {
+        console.warn("Could not persist favorites", e);
+      }
     },
     addToCart(itemId) {
-      console.log("Adding to cart:", itemId);
-      // Tu pridáš logiku pre pridanie do košíka
+      const product = this.favorites.find((p) => p.id === itemId);
+      if (!product) return;
+      // keep simple: emit global event and show quick feedback
+      window.dispatchEvent(new CustomEvent("add-to-cart", { detail: product }));
+      alert(`${product.name || product.title} pridaný do košíka!`);
     },
     addAllToCart() {
       const availableItems = this.favorites.filter((item) => item.inStock);
-      console.log("Adding all to cart:", availableItems);
-      // Tu pridáš logiku pre pridanie všetkých dostupných produktov do košíka
+      if (availableItems.length === 0) return;
+      window.dispatchEvent(
+        new CustomEvent("add-to-cart-batch", { detail: availableItems })
+      );
       alert(`Pridaných ${availableItems.length} produktov do košíka!`);
     },
+    async loadFavorites() {
+      // Read favorite ids from localStorage. Expecting array of ids.
+      let ids = [];
+      try {
+        const raw = localStorage.getItem("favorites");
+        if (raw) ids = JSON.parse(raw) || [];
+      } catch (e) {
+        console.warn("Failed to read favorites from localStorage", e);
+      }
+
+      // If user is logged in, try to load favorites from server
+      const loggedIn = !!(localStorage.getItem("token") || getSessionToken());
+      if (loggedIn) {
+        try {
+          const resp = await api.get("/api/favorites");
+          const data = resp.data || [];
+
+          // If API returned list of product objects, map directly
+          if (
+            data.length > 0 &&
+            typeof data[0] === "object" &&
+            (data[0].id || data[0].title)
+          ) {
+            this.favorites = data.map((p) => ({
+              id: p.id,
+              name: p.title || p.name || p.product_name || "Produkt",
+              description: p.description || p.short_description || "",
+              category: p.category?.name || p.category_name || "",
+              price: Number(p.price) || Number(p.current_price) || 0,
+              originalPrice: p.oldPrice || p.original_price || null,
+              image: p.image || p.images?.[0] || "/placeholder-product.png",
+              inStock: typeof p.stock !== "undefined" ? p.stock > 0 : p.inStock ?? true,
+              _raw: p,
+            }));
+            return;
+          }
+
+          // If API returned list of ids, fetch product details for each id
+          const serverIds = Array.isArray(data) ? data : [];
+          if (serverIds.length === 0) {
+            this.favorites = [];
+            return;
+          }
+
+          const promises = serverIds.map((id) =>
+            api
+              .get(`api/products/${id}`)
+              .then((r) => r.data)
+              .catch(() => null)
+          );
+          const results = await Promise.all(promises);
+          this.favorites = results.filter(Boolean).map((p) => ({
+            id: p.id,
+            name: p.title || p.name || p.product_name || "Produkt",
+            description: p.description || p.short_description || "",
+            category: p.category?.name || p.category_name || "",
+            price: Number(p.price) || Number(p.current_price) || 0,
+            originalPrice: p.oldPrice || p.original_price || null,
+            image: p.image || p.images?.[0] || "/placeholder-product.png",
+            inStock: typeof p.stock !== "undefined" ? p.stock > 0 : p.inStock ?? true,
+            _raw: p,
+          }));
+          return;
+        } catch (e) {
+          console.warn(
+            "Failed to load favorites from server, falling back to localStorage",
+            e
+          );
+          // fall through to localStorage below
+        }
+      }
+
+      // Fallback: use localStorage entries. Support two formats:
+      // - Array of product objects (preferred when anonymous)
+      // - Array of ids (legacy) -> try to fetch details
+      if (!Array.isArray(ids) || ids.length === 0) {
+        this.favorites = [];
+        return;
+      }
+
+      // If stored items are full objects, use them directly
+      if (Array.isArray(ids) && ids.length > 0 && typeof ids[0] === "object") {
+        this.favorites = ids.map((p) => ({
+          id: p.id,
+          name: p.title || p.name || p.product_name || "Produkt",
+          description: p.description || p.short_description || "",
+          category: p.category || p.category?.name || p.category_name || "",
+          price: Number(p.price) || Number(p.current_price) || 0,
+          originalPrice: p.oldPrice || p.original_price || null,
+          image: p.image || (p.images && p.images[0]) || "/placeholder-product.png",
+          inStock: typeof p.stock !== "undefined" ? p.stock > 0 : p.inStock ?? true,
+          _raw: p,
+        }));
+        return;
+      }
+
+      // Otherwise assume ids and fetch product details (may fail when no backend exists)
+      try {
+        const promises = ids.map((id) =>
+          api
+            .get(`api/products/${id}`)
+            .then((r) => r.data)
+            .catch(() => null)
+        );
+        const results = await Promise.all(promises);
+        this.favorites = results.filter(Boolean).map((p) => ({
+          id: p.id,
+          name: p.title || p.name || p.product_name || "Produkt",
+          description: p.description || p.short_description || "",
+          category: p.category?.name || p.category_name || "",
+          price: Number(p.price) || Number(p.current_price) || 0,
+          originalPrice: p.oldPrice || p.original_price || null,
+          image: p.image || p.images?.[0] || "/placeholder-product.png",
+          inStock: typeof p.stock !== "undefined" ? p.stock > 0 : p.inStock ?? true,
+          _raw: p,
+        }));
+      } catch (e) {
+        console.error("Failed loading favorite products", e);
+        this.favorites = [];
+      }
+    },
+  },
+  async mounted() {
+    await this.loadFavorites();
+    // refresh when other components update favorites
+    window.addEventListener("favorites-updated", this.loadFavorites);
+  },
+  beforeUnmount() {
+    window.removeEventListener("favorites-updated", this.loadFavorites);
   },
 };
 </script>

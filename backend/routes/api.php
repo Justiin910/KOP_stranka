@@ -36,6 +36,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/user/profile', [ProfileController::class, 'updateProfile']);
     Route::put('/user/password', [ProfileController::class, 'updatePassword']);
     Route::delete('/user', [ProfileController::class, 'deleteAccount']);
+    
+    // Favorites API
+    Route::get('/favorites', [\App\Http\Controllers\FavoriteController::class, 'index']);
+    Route::post('/favorites', [\App\Http\Controllers\FavoriteController::class, 'store']);
+    Route::delete('/favorites/{product}', [\App\Http\Controllers\FavoriteController::class, 'destroy']);
+    Route::post('/favorites/sync', [\App\Http\Controllers\FavoriteController::class, 'sync']);
 });
 
 // Password reset (Breeze Auth)

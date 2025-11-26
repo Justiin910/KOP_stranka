@@ -30,6 +30,7 @@ const router = createRouter({
       path: '/profile',
       name: 'profile',
       component: ProfileView,
+      meta: { requiresAuth: true },
     },
     {
       path: '/favorites',
@@ -111,6 +112,28 @@ const router = createRouter({
       props: true,
    }
   ],
+})
+
+// Navigation guard: only allow access to routes with `meta.requiresAuth` when a token exists
+import { getSessionToken } from '@/api'
+
+router.beforeEach((to, from, next) => {
+  const requiresAuth = to.matched.some(record => (record.meta as any)?.requiresAuth)
+
+  if (!requiresAuth) {
+    return next()
+  }
+
+  // Check for persistent token in localStorage or session token
+  const persistentToken = localStorage.getItem('token')
+  const sessionToken = getSessionToken()
+
+  if (persistentToken || sessionToken) {
+    return next()
+  }
+
+  // Not authenticated — redirect to login
+  return next({ name: 'login' })
 })
 
 export default router

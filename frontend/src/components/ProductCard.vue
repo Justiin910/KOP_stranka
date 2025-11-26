@@ -88,6 +88,8 @@
 </template>
 
 <script>
+import api, { getSessionToken } from '@/api';
+
 export default {
   name: "ProductCard",
   props: {
@@ -101,12 +103,87 @@ export default {
       isFavorited: false,
     };
   },
+  mounted() {
+    try {
+      const raw = localStorage.getItem('favorites');
+      const stored = raw ? JSON.parse(raw) : [];
+      if (Array.isArray(stored) && stored.length > 0 && typeof stored[0] === 'object') {
+        this.isFavorited = stored.some((p) => p.id === this.product.id);
+      } else {
+        this.isFavorited = Array.isArray(stored) && stored.includes(this.product.id);
+      }
+    } catch (e) {
+      // ignore
+    }
+  },
   methods: {
     goToProduct() {
       this.$router.push(`/product/${this.product.id}`);
     },
-    toggleFavorite() {
-      this.isFavorited = !this.isFavorited;
+    async toggleFavorite() {
+      const newState = !this.isFavorited;
+      const loggedIn = !!(localStorage.getItem('token') || getSessionToken());
+
+      // If logged in, try to update server first
+      if (loggedIn) {
+        try {
+          if (newState) {
+            // attempt to add favorite on server
+            await api.post('/api/favorites', { product_id: this.product.id });
+          } else {
+            // attempt to remove favorite on server
+            // try direct id-based delete first
+            await api.delete(`/api/favorites/${this.product.id}`).catch(async (err) => {
+              // fallback to body-based delete
+              await api.delete('/api/favorites', { data: { product_id: this.product.id } });
+            });
+          }
+
+          // server update succeeded — update local indicator and notify
+          this.isFavorited = newState;
+          window.dispatchEvent(new Event('favorites-updated'));
+          return;
+        } catch (err) {
+          // server update failed — fallback to localStorage below
+          console.warn('Server favorite update failed, falling back to localStorage', err);
+        }
+      }
+
+      // Anonymous or server failed: persist locally
+      this.isFavorited = newState;
+      try {
+        const raw = localStorage.getItem('favorites');
+        let stored = raw ? JSON.parse(raw) : [];
+        if (!Array.isArray(stored)) stored = [];
+
+        // Normalize stored format to array of product objects when storing locally
+        if (this.isFavorited) {
+          // add product object if not present
+          const exists = stored.some((p) => (typeof p === 'object' ? p.id === this.product.id : p === this.product.id));
+          if (!exists) {
+            const item = {
+              id: this.product.id,
+              title: this.product.title || this.product.name,
+              name: this.product.title || this.product.name,
+              description: this.product.description || this.product.short_description || '',
+              category: this.product.category || this.product.category_name || '',
+              price: this.product.price || this.product.current_price || 0,
+              originalPrice: this.product.oldPrice || this.product.original_price || null,
+              image: this.product.image || (this.product.images && this.product.images[0]) || '/placeholder-product.png',
+              inStock: typeof this.product.stock !== 'undefined' ? this.product.stock > 0 : (this.product.inStock ?? true),
+            };
+            stored.push(item);
+          }
+        } else {
+          // remove by id whether stored entries are ids or objects
+          stored = stored.filter((p) => (typeof p === 'object' ? p.id !== this.product.id : p !== this.product.id));
+        }
+
+        localStorage.setItem('favorites', JSON.stringify(stored));
+        window.dispatchEvent(new CustomEvent('favorites-updated', { detail: stored }));
+      } catch (e) {
+        console.warn('Failed to update favorites in localStorage', e);
+      }
     },
     calculateDiscount() {
       if (!this.product.oldPrice) return 0;

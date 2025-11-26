@@ -102,6 +102,7 @@
 <script>
 import Notification from "./NotificationsComponent.vue";
 import Profile from "./ProfileComponent.vue";
+import api, { setSessionToken } from "../api";
 
 export default {
   name: "Navbar",
@@ -113,7 +114,7 @@ export default {
     return {
       query: "",
       cartCount: 2,
-      favoritesCount: 4, // ← počet obľúbených produktov
+      favoritesCount: 0, // will be computed from storage/server
       showProfileDropdown: false,
       isLoggedIn: false,
       user: {
@@ -124,9 +125,25 @@ export default {
   },
   mounted() {
     document.addEventListener("click", this.handleClickOutside);
+    // initialize favorites count from localStorage (or server if logged)
+    this.updateFavoritesCount();
+
+    // react to favorites changes and auth events
+    window.addEventListener("favorites-updated", this.updateFavoritesCount);
+    window.addEventListener("favorites-remote-updated", this.updateFavoritesCount);
+    window.addEventListener("user-logged-in", this.onUserLoggedIn);
+    window.addEventListener("user-logged-out", this.onUserLoggedOut);
+
+    // listen to storage events (other tabs) to stay in sync for anonymous users
+    window.addEventListener("storage", this.onStorageEvent);
   },
   beforeUnmount() {
     document.removeEventListener("click", this.handleClickOutside);
+    window.removeEventListener("favorites-updated", this.updateFavoritesCount);
+    window.removeEventListener("favorites-remote-updated", this.updateFavoritesCount);
+    window.removeEventListener("user-logged-in", this.onUserLoggedIn);
+    window.removeEventListener("user-logged-out", this.onUserLoggedOut);
+    window.removeEventListener("storage", this.onStorageEvent);
   },
   methods: {
     onSearch() {
@@ -174,6 +191,51 @@ export default {
       window.dispatchEvent(new Event("user-logged-out"));
       
       this.$router.push("/");
+    },
+    // Compute favorites count from either local storage (anonymous) or server (logged)
+    async updateFavoritesCount() {
+      // Always try server first — the API client will include either the
+      // persistent token (localStorage) or the in-memory session token set
+      // by `setSessionToken`. If that fails, fall back to localStorage.
+      try {
+        const resp = await api.get("/api/favorites");
+        if (Array.isArray(resp.data)) {
+          this.favoritesCount = resp.data.length;
+          return;
+        }
+      } catch (e) {
+        // Server call failed (unauthorized, network error, etc.) — fallback.
+      }
+
+      // fallback: compute from localStorage 'favorites' key
+      this.favoritesCount = this.getLocalFavoritesCount();
+    },
+    getLocalFavoritesCount() {
+      try {
+        const raw = localStorage.getItem("favorites");
+        if (!raw) return 0;
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          // support array of ids or product objects
+          return parsed.length;
+        }
+        return 0;
+      } catch (e) {
+        return 0;
+      }
+    },
+    async onUserLoggedIn() {
+      // when user logs in, try to refresh count from server
+      await this.updateFavoritesCount();
+    },
+    onUserLoggedOut() {
+      // revert to local storage count on logout
+      this.favoritesCount = this.getLocalFavoritesCount();
+    },
+    onStorageEvent(e) {
+      if (e.key === "favorites") {
+        this.favoritesCount = this.getLocalFavoritesCount();
+      }
     },
   },
 };

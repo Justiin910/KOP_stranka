@@ -222,6 +222,8 @@ export default {
           this.user = response.data;
           // Aktualizuj localStorage
           localStorage.setItem("user", JSON.stringify(response.data));
+          // Merge any local favorites into server for logged-in users
+          this.mergeLocalFavorites();
         } else {
           this.handleLoggedOut();
         }
@@ -229,6 +231,39 @@ export default {
         console.error("Check login error:", error);
         // Ak zlyhá request, user nie je prihlásený
         this.handleLoggedOut();
+      }
+    },
+    async mergeLocalFavorites() {
+      try {
+        const raw = localStorage.getItem('favorites');
+        const ids = raw ? JSON.parse(raw) : [];
+        if (!Array.isArray(ids) || ids.length === 0) return;
+
+        // Try a batch sync endpoint first
+        try {
+          await api.post('/api/favorites/sync', { ids });
+        } catch (err) {
+          // fallback to a common /api/favorites endpoint that accepts product_ids
+          try {
+            await api.post('/api/favorites', { product_ids: ids });
+          } catch (err2) {
+            // last resort: post individually
+            for (const id of ids) {
+              try {
+                await api.post('/api/favorites', { product_id: id });
+              } catch (e) {
+                // ignore individual failures
+                console.warn('Failed to sync favorite', id, e);
+              }
+            }
+          }
+        }
+
+        // On success (or best-effort), remove local cache and notify
+        localStorage.removeItem('favorites');
+        window.dispatchEvent(new Event('favorites-updated'));
+      } catch (e) {
+        console.warn('Failed merging local favorites to server', e);
       }
     },
     handleLoggedOut() {

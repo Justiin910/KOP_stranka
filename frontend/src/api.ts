@@ -31,16 +31,15 @@ api.interceptors.response.use(
     response => response,
     error => {
         if (error.response?.status === 401) {
+            // Clear any stored auth state but do NOT force a global redirect.
+            // Emit an event so the app can decide how to react (router guard will handle route-level redirects).
             localStorage.removeItem('token');
             sessionStorage.removeItem('token');
             sessionToken = null;
             localStorage.removeItem('user');
-            
-            // Only redirect if not already on login/register page
-            const currentPath = window.location.pathname;
-            if (currentPath !== '/login' && currentPath !== '/register') {
-                window.location.href = '/login';
-            }
+
+            // Emit a global event so consuming code can react (e.g., show login or redirect if on protected page)
+            window.dispatchEvent(new Event('api-unauthorized'));
         }
         return Promise.reject(error);
     }
