@@ -1,7 +1,17 @@
 import axios from 'axios';
 
 // Store token in memory (not in storage) for session-only authentication
+// Store token in memory (not in storage) for session-only authentication
+// We also persist it to `sessionStorage` so a session-only login survives a page reload
 let sessionToken: string | null = null;
+
+// Initialize sessionToken from sessionStorage (survives reloads, cleared when tab/window closes)
+try {
+    const storedSession = sessionStorage.getItem('token');
+    if (storedSession) sessionToken = storedSession;
+} catch (e) {
+    // sessionStorage may be unavailable in some environments; fall back to in-memory only
+}
 
 const api = axios.create({
     baseURL: 'http://localhost:8000',
@@ -19,9 +29,15 @@ api.interceptors.request.use((config) => {
     const persistentToken = localStorage.getItem('token');
     if (persistentToken) {
         config.headers.Authorization = `Bearer ${persistentToken}`;
-    } else if (sessionToken) {
-        // Otherwise use in-memory token (session-only login)
-        config.headers.Authorization = `Bearer ${sessionToken}`;
+    } else {
+        // Check sessionStorage (session-only token that survives reload)
+        const sessionStorageToken = sessionStorage.getItem('token');
+        if (sessionStorageToken) {
+            config.headers.Authorization = `Bearer ${sessionStorageToken}`;
+        } else if (sessionToken) {
+            // Fallback to in-memory token (rare: sessionStorage unavailable)
+            config.headers.Authorization = `Bearer ${sessionToken}`;
+        }
     }
     return config;
 });
@@ -34,7 +50,7 @@ api.interceptors.response.use(
             // Clear any stored auth state but do NOT force a global redirect.
             // Emit an event so the app can decide how to react (router guard will handle route-level redirects).
             localStorage.removeItem('token');
-            sessionStorage.removeItem('token');
+            try { sessionStorage.removeItem('token'); } catch (e) {}
             sessionToken = null;
             localStorage.removeItem('user');
 
@@ -48,6 +64,15 @@ api.interceptors.response.use(
 // Export session token setter/getter for use in components
 export function setSessionToken(token: string | null) {
     sessionToken = token;
+    try {
+        if (token) {
+            sessionStorage.setItem('token', token);
+        } else {
+            sessionStorage.removeItem('token');
+        }
+    } catch (e) {
+        // sessionStorage may be disabled/unavailable; in that case we keep in-memory only
+    }
 }
 
 export function getSessionToken() {

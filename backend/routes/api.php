@@ -11,7 +11,7 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
-
+use App\Http\Controllers\CartController;use App\Http\Controllers\AdminController;
 // Get authenticated user
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
@@ -42,6 +42,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/favorites', [\App\Http\Controllers\FavoriteController::class, 'store']);
     Route::delete('/favorites/{product}', [\App\Http\Controllers\FavoriteController::class, 'destroy']);
     Route::post('/favorites/sync', [\App\Http\Controllers\FavoriteController::class, 'sync']);
+    
+    // Cart API
+    Route::get('/cart', [CartController::class, 'index']);
+    Route::post('/cart', [CartController::class, 'add']);
+    Route::put('/cart/{productId}', [CartController::class, 'update']);
+    Route::delete('/cart/{productId}', [CartController::class, 'remove']);
+    Route::delete('/cart', [CartController::class, 'clear']);
+    
 });
 
 // Password reset (Breeze Auth)

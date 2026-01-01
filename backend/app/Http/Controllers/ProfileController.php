@@ -43,13 +43,17 @@ class ProfileController extends Controller
         }
 
         $user = $request->user();
-        
-        // Ak sa zmenil email, resetni email verification
-        if ($user->email !== $validated['email']) {
-            $validated['email_verified_at'] = null;
-        }
+
+        // If the email changed, we'll explicitly clear the verified timestamp
+        // (it's not mass-assignable on the User model).
+        $emailChanged = $user->email !== $validated['email'];
 
         $user->update($validated);
+
+        if ($emailChanged) {
+            $user->email_verified_at = null;
+            $user->save();
+        }
 
         return response()->json([
             'message' => 'Profil bol úspešne aktualizovaný.',

@@ -2,6 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import ProfileView from '../views/ProfileView.vue'
 import CartView from '../views/CartView.vue'
+import CheckoutDeliveryView from '../views/CheckoutDeliveryView.vue'
+import CheckoutPaymentView from '../views/CheckoutPaymentView.vue'
+import CheckoutConfirmationView from '../views/CheckoutConfirmationView.vue'
 import FavView from '@/views/FavView.vue'
 import LoginView from '@/views/LoginView.vue'
 import RegisterView from '@/views/RegisterView.vue'
@@ -41,6 +44,21 @@ const router = createRouter({
       path: '/cart',
       name: 'cart',
       component: CartView,
+    },
+    {
+      path: '/checkout/delivery',
+      name: 'checkout-delivery',
+      component: CheckoutDeliveryView,
+    },
+    {
+      path: '/checkout/payment',
+      name: 'checkout-payment',
+      component: CheckoutPaymentView,
+    },
+    {
+      path: '/checkout/confirmation',
+      name: 'checkout-confirmation',
+      component: CheckoutConfirmationView,
     },
     {
       path: '/login',

@@ -161,6 +161,16 @@
             </router-link>
           </div>
 
+          <!-- Verified Message -->
+          <div v-if="verifiedMessage" class="mb-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+            <div class="flex items-start gap-2">
+              <svg class="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              <p class="text-sm text-green-800 dark:text-green-200">{{ verifiedMessage }}</p>
+            </div>
+          </div>
+
           <!-- Error Message -->
           <div
             v-if="loginError"
@@ -246,6 +256,7 @@ export default {
   name: "LoginView",
   data() {
     return {
+      verifiedMessage: "",
       form: {
         email: "",
         password: "",
@@ -257,6 +268,12 @@ export default {
     };
   },
   mounted() {
+    // Show success banner if redirected after email verification
+    const q = this.$route.query;
+    if (q && (q.verified === '1' || q.verified === 'true')) {
+      this.verifiedMessage = 'Email bol overený. Teraz sa môžete prihlásiť.';
+    }
+
     this.$nextTick(() => {
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
@@ -270,21 +287,26 @@ export default {
 
       try {
         // 1. Post login credentials
-        const response = await api.post(
-          "/api/login",
-          {
-            email: this.form.email,
-            password: this.form.password,
-            remember: this.form.remember,
-          }
-        );
+        const response = await api.post("/api/login", {
+          email: this.form.email,
+          password: this.form.password,
+          remember: this.form.remember,
+        });
 
         // 2. Store token based on "remember me"
         if (this.form.remember) {
+          // Persistent across browser restarts
           localStorage.setItem("token", response.data.token);
-          setSessionToken(null); // Clear in-memory token
+          try {
+            sessionStorage.removeItem("token");
+          } catch (e) {}
+          setSessionToken(null);
         } else {
-          setSessionToken(response.data.token); // Store in memory only
+          // Session-only: survive page reloads but cleared when the tab/window closes
+          try {
+            sessionStorage.setItem("token", response.data.token);
+          } catch (e) {}
+          setSessionToken(response.data.token);
           localStorage.removeItem("token"); // Clear persistent token if exists
         }
 

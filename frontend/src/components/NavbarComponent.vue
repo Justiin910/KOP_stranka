@@ -103,6 +103,7 @@
 import Notification from "./NotificationsComponent.vue";
 import Profile from "./ProfileComponent.vue";
 import api, { setSessionToken } from "../api";
+import { useCartStore } from '../stores/cartStore'
 
 export default {
   name: "Navbar",
@@ -113,7 +114,7 @@ export default {
   data() {
     return {
       query: "",
-      cartCount: 2,
+      // cartCount provided by cart store (computed)
       favoritesCount: 0, // will be computed from storage/server
       showProfileDropdown: false,
       isLoggedIn: false,
@@ -136,6 +137,14 @@ export default {
 
     // listen to storage events (other tabs) to stay in sync for anonymous users
     window.addEventListener("storage", this.onStorageEvent);
+
+    // Initialize cart store so navbar shows correct count
+    try {
+      const cartStore = useCartStore()
+      cartStore.initializeAuth().then(() => cartStore.loadCart()).catch(() => cartStore.loadCart())
+    } catch (e) {
+      console.error('Failed to init cart store in navbar:', e)
+    }
   },
   beforeUnmount() {
     document.removeEventListener("click", this.handleClickOutside);
@@ -237,6 +246,17 @@ export default {
         this.favoritesCount = this.getLocalFavoritesCount();
       }
     },
+  },
+  computed: {
+    cartCount() {
+      try {
+        const cartStore = useCartStore()
+        // totalItems is a computed ref; Vue will unwrap it in template
+        return cartStore.totalItems
+      } catch (e) {
+        return 0
+      }
+    }
   },
 };
 </script>

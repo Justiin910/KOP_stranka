@@ -25,7 +25,7 @@
         <span>/</span>
 
         <span class="text-gray-900 dark:text-gray-100 font-semibold">
-          {{ product.title }}
+          {{ product.name }}
         </span>
       </nav>
       <!-- DIVIDER -->
@@ -38,7 +38,7 @@
         <div class="flex flex-col items-center">
           <img
             :src="product.image"
-            :alt="product.title"
+            :alt="product.name"
             class="w-full max-w-md rounded-lg shadow-md"
           />
           <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">
@@ -49,7 +49,7 @@
         <!-- INFO -->
         <div>
           <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            {{ product.title }}
+            {{ product.name }}
           </h1>
 
           <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
@@ -134,10 +134,15 @@
 <script>
 import api from "@/api";
 import SideBarComponent from "../components/SideBarComponent.vue";
+import { useCartStore } from "../stores/cartStore";
 
 export default {
   name: "ProductView",
   components: { SideBarComponent },
+  setup() {
+    const cartStore = useCartStore();
+    return { cartStore };
+  },
 
   data() {
     return {
@@ -171,6 +176,15 @@ export default {
       return price.toFixed(2);
     },
     addToCart() {
+      this.cartStore.addToCart({
+        id: this.product.id,
+        product_id: this.product.id,
+        name: this.product.title,
+        price: this.product.price,
+        image: this.product.image,
+        description: this.product.description,
+        quantity: 1,
+      });
       alert(`${this.product.title} pridaný do košíka!`);
     },
   },

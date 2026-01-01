@@ -47,12 +47,17 @@
 import api from "@/api";
 import ProductCard from "../components/ProductCard.vue";
 import SideBarComponent from "../components/SideBarComponent.vue";
+import { useCartStore } from "../stores/cartStore";
 
 export default {
   name: "ProductList",
   components: {
     ProductCard,
     SideBarComponent,
+  },
+  setup() {
+    const cartStore = useCartStore();
+    return { cartStore };
   },
   data() {
     return {
@@ -89,7 +94,15 @@ export default {
     },
 
     addToCart(product) {
-      console.log("Adding to cart:", product);
+      this.cartStore.addToCart({
+        id: product.id,
+        product_id: product.id,
+        name: product.title,
+        price: product.price,
+        image: product.image,
+        description: product.description,
+        quantity: 1,
+      });
       alert(`${product.title} pridané do košíka!`);
     },
 

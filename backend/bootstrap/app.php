@@ -4,7 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 
-return Application::configure(basePath: dirname(__DIR__))
+$app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',
@@ -14,7 +14,12 @@ return Application::configure(basePath: dirname(__DIR__))
     
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->api(prepend: [
+            \Illuminate\Http\Middleware\HandleCors::class,
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+        ]);
+
+        $middleware->web(prepend: [
+            \Illuminate\Http\Middleware\HandleCors::class,
         ]);
 
         $middleware->alias([
@@ -25,7 +30,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             '*',
         ]);
-    })
+    });
+
+return $app
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();
