@@ -24,6 +24,7 @@ class AdminController extends Controller
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
+                    'role' => $user->role ?? 'user',
                     'phone' => $user->phone,
                     'orders' => $user->orders->count(),
                     'totalSpent' => (int)$user->orders->sum('total'),
@@ -45,6 +46,7 @@ class AdminController extends Controller
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
+            'role' => $user->role ?? 'user',
             'phone' => $user->phone,
             'created_at' => $user->created_at->format('d.m.Y'),
             'updated_at' => $user->updated_at->format('d.m.Y'),
@@ -58,16 +60,33 @@ class AdminController extends Controller
     {
         $user = User::findOrFail($id);
 
-        $validated = $request->validate([
+        // Base validation rules
+        $rules = [
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . $id,
             'phone' => 'nullable|string|max:20',
             'password' => ['nullable', 'confirmed', Password::defaults()],
-        ]);
+        ];
+
+        // Only owners may change roles
+        if (Auth::user() && Auth::user()->role === 'owner') {
+            $rules['role'] = 'in:user,admin,owner';
+        }
+
+        $validated = $request->validate($rules);
 
         $user->name = $validated['name'];
         $user->email = $validated['email'];
         $user->phone = $validated['phone'] ?? $user->phone;
+
+        // Handle role change if provided and allowed
+        if (isset($validated['role']) && Auth::user() && Auth::user()->role === 'owner') {
+            // Prevent owner from demoting themselves
+            if (Auth::id() === $user->id && $validated['role'] !== 'owner') {
+                return response()->json(['message' => 'Nemôžete si odobrať rolu owner.'], 403);
+            }
+            $user->role = $validated['role'];
+        }
 
         if (!empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);
@@ -82,6 +101,7 @@ class AdminController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'phone' => $user->phone,
+                'role' => $user->role ?? 'user',
             ]
         ]);
     }

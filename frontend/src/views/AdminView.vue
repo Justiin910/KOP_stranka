@@ -512,6 +512,23 @@
             />
           </div>
 
+          <!-- Role (only visible to owner) -->
+          <div v-if="currentUser.role === 'owner'">
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
+              Rola
+            </label>
+            <select
+              v-model="editingUser.role"
+              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+              <option value="owner">Owner</option>
+            </select>
+          </div>
+
           <!-- Generate Password Button -->
           <button
             type="button"
@@ -857,14 +874,14 @@ export default {
     viewOrder(order) {
       this.selectedOrder = order;
     },
-    deleteOrder(id) {
-      if (confirm("Naozaj chcete vymazať túto objednávku?")) {
+    async deleteOrder(id) {
+      if (await window.appConfirm("Naozaj chcete vymazať túto objednávku?")) {
         this.orders = this.orders.filter((order) => order.id !== id);
         alert("Objednávka vymazaná!");
       }
     },
-    deleteUser(id) {
-      if (confirm("Naozaj chcete vymazať tento účet?")) {
+    async deleteUser(id) {
+      if (await window.appConfirm("Naozaj chcete vymazať tento účet?")) {
         api
           .delete(`api/admin/users/${id}`)
           .then(() => {
@@ -877,8 +894,8 @@ export default {
           });
       }
     },
-    resetUserPassword(id) {
-      if (confirm("Naozaj chcete resetovať heslo tohto používateľa?")) {
+    async resetUserPassword(id) {
+      if (await window.appConfirm("Naozaj chcete resetovať heslo tohto používateľa?")) {
         api
           .post(`api/admin/users/${id}/reset-password`)
           .then((response) => {
@@ -898,6 +915,7 @@ export default {
         name: user.name,
         email: user.email,
         phone: this.formatPhoneNumber(user.phone) || "",
+        role: user.role || "user",
       };
       this.editError = "";
       this.generatedPassword = "";
@@ -975,11 +993,27 @@ export default {
       this.editingSaving = true;
       this.editError = "";
 
+      // Prevent owner from demoting themselves
+      if (
+        this.currentUser?.id === this.editingUser?.id &&
+        this.editingUser.role &&
+        this.editingUser.role !== "owner"
+      ) {
+        this.editError = "Nemôžete odstrániť svoje oprávnenie Owner.";
+        this.editingSaving = false;
+        return;
+      }
+
       const data = {
         name: this.editingUser.name,
         email: this.editingUser.email,
         phone: this.editingUser.phone,
       };
+
+      // Only owners can change roles
+      if (this.currentUser?.role === "owner" && this.editingUser.role) {
+        data.role = this.editingUser.role;
+      }
 
       api
         .put(`api/admin/users/${this.editingUser.id}`, data)
@@ -990,6 +1024,7 @@ export default {
             this.users[index].name = this.editingUser.name;
             this.users[index].email = this.editingUser.email;
             this.users[index].phone = this.editingUser.phone;
+            if (data.role) this.users[index].role = data.role;
           }
           this.editingUser = null;
           this.showGeneratedPassword = false;
@@ -1032,8 +1067,8 @@ export default {
     editProduct(product) {
       alert(`Úprava produktu: ${product.name}`);
     },
-    deleteProduct(id) {
-      if (confirm("Naozaj chcete vymazať tento produkt?")) {
+    async deleteProduct(id) {
+      if (await window.appConfirm("Naozaj chcete vymazať tento produkt?")) {
         this.products = this.products.filter((product) => product.id !== id);
         alert("Produkt vymazaný!");
       }

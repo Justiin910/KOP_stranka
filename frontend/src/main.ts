@@ -18,7 +18,28 @@ import { far } from '@fortawesome/free-regular-svg-icons';
 library.add(fas, far, fab)
 dom.watch();
 
-app.use(createPinia())
+const pinia = createPinia()
+app.use(pinia)
 app.use(router)
 .component("font-awesome-icon", FontAwesomeIcon)
+
+// Setup global UI helpers (override native alert and provide async confirm)
+import { useUiStore } from './stores/uiStore'
+
+(window as any).alert = (msg?: any) => {
+	try {
+		const ui = useUiStore()
+		ui.notify(typeof msg === 'string' ? msg : JSON.stringify(msg))
+	} catch (e) {
+		// fallback
+		console.log(msg)
+	}
+}
+
+// async confirm replacement: returns a Promise<boolean>
+(window as any).appConfirm = (msg: string): Promise<boolean> => {
+	const ui = useUiStore()
+	return ui.confirm(msg)
+}
+
 app.mount('#app')

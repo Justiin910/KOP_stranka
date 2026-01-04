@@ -269,13 +269,13 @@ export default {
 			// Presmerovanie na detail objednávky
 			this.$router.push(`/orders/${order.id}`)
 		},
-		cancelOrder(orderId) {
-			if (confirm('Naozaj chcete zrušiť túto objednávku?')) {
-				const order = this.orders.find(o => o.id === orderId)
-				if (order) {
-					order.status = 'Zrušené'
+		async cancelOrder(orderId) {
+			if (await window.appConfirm('Naozaj chcete zrušiť túto objednávku?')) {
+					const order = this.orders.find(o => o.id === orderId)
+					if (order) {
+						order.status = 'Zrušené'
+					}
 				}
-			}
 		}
 	}
 }
