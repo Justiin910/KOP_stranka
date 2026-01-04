@@ -228,18 +228,27 @@
               <button
                 @click="editUser(user)"
                 class="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors"
+                :disabled="currentUser.role === 'admin' && user.role === 'owner'"
+                :title="currentUser.role === 'admin' && user.role === 'owner' ? 'Nemôžete upravovať Owner účet' : ''"
+                :class="{ 'opacity-50 cursor-not-allowed': currentUser.role === 'admin' && user.role === 'owner' }"
               >
                 Upraviť
               </button>
               <button
                 @click="resetUserPassword(user.id)"
                 class="flex-1 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg text-sm font-medium transition-colors"
+                :disabled="currentUser.role === 'admin' && user.role === 'owner'"
+                :title="currentUser.role === 'admin' && user.role === 'owner' ? 'Nemôžete resetovať heslo Owner účtu' : ''"
+                :class="{ 'opacity-50 cursor-not-allowed': currentUser.role === 'admin' && user.role === 'owner' }"
               >
                 Reset hesla
               </button>
               <button
                 @click="deleteUser(user.id)"
                 class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-colors"
+                :disabled="currentUser.role === 'admin' && user.role === 'owner'"
+                :title="currentUser.role === 'admin' && user.role === 'owner' ? 'Nemôžete vymazať Owner účet' : ''"
+                :class="{ 'opacity-50 cursor-not-allowed': currentUser.role === 'admin' && user.role === 'owner' }"
               >
                 Vymazať
               </button>
@@ -529,7 +538,7 @@
             </select>
           </div>
 
-          <!-- Password controls (owners only): manual set or generate) -->
+          <!-- Password: owners get manual set + generate; admins get generate-only -->
           <div v-if="currentUser.role === 'owner'">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Nastaviť heslo
@@ -550,6 +559,21 @@
                 {{ editingSaving ? "Ukladá sa..." : "Nastaviť heslo" }}
               </button>
 
+              <button
+                type="button"
+                @click="generateRandomPassword"
+                class="flex-1 px-4 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-medium transition-colors"
+              >
+                Vygenerovať heslo
+              </button>
+            </div>
+          </div>
+
+          <div v-else-if="currentUser.role === 'admin'">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Generovať heslo
+            </label>
+            <div class="flex gap-3 mt-3">
               <button
                 type="button"
                 @click="generateRandomPassword"
@@ -903,6 +927,12 @@ export default {
       }
     },
     async deleteUser(id) {
+      const target = this.users.find((u) => u.id === id);
+      if (this.currentUser?.role === 'admin' && target?.role === 'owner') {
+        alert('Nemôžete vymazať Owner účet.');
+        return;
+      }
+
       if (await window.appConfirm("Naozaj chcete vymazať tento účet?")) {
         api
           .delete(`api/admin/users/${id}`)
@@ -917,6 +947,12 @@ export default {
       }
     },
     async resetUserPassword(id) {
+      const target = this.users.find((u) => u.id === id);
+      if (this.currentUser?.role === 'admin' && target?.role === 'owner') {
+        alert('Nemôžete resetovať heslo Owner účtu.');
+        return;
+      }
+
       if (await window.appConfirm("Naozaj chcete resetovať heslo tohto používateľa?")) {
         api
           .post(`api/admin/users/${id}/reset-password`, { send_notification: false })
@@ -932,6 +968,12 @@ export default {
       }
     },
     editUser(user) {
+      // Prevent admins from editing owner accounts
+      if (this.currentUser?.role === 'admin' && user?.role === 'owner') {
+        alert('Nemôžete upravovať Owner účet.');
+        return;
+      }
+
       this.editingUser = {
         id: user.id,
         name: user.name,
@@ -986,6 +1028,7 @@ export default {
           `api/admin/users/${this.editingUser.id}/set-password`,
           {
             password: this.generatedPassword,
+            send_notification: false,
           }
         );
         console.log("Password set response:", response.data);
@@ -1008,7 +1051,7 @@ export default {
       try {
         const response = await api.post(
           `api/admin/users/${this.editingUser.id}/set-password`,
-          { password: this.editingUser.password }
+          { password: this.editingUser.password, send_notification: false }
         );
         console.log("Password set response:", response.data);
         alert("Heslo bolo nastavené.");
