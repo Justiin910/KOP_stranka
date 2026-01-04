@@ -83,20 +83,7 @@
         >
           <div class="flex items-start gap-6">
             <div class="relative">
-              <!-- Profile Picture or Initials -->
               <div
-                v-if="profile_picture_path"
-                class="w-24 h-24 rounded-full bg-gray-200 overflow-hidden"
-              >
-                <img
-                  :src="`${profile_picture_path}?v=${profileImageCacheBuster}`"
-                  :alt="user.name"
-                  class="w-full h-full object-cover"
-                  @error="handleImageError"
-                />
-              </div>
-              <div
-                v-else
                 class="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold"
               >
                 {{ getInitials(user.name) }}
@@ -106,17 +93,14 @@
                 type="file"
                 accept="image/*"
                 @change="handleAvatarChange"
-                :disabled="isUploading"
                 class="hidden"
               />
               <button
                 @click="$refs.avatarInput.click()"
-                :disabled="isUploading"
-                class="absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-full p-2 shadow-lg transition-colors"
+                class="absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-2 shadow-lg transition-colors"
                 title="Zmeniť avatar"
               >
                 <svg
-                  v-if="!isUploading"
                   class="w-4 h-4"
                   fill="none"
                   stroke="currentColor"
@@ -134,21 +118,6 @@
                     stroke-width="2"
                     d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
                   />
-                </svg>
-                <svg v-else class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-                  <circle
-                    class="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    stroke-width="4"
-                  ></circle>
-                  <path
-                    class="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
                 </svg>
               </button>
             </div>
@@ -696,10 +665,6 @@ export default {
       orders: [],
       showDeleteConfirmation: false,
       deleteAccountPassword: "",
-      isUploading: false,
-      showMessage: false,
-      profile_picture_path: null,
-      profileImageCacheBuster: 0,
     };
   },
   async mounted() {
@@ -750,12 +715,6 @@ export default {
       try {
         const userResponse = await api.get("/api/user");
         this.user = userResponse.data;
-
-        // Set profile picture path (use backend base URL so browser requests go to backend)
-        if (this.user.profile_picture_path) {
-          this.profile_picture_path = api.defaults.baseURL.replace(/\/$/, '') + `/api/user/${this.user.id}/profile-picture`;
-          this.profileImageCacheBuster++;
-        }
 
         this.formData = {
           name: this.user.name || "",
@@ -1064,82 +1023,12 @@ export default {
         this.isDeletingAccount = false;
       }
     },
-    handleImageError(event) {
-      console.error('Failed to load profile picture from:', event.target.src);
-      // Fallback to initials if image fails to load
-      this.profile_picture_path = null;
-    },
     handleAvatarChange(event) {
       const file = event.target.files[0];
-      if (!file) return;
-
-      // Validate file
-      const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-      const maxSize = 5 * 1024 * 1024; // 5MB
-
-      if (!validTypes.includes(file.type)) {
-        this.errorMessage =
-          "Nepodporovaný typ súboru. Prosím nahrajte JPG, PNG, GIF alebo WebP.";
-        this.showMessage = true;
-        return;
+      if (file) {
+        console.log("Avatar file:", file);
+        alert("Funkcia uploadu avatara bude implementovaná neskôr.");
       }
-
-      if (file.size > maxSize) {
-        this.errorMessage = "Súbor je príliš veľký. Maximálna veľkosť je 5MB.";
-        this.showMessage = true;
-        return;
-      }
-
-      // Upload file
-      const formData = new FormData();
-      formData.append("profile_picture", file);
-
-      this.isUploading = true;
-
-      api
-        .post("/api/user/profile-picture", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        })
-        .then((response) => {
-          // Update user data in localStorage
-          if (localStorage.user) {
-            const userData = JSON.parse(localStorage.user);
-            userData.profile_picture_path = response.data.user.profile_picture_path;
-            userData.id = response.data.user.id;
-            localStorage.user = JSON.stringify(userData);
-          }
-
-          // Update local profile_picture_path to use absolute backend URL
-          this.profile_picture_path = api.defaults.baseURL.replace(/\/$/, '') + `/api/user/${response.data.user.id}/profile-picture`;
-          this.user.id = response.data.user.id;
-          this.profileImageCacheBuster++;
-
-          // Emit event for navbar/sidebar to update (send absolute URL)
-          window.dispatchEvent(
-            new CustomEvent("profilePictureUpdated", {
-              detail: { profile_picture_url: this.profile_picture_path },
-            })
-          );
-
-          this.successMessage = response.data.message;
-          this.showMessage = true;
-          this.errorMessage = "";
-
-          // Clear file input
-          event.target.value = "";
-        })
-        .catch((error) => {
-          console.error("Error uploading profile picture:", error);
-          const errorMsg =
-            error.response?.data?.message || "Chyba pri nahravaní fotografie.";
-          this.errorMessage = errorMsg;
-          this.showMessage = true;
-        })
-        .finally(() => {
-          this.isUploading = false;
-        });
     },
     getInitials(name) {
       if (!name) return "?";
