@@ -121,6 +121,23 @@
             Nastavenia
           </button>
 
+          <!-- Admin Link (only for admin and owner roles) -->
+          <button
+            v-if="user.role === 'admin' || user.role === 'owner'"
+            @click="goToAdmin"
+            class="w-full text-left px-4 py-2 text-sm text-indigo-600 dark:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 transition-colors"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+              />
+            </svg>
+            Admin Panel
+          </button>
+
           <div class="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
             <button
               @click="logout"
@@ -289,6 +306,10 @@ export default {
     },
     goToSettings() {
       this.$router.push("/settings");
+      this.showProfileDropdown = false;
+    },
+    goToAdmin() {
+      this.$router.push("/admin/dashboard");
       this.showProfileDropdown = false;
     },
     async logout() {

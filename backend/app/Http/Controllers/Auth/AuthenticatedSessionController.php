@@ -19,18 +19,18 @@ class AuthenticatedSessionController extends Controller
 
         $user = Auth::user();
         
-        // Create API token with expiration based on remember flag
-        $expiresIn = $request->boolean('remember') ? 30 * 24 * 60 : 2 * 60; // 30 days or 2 hours in minutes
-        $token = $user->createToken(
-            'mobile-app',
-            ['*'],
-            now()->addMinutes($expiresIn)
-        );
+        // Create API token
+        $token = $user->createToken('api-token');
 
         return response()->json([
             'token' => $token->plainTextToken,
-            'user' => $user,
-            'remember' => $request->boolean('remember'),
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'role' => $user->role,
+            ],
         ]);
     }
 

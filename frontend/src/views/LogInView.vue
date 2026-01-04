@@ -140,19 +140,8 @@
             </div>
           </div>
 
-          <!-- Remember Me & Forgot Password -->
-          <div class="flex items-center justify-between mb-6">
-            <label class="flex items-center">
-              <input
-                v-model="form.remember"
-                type="checkbox"
-                :disabled="isSubmitting"
-                class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 disabled:opacity-50"
-              />
-              <span class="ml-2 text-sm text-gray-700 dark:text-gray-300"
-                >Zapamätať si ma</span
-              >
-            </label>
+          <!-- Forgot Password -->
+          <div class="flex justify-end mb-6">
             <router-link
               to="/password-reset"
               class="text-sm text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium"
@@ -162,12 +151,27 @@
           </div>
 
           <!-- Verified Message -->
-          <div v-if="verifiedMessage" class="mb-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+          <div
+            v-if="verifiedMessage"
+            class="mb-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3"
+          >
             <div class="flex items-start gap-2">
-              <svg class="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              <svg
+                class="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
-              <p class="text-sm text-green-800 dark:text-green-200">{{ verifiedMessage }}</p>
+              <p class="text-sm text-green-800 dark:text-green-200">
+                {{ verifiedMessage }}
+              </p>
             </div>
           </div>
 
@@ -260,7 +264,6 @@ export default {
       form: {
         email: "",
         password: "",
-        remember: false,
       },
       showPassword: false,
       loginError: "",
@@ -270,8 +273,8 @@ export default {
   mounted() {
     // Show success banner if redirected after email verification
     const q = this.$route.query;
-    if (q && (q.verified === '1' || q.verified === 'true')) {
-      this.verifiedMessage = 'Email bol overený. Teraz sa môžete prihlásiť.';
+    if (q && (q.verified === "1" || q.verified === "true")) {
+      this.verifiedMessage = "Email bol overený. Teraz sa môžete prihlásiť.";
     }
 
     this.$nextTick(() => {
@@ -287,28 +290,14 @@ export default {
 
       try {
         // 1. Post login credentials
-        const response = await api.post("/api/login", {
+        const response = await api.post("/login", {
           email: this.form.email,
           password: this.form.password,
-          remember: this.form.remember,
         });
 
-        // 2. Store token based on "remember me"
-        if (this.form.remember) {
-          // Persistent across browser restarts
-          localStorage.setItem("token", response.data.token);
-          try {
-            sessionStorage.removeItem("token");
-          } catch (e) {}
-          setSessionToken(null);
-        } else {
-          // Session-only: survive page reloads but cleared when the tab/window closes
-          try {
-            sessionStorage.setItem("token", response.data.token);
-          } catch (e) {}
-          setSessionToken(response.data.token);
-          localStorage.removeItem("token"); // Clear persistent token if exists
-        }
+        // 2. Store token in localStorage for persistent login
+        localStorage.setItem("token", response.data.token);
+        setSessionToken(response.data.token);
 
         // 3. Store user data
         localStorage.setItem("user", JSON.stringify(response.data.user));

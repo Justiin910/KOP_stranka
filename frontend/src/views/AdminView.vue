@@ -29,10 +29,10 @@
       <!-- Header -->
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-800 dark:text-white mb-2">
-          {{ tabs.find((t) => t.id === activeTab).label }}
+          {{ tabs.find((t) => t.id === activeTab)?.label || tabs[0]?.label }}
         </h1>
         <p class="text-gray-600 dark:text-gray-400">
-          {{ tabs.find((t) => t.id === activeTab).description }}
+          {{ tabs.find((t) => t.id === activeTab)?.description || tabs[0]?.description }}
         </p>
       </div>
 
@@ -150,6 +150,40 @@
           />
         </div>
 
+        <!-- Error Message -->
+        <div
+          v-if="usersError"
+          class="bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 rounded-lg p-4 mb-4"
+        >
+          <p class="text-red-800 dark:text-red-200 mb-3">
+            <strong>Chyba:</strong> {{ usersError }}
+          </p>
+          <button
+            @click="fetchUsers"
+            :disabled="usersLoading"
+            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+          >
+            {{ usersLoading ? "Načítava sa..." : "Skúsiť znovu" }}
+          </button>
+        </div>
+
+        <!-- Empty State -->
+        <div
+          v-if="users.length === 0 && !usersError && !usersLoading"
+          class="bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4"
+        >
+          <p class="text-yellow-800 dark:text-yellow-200 mb-3">
+            <strong>Poznámka:</strong> Žiadni používatelia sa nenachádzajú. Skontrolujte,
+            že ste prihlásený/á a že máte oprávnenia na prístup k administrácii.
+          </p>
+          <button
+            @click="fetchUsers"
+            class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg text-sm font-medium transition-colors"
+          >
+            Skúsiť znovu
+          </button>
+        </div>
+
         <!-- Users Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div
@@ -191,6 +225,12 @@
               </div>
             </div>
             <div class="flex gap-2">
+              <button
+                @click="editUser(user)"
+                class="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                Upraviť
+              </button>
               <button
                 @click="resetUserPassword(user.id)"
                 class="flex-1 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg text-sm font-medium transition-colors"
@@ -395,10 +435,172 @@
         </button>
       </div>
     </div>
+
+    <!-- Modal for Edit User -->
+    <div
+      v-if="editingUser"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div
+        class="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-2xl w-full mx-4"
+        @click.stop
+      >
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+            Úprava používateľa
+          </h2>
+          <button
+            type="button"
+            @click="editingUser = null"
+            class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
+          </button>
+        </div>
+        <form @submit.prevent="saveUserChanges" class="space-y-6">
+          <!-- Name -->
+          <div>
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
+              Meno
+            </label>
+            <input
+              v-model="editingUser.name"
+              type="text"
+              required
+              placeholder="Meno a priezvisko"
+              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            />
+          </div>
+
+          <!-- Email -->
+          <div>
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
+              Email
+            </label>
+            <input
+              v-model="editingUser.email"
+              type="email"
+              required
+              placeholder="vas.email@priklad.sk"
+              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            />
+          </div>
+
+          <!-- Phone -->
+          <div>
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
+              Telefón
+            </label>
+            <input
+              v-model="editingUser.phone"
+              type="tel"
+              placeholder="+421 123 456 789"
+              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            />
+          </div>
+
+          <!-- Generate Password Button -->
+          <button
+            type="button"
+            @click="generateRandomPassword"
+            class="w-full px-4 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-medium transition-colors"
+          >
+            Vygenerovať heslo
+          </button>
+
+          <!-- Generated Password Display -->
+          <div
+            v-if="generatedPassword"
+            class="bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded-lg p-4 mt-3"
+          >
+            <p class="text-sm text-green-700 dark:text-green-200 font-medium mb-2">
+              Heslo vygenerované a uložené:
+            </p>
+            <p class="text-lg font-mono text-green-900 dark:text-green-100 break-all">
+              {{ generatedPassword }}
+            </p>
+          </div>
+
+          <!-- Error Message -->
+          <div
+            v-if="editError"
+            class="bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 rounded-lg p-3 mb-4"
+          >
+            <p class="text-red-800 dark:text-red-200 text-sm">{{ editError }}</p>
+          </div>
+
+          <!-- Buttons -->
+          <div class="flex gap-3 mt-6">
+            <button
+              type="submit"
+              :disabled="editingSaving"
+              class="flex-1 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50"
+            >
+              {{ editingSaving ? "Ukladá sa..." : "Uložiť zmeny" }}
+            </button>
+            <button
+              type="button"
+              @click="editingUser = null"
+              class="flex-1 px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-white rounded-lg font-medium hover:shadow-lg transition-all"
+            >
+              Zrušiť
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Confirmation Modal for Password Generation -->
+    <div
+      v-if="showPasswordConfirmation"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      @click="showPasswordConfirmation = false"
+    >
+      <div
+        class="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-md w-full mx-4"
+        @click.stop
+      >
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          Potvrdiť vygenerovanie hesla
+        </h2>
+        <p class="text-gray-600 dark:text-gray-400 mb-6">
+          Ste si istí, že chcete vygenerovať heslo pre tohto používateľa?
+        </p>
+        <div class="flex gap-3">
+          <button
+            @click="confirmAndGeneratePassword"
+            class="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+          >
+            Áno, vygenerovať
+          </button>
+          <button
+            @click="showPasswordConfirmation = false"
+            class="flex-1 px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-white rounded-lg font-medium transition-colors"
+          >
+            Zrušiť
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
+import api from "@/api.ts";
+
 export default {
   name: "AdminView",
   data() {
@@ -409,8 +611,17 @@ export default {
       productSearch: "",
       selectedOrder: null,
       showAddProduct: false,
+      editingUser: null,
+      editingSaving: false,
+      editError: "",
+      usersLoading: false,
+      usersError: null,
+      generatedPassword: "",
+      showGeneratedPassword: false,
+      showPasswordConfirmation: false,
+      currentUser: JSON.parse(localStorage.getItem("user") || "{}"),
 
-      tabs: [
+      allTabs: [
         { id: "stats", label: "Štatistiky", description: "Prehľad výkonu vášho obchodu" },
         {
           id: "orders",
@@ -541,56 +752,7 @@ export default {
         },
       ],
 
-      users: [
-        {
-          id: 1,
-          name: "Ján Novák",
-          email: "jan.novak@gmail.com",
-          orders: 5,
-          totalSpent: 3245,
-          registered: "12.5.2024",
-        },
-        {
-          id: 2,
-          name: "Peter Malý",
-          email: "peter.maly@gmail.com",
-          orders: 2,
-          totalSpent: 1890,
-          registered: "3.8.2024",
-        },
-        {
-          id: 3,
-          name: "Mária Veselá",
-          email: "maria.vesela@gmail.com",
-          orders: 8,
-          totalSpent: 5670,
-          registered: "18.3.2024",
-        },
-        {
-          id: 4,
-          name: "Tomáš Horný",
-          email: "tomas.horny@gmail.com",
-          orders: 3,
-          totalSpent: 2340,
-          registered: "25.6.2024",
-        },
-        {
-          id: 5,
-          name: "Eva Nová",
-          email: "eva.nova@gmail.com",
-          orders: 1,
-          totalSpent: 1199,
-          registered: "9.10.2024",
-        },
-        {
-          id: 6,
-          name: "Michal Dlhý",
-          email: "michal.dlhy@gmail.com",
-          orders: 12,
-          totalSpent: 8920,
-          registered: "5.1.2024",
-        },
-      ],
+      users: [],
 
       products: [
         {
@@ -632,7 +794,24 @@ export default {
       ],
     };
   },
+  mounted() {
+    this.currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+    // Set activeTab to first available tab for user
+    this.$nextTick(() => {
+      if (this.currentUser.role === "admin" && this.activeTab === "stats") {
+        this.activeTab = "orders";
+      }
+    });
+    this.fetchUsers();
+  },
   computed: {
+    tabs() {
+      // Hide stats tab for admins (only show for owners)
+      if (this.currentUser.role === "admin") {
+        return this.allTabs.filter((tab) => tab.id !== "stats");
+      }
+      return this.allTabs;
+    },
     filteredOrders() {
       if (!this.orderSearch) return this.orders;
       const search = this.orderSearch.toLowerCase();
@@ -686,14 +865,169 @@ export default {
     },
     deleteUser(id) {
       if (confirm("Naozaj chcete vymazať tento účet?")) {
-        this.users = this.users.filter((user) => user.id !== id);
-        alert("Používateľ vymazaný!");
+        api
+          .delete(`api/admin/users/${id}`)
+          .then(() => {
+            this.users = this.users.filter((user) => user.id !== id);
+            alert("Používateľ vymazaný!");
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            alert("Chyba pri vymazávaní používateľa");
+          });
       }
     },
     resetUserPassword(id) {
       if (confirm("Naozaj chcete resetovať heslo tohto používateľa?")) {
-        alert("Reset hesla bol odoslaný na email používateľa!");
+        api
+          .post(`api/admin/users/${id}/reset-password`)
+          .then((response) => {
+            alert(
+              response.data.message || "Reset hesla bol odoslaný na email používateľa!"
+            );
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            alert("Chyba pri resetovaní hesla");
+          });
       }
+    },
+    editUser(user) {
+      this.editingUser = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: this.formatPhoneNumber(user.phone) || "",
+      };
+      this.editError = "";
+      this.generatedPassword = "";
+      this.showGeneratedPassword = false;
+    },
+    generateRandomPassword() {
+      this.showPasswordConfirmation = true;
+    },
+    confirmAndGeneratePassword() {
+      const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      const lowercase = "abcdefghijklmnopqrstuvwxyz";
+      const numbers = "0123456789";
+      const symbols = "!@#$%^&*";
+
+      // Weight towards letters more than symbols
+      const allChars = uppercase + uppercase + lowercase + lowercase + numbers + symbols;
+
+      let password = "";
+      // Ensure at least one of each type
+      password += uppercase[Math.floor(Math.random() * uppercase.length)];
+      password += lowercase[Math.floor(Math.random() * lowercase.length)];
+      password += numbers[Math.floor(Math.random() * numbers.length)];
+      password += symbols[Math.floor(Math.random() * symbols.length)];
+
+      // Fill the rest randomly (15 more chars = 19 total)
+      for (let i = password.length; i < 16; i++) {
+        password += allChars[Math.floor(Math.random() * allChars.length)];
+      }
+
+      // Shuffle the password
+      password = password
+        .split("")
+        .sort(() => Math.random() - 0.5)
+        .join("");
+
+      this.generatedPassword = password;
+      this.showPasswordConfirmation = false;
+      // Auto-save the generated password
+      this.saveGeneratedPassword();
+    },
+    async saveGeneratedPassword() {
+      if (!this.generatedPassword || !this.editingUser) return;
+
+      try {
+        const response = await api.post(
+          `api/admin/users/${this.editingUser.id}/set-password`,
+          {
+            password: this.generatedPassword,
+          }
+        );
+        console.log("Password set response:", response.data);
+      } catch (error) {
+        console.error("Error setting password:", error);
+        const errorMsg =
+          error.response?.data?.message || error.response?.data?.errors || error.message;
+        console.error("Full error:", errorMsg);
+        this.editError = "Chyba pri nastavovaní hesla: " + JSON.stringify(errorMsg);
+      }
+    },
+    copyToClipboard() {
+      navigator.clipboard.writeText(this.generatedPassword);
+    },
+    formatPhoneNumber(phone) {
+      if (!phone) return "";
+      // Remove all non-digits except leading +
+      const cleaned = phone.replace(/[^\d+]/g, "");
+      // Format as +XXX XXX XXX XXX
+      if (cleaned.startsWith("+")) {
+        const withoutPlus = cleaned.slice(1);
+        return "+" + withoutPlus.replace(/(\d{3})(?=\d)/g, "$1 ");
+      }
+      return cleaned.replace(/(\d{3})(?=\d)/g, "$1 ");
+    },
+    saveUserChanges() {
+      this.editingSaving = true;
+      this.editError = "";
+
+      const data = {
+        name: this.editingUser.name,
+        email: this.editingUser.email,
+        phone: this.editingUser.phone,
+      };
+
+      api
+        .put(`api/admin/users/${this.editingUser.id}`, data)
+        .then((response) => {
+          // Update user in the list
+          const index = this.users.findIndex((u) => u.id === this.editingUser.id);
+          if (index !== -1) {
+            this.users[index].name = this.editingUser.name;
+            this.users[index].email = this.editingUser.email;
+            this.users[index].phone = this.editingUser.phone;
+          }
+          this.editingUser = null;
+          this.showGeneratedPassword = false;
+          alert("Zmeny boli uložené!");
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          this.editError = error.response?.data?.message || "Chyba pri ukládaní zmien";
+        })
+        .finally(() => {
+          this.editingSaving = false;
+        });
+    },
+    fetchUsers() {
+      this.usersLoading = true;
+      this.usersError = null;
+      api
+        .get("api/admin/users")
+        .then((response) => {
+          console.log("Users fetched:", response.data);
+          this.users = response.data;
+          this.usersError = null;
+        })
+        .catch((error) => {
+          console.error("Error fetching users:", error);
+          if (error.response) {
+            console.error("Response status:", error.response.status);
+            console.error("Response data:", error.response.data);
+            this.usersError = `Chyba ${error.response.status}: ${
+              error.response.data?.message || "Nepodarilo sa načítať používateľov"
+            }`;
+          } else {
+            this.usersError = error.message || "Chyba pri načítavaní používateľov";
+          }
+        })
+        .finally(() => {
+          this.usersLoading = false;
+        });
     },
     editProduct(product) {
       alert(`Úprava produktu: ${product.name}`);

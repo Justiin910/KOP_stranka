@@ -56,3 +56,13 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])->middleware('guest');
 Route::post('/reset-password', [NewPasswordController::class, 'store'])->middleware('guest');
 
+// Admin routes
+Route::middleware(['auth:sanctum', 'admin'])->group(function () {
+    Route::get('/admin/users', [AdminController::class, 'getUsers']);
+    Route::get('/admin/users/{id}', [AdminController::class, 'getUser']);
+    Route::put('/admin/users/{id}', [AdminController::class, 'updateUser']);
+    Route::delete('/admin/users/{id}', [AdminController::class, 'deleteUser']);
+    Route::post('/admin/users/{id}/reset-password', [AdminController::class, 'resetUserPassword']);
+    Route::post('/admin/users/{id}/set-password', [AdminController::class, 'setUserPassword']);
+    Route::get('/admin/stats', [AdminController::class, 'getStats']);
+});
