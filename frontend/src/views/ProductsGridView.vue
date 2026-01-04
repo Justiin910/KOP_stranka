@@ -7,7 +7,14 @@
     <!-- Products Section -->
     <section class="flex-1 px-10 py-12">
       <!-- SORT BAR (Alza style) -->
-      <div class="mb-6">
+        <!-- BREADCRUMBS -->
+        <nav class="text-sm text-gray-600 dark:text-gray-300 mb-3 flex items-center gap-2">
+          <router-link to="/" class="hover:underline">Domov</router-link>
+          <span>/</span>
+          <span class="text-gray-900 dark:text-gray-100 font-semibold capitalize">{{ getCategoryLabel($route.params.catkey) }}</span>
+        </nav>
+
+        <div class="mb-6">
         <p class="text-sm text-white mb-3">{{ products.length }} položiek</p>
 
         <div
@@ -91,6 +98,21 @@ export default {
         console.error("Error loading products:", error);
         this.products = [];
       }
+    },
+
+    getCategoryLabel(category) {
+      const categoryMap = {
+        phones: "Telefóny",
+        notebooks: "Notebooky",
+        tablets: "Tablety",
+        pocitace: "Počítače",
+        pcs: "Počítače",
+        accessories: "Príslušenstvo",
+        monitors: "Monitory",
+        peripherals: "Periférie",
+        mobily: "Mobily",
+      };
+      return categoryMap[category] || category || "Všetky";
     },
 
     addToCart(product) {

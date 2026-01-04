@@ -76,6 +76,11 @@ const router = createRouter({
       component: PasswordresetView,
     },
     {
+      path: '/reset-password',
+      name: 'reset-password',
+      component: () => import('@/views/ResetPasswordView.vue'),
+    },
+    {
       path: '/orders/status',
       name: 'orders/status',
       component: OrderStatus
@@ -116,12 +121,18 @@ const router = createRouter({
       name: 'admin-dashboard',
       component: AdminView,
       props: true,
+      meta: { requiresAuth: true, requiresAdmin: true },
     },
     {
       path: '/category/:catkey',
       name: 'category',
       component: ProductsGridView,
       props: true,
+    },
+    {
+      path: '/search',
+      name: 'search',
+      component: () => import('@/views/SearchResultsView.vue'),
     },
     {
     path: '/password-reset/:hash',
@@ -137,8 +148,9 @@ import { getSessionToken } from '@/api'
 
 router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some(record => (record.meta as any)?.requiresAuth)
+  const requiresAdmin = to.matched.some(record => (record.meta as any)?.requiresAdmin)
 
-  if (!requiresAuth) {
+  if (!requiresAuth && !requiresAdmin) {
     return next()
   }
 
@@ -146,12 +158,31 @@ router.beforeEach((to, from, next) => {
   const persistentToken = localStorage.getItem('token')
   const sessionToken = getSessionToken()
 
-  if (persistentToken || sessionToken) {
-    return next()
+  if (!persistentToken && !sessionToken) {
+    // Not authenticated — redirect to home
+    return next({ name: 'home' })
   }
 
-  // Not authenticated — redirect to login
-  return next({ name: 'login' })
+  // If route requires admin, verify stored user role (fast client-side check).
+  // If no user data is available, or role is not admin/owner, redirect to home.
+  if (requiresAdmin) {
+    try {
+      const userJson = localStorage.getItem('user')
+      const user = userJson ? JSON.parse(userJson) : null
+
+      const role = user?.role ?? null
+      if (role === 'admin' || role === 'owner') {
+        return next()
+      }
+      // Not an admin — redirect to home
+      return next({ name: 'home' })
+    } catch (e) {
+      // If parse fails or any error, be conservative and redirect to home
+      return next({ name: 'home' })
+    }
+  }
+
+  return next()
 })
 
 export default router

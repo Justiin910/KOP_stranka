@@ -286,6 +286,7 @@
 
 <script>
 import api, { getSessionToken } from "@/api";
+import { useCartStore } from '@/stores/cartStore';
 
 export default {
   data() {
@@ -339,17 +340,47 @@ export default {
     addToCart(itemId) {
       const product = this.favorites.find((p) => p.id === itemId);
       if (!product) return;
-      // keep simple: emit global event and show quick feedback
-      window.dispatchEvent(new CustomEvent("add-to-cart", { detail: product }));
-      alert(`${product.name || product.title} pridaný do košíka!`);
+      try {
+        const cartStore = useCartStore();
+        cartStore.addToCart({
+          id: product.id,
+          product_id: product.id,
+          title: product.name,
+          price: Number(product.price) || 0,
+          image: product.image || null,
+          description: product.description || '',
+          quantity: 1,
+        });
+        alert(`${product.name || product.title} pridaný do košíka!`);
+      } catch (e) {
+        console.error('Failed to add to cart', e);
+        alert('Nepodarilo sa pridať do košíka');
+      }
     },
     addAllToCart() {
       const availableItems = this.favorites.filter((item) => item.inStock);
       if (availableItems.length === 0) return;
-      window.dispatchEvent(
-        new CustomEvent("add-to-cart-batch", { detail: availableItems })
-      );
-      alert(`Pridaných ${availableItems.length} produktov do košíka!`);
+      try {
+        const cartStore = useCartStore();
+        // add sequentially to ensure server/local storage consistency
+        (async () => {
+          for (const product of availableItems) {
+            await cartStore.addToCart({
+              id: product.id,
+              product_id: product.id,
+              title: product.name,
+              price: Number(product.price) || 0,
+              image: product.image || null,
+              description: product.description || '',
+              quantity: 1,
+            });
+          }
+        })();
+        alert(`Pridaných ${availableItems.length} produktov do košíka!`);
+      } catch (e) {
+        console.error('Failed to add all to cart', e);
+        alert('Nepodarilo sa pridať všetky produkty do košíka');
+      }
     },
     async loadFavorites() {
       // Read favorite ids from localStorage. Expecting array of ids.

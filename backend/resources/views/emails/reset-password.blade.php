@@ -1,50 +1,3 @@
-<?php
-
-namespace App\Notifications;
-
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\Mail;
-
-class ResetPasswordNotification extends Notification
-{
-    use Queueable;
-
-    /**
-     * The password reset token.
-     *
-     * @var string
-     */
-    public $token;
-
-    /**
-     * Create a new notification instance.
-     */
-    public function __construct($token)
-    {
-        $this->token = $token;
-    }
-
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
-     */
-    public function via(object $notifiable): array
-    {
-        return ['mail'];
-    }
-
-    /**
-     * Get the mail representation of the notification.
-     */
-    public function toMail(object $notifiable)
-    {
-        $frontendUrl = config('app.frontend_url') ?? config('app.url');
-        $resetUrl = $frontendUrl . '/reset-password?token=' . $this->token . '&email=' . urlencode($notifiable->getEmailForPasswordReset());
-
-        $htmlBody = <<<HTML
 <!DOCTYPE html>
 <html lang="sk">
 <head>
@@ -166,16 +119,16 @@ class ResetPasswordNotification extends Notification
         </div>
         
         <div class="content">
-            <p class="greeting">Ahoj,</p>
+            <p class="greeting">Dobrý deň,</p>
             
             <p>Obdržali ste túto správu, pretože sme dostali požiadavku na obnovenie hesla vášho účtu.</p>
             
             <div class="button-container">
-                <a href="{$resetUrl}" class="button">Obnoviť heslo</a>
+                <a href="{{ $resetUrl }}" class="button">Obnoviť heslo</a>
             </div>
             
             <p style="text-align: center; font-size: 14px; color: #666;">Alebo skopírujte a vložte tento odkaz do prehliadača:</p>
-            <div class="url-box">{$resetUrl}</div>
+            <div class="url-box">{{ $resetUrl }}</div>
             
             <div class="info-section">
                 <p><strong>Platnosť odkazu:</strong> Tento odkaz na obnovenie hesla platí 60 minút.</p>
@@ -188,37 +141,15 @@ class ResetPasswordNotification extends Notification
             
             <div class="divider"></div>
             
-            <p style="font-size: 14px; color: #666;">Ak máte ďalšie otázky, kontaktujte nás na adrese <a href="mailto:{config('mail.from.address')}">{config('mail.from.address')}</a>.</p>
+            <p style="font-size: 14px; color: #666;">Ak máte ďalšie otázky, kontaktujte nás na adrese <a href="mailto:techstore99x@gmail.com">techstore99x@gmail.com</a>.</p>
             
-            <p style="font-size: 14px; color: #666;">S pozdravom,<br><strong>{config('mail.from.name')}</strong></p>
+            <p style="font-size: 14px; color: #666;">S pozdravom,<br><strong>{{ config('mail.from.name') }}</strong></p>
         </div>
         
         <div class="footer">
-            <p>&copy; {{date('Y')}} {config('app.name')}. Všetky práva vyhradené.</p>
+            <p>&copy; {{ date('Y') }} {{ config('app.name') }}. Všetky práva vyhradené.</p>
             <p>Toto je automatizovaná správa. Prosím, neodpovedajte na túto správu.</p>
         </div>
     </div>
 </body>
 </html>
-HTML;
-
-        return (new \Illuminate\Notifications\Messages\MailMessage())
-            ->view('emails.reset-password', [
-                'resetUrl' => $resetUrl,
-            ])
-            ->subject('Obnovenie hesla');
-    }
-
-    /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(object $notifiable): array
-    {
-        return [
-            //
-        ];
-    }
-}
-

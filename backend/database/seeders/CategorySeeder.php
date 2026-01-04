@@ -32,7 +32,7 @@ class CategorySeeder extends Seeder
             [
                 'id' => 3,
                 'key_name' => 'notebooks',
-                'label' => 'Počítače a notebooky',
+                'label' => 'Notebooky',
                 'icon' => 'fa-solid fa-laptop',
                 'created_at' => NULL,
                 'updated_at' => NULL,

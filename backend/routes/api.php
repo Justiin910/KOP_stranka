@@ -30,6 +30,8 @@ Route::post('/email/verification-notification', [EmailVerificationNotificationCo
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/category/{category}', [ProductController::class, 'byCategory']);
 Route::get('/products/recommended', [RecommendedProductController::class, 'recommended']);
+Route::get('/products/search', [ProductController::class, 'search']);
+Route::get('/products/{id}', [ProductController::class, 'show']);
 
 // User profile management
 Route::middleware('auth:sanctum')->group(function () {

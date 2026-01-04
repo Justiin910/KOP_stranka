@@ -529,14 +529,36 @@
             </select>
           </div>
 
-          <!-- Generate Password Button -->
-          <button
-            type="button"
-            @click="generateRandomPassword"
-            class="w-full px-4 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-medium transition-colors"
-          >
-            Vygenerovať heslo
-          </button>
+          <!-- Password controls (owners only): manual set or generate) -->
+          <div v-if="currentUser.role === 'owner'">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Nastaviť heslo
+            </label>
+            <input
+              v-model="editingUser.password"
+              type="password"
+              placeholder="Zadajte nové heslo"
+              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            />
+            <div class="flex gap-3 mt-3">
+              <button
+                type="button"
+                @click="saveUserPassword"
+                :disabled="editingSaving"
+                class="flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+              >
+                {{ editingSaving ? "Ukladá sa..." : "Nastaviť heslo" }}
+              </button>
+
+              <button
+                type="button"
+                @click="generateRandomPassword"
+                class="flex-1 px-4 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-medium transition-colors"
+              >
+                Vygenerovať heslo
+              </button>
+            </div>
+          </div>
 
           <!-- Generated Password Display -->
           <div
@@ -897,7 +919,7 @@ export default {
     async resetUserPassword(id) {
       if (await window.appConfirm("Naozaj chcete resetovať heslo tohto používateľa?")) {
         api
-          .post(`api/admin/users/${id}/reset-password`)
+          .post(`api/admin/users/${id}/reset-password`, { send_notification: false })
           .then((response) => {
             alert(
               response.data.message || "Reset hesla bol odoslaný na email používateľa!"
@@ -973,6 +995,34 @@ export default {
           error.response?.data?.message || error.response?.data?.errors || error.message;
         console.error("Full error:", errorMsg);
         this.editError = "Chyba pri nastavovaní hesla: " + JSON.stringify(errorMsg);
+      }
+    },
+    async saveUserPassword() {
+      if (!this.editingUser || !this.editingUser.id) return;
+      if (!this.editingUser.password) {
+        this.editError = "Zadajte nové heslo.";
+        return;
+      }
+      this.editingSaving = true;
+      this.editError = "";
+      try {
+        const response = await api.post(
+          `api/admin/users/${this.editingUser.id}/set-password`,
+          { password: this.editingUser.password }
+        );
+        console.log("Password set response:", response.data);
+        alert("Heslo bolo nastavené.");
+        this.editingUser.password = "";
+        this.editingUser = null;
+        this.showGeneratedPassword = false;
+        this.generatedPassword = "";
+      } catch (error) {
+        console.error("Error setting password:", error);
+        const errorMsg =
+          error.response?.data?.message || error.response?.data?.errors || error.message;
+        this.editError = "Chyba pri nastavovaní hesla: " + JSON.stringify(errorMsg);
+      } finally {
+        this.editingSaving = false;
       }
     },
     copyToClipboard() {

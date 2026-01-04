@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules\Password;
 
 class ProfileController extends Controller
@@ -71,9 +73,30 @@ class ProfileController extends Controller
             'password' => ['required', 'confirmed', Password::defaults()],
         ]);
 
-        $request->user()->update([
+        $user = $request->user();
+        $user->update([
             'password' => Hash::make($validated['password']),
         ]);
+
+        // Send password change notification email
+        try {
+            $changeTime = now()->format('d.m.Y H:i');
+            $htmlBody = view('emails.password-changed', [
+                'user' => $user,
+                'changeTime' => $changeTime
+            ])->render();
+
+            Mail::html($htmlBody, function($message) use ($user) {
+                $message->to($user->email)
+                        ->subject('Vaše heslo bolo zmenené')
+                        ->from(config('mail.from.address'), config('mail.from.name'));
+            });
+
+            Log::info("Password change notification email sent to user {$user->id} ({$user->email})");
+        } catch (\Exception $e) {
+            Log::error("Failed to send password change notification email for user {$user->id}: " . $e->getMessage());
+            // Don't fail the password update if email fails, just log it
+        }
 
         return response()->json([
             'message' => 'Heslo bolo úspešne zmenené.'

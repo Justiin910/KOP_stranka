@@ -62,6 +62,7 @@
       <!-- right: icons -->
       <div class="flex items-center gap-2 flex-shrink-0">
         <Profile />
+        <!--     <span v-if="isLoggedIn" class="ml-2 text-sm text-gray-200 hidden md:inline">{{ user.name }}</span>
 
         <!-- Wishlist with counter -->
         <button
@@ -103,7 +104,7 @@
 import Notification from "./NotificationsComponent.vue";
 import Profile from "./ProfileComponent.vue";
 import api, { setSessionToken } from "../api";
-import { useCartStore } from '../stores/cartStore'
+import { useCartStore } from "../stores/cartStore";
 
 export default {
   name: "Navbar",
@@ -138,12 +139,31 @@ export default {
     // listen to storage events (other tabs) to stay in sync for anonymous users
     window.addEventListener("storage", this.onStorageEvent);
 
+    // populate auth/display user info
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      const userJson = localStorage.getItem("user");
+      if (token && userJson) {
+        this.isLoggedIn = true;
+        try {
+          this.user = JSON.parse(userJson);
+        } catch (e) {
+          /* ignore parse error */
+        }
+      }
+    } catch (e) {
+      console.error("Error reading auth state in navbar", e);
+    }
+
     // Initialize cart store so navbar shows correct count
     try {
-      const cartStore = useCartStore()
-      cartStore.initializeAuth().then(() => cartStore.loadCart()).catch(() => cartStore.loadCart())
+      const cartStore = useCartStore();
+      cartStore
+        .initializeAuth()
+        .then(() => cartStore.loadCart())
+        .catch(() => cartStore.loadCart());
     } catch (e) {
-      console.error('Failed to init cart store in navbar:', e)
+      console.error("Failed to init cart store in navbar:", e);
     }
   },
   beforeUnmount() {
@@ -156,7 +176,9 @@ export default {
   },
   methods: {
     onSearch() {
-      console.log("Searching for:", this.query);
+      const q = (this.query || "").trim();
+      if (!q) return;
+      this.$router.push({ name: "search", query: { q } });
     },
     toggleProfileDropdown() {
       this.showProfileDropdown = !this.showProfileDropdown;
@@ -195,10 +217,10 @@ export default {
 
       this.isLoggedIn = false;
       this.showProfileDropdown = false;
-      
+
       // Emit logout event
       window.dispatchEvent(new Event("user-logged-out"));
-      
+
       this.$router.push("/");
     },
     // Compute favorites count from either local storage (anonymous) or server (logged)
@@ -250,13 +272,13 @@ export default {
   computed: {
     cartCount() {
       try {
-        const cartStore = useCartStore()
+        const cartStore = useCartStore();
         // totalItems is a computed ref; Vue will unwrap it in template
-        return cartStore.totalItems
+        return cartStore.totalItems;
       } catch (e) {
-        return 0
+        return 0;
       }
-    }
+    },
   },
 };
 </script>

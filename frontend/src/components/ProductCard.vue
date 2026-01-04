@@ -104,16 +104,59 @@ export default {
     };
   },
   mounted() {
+    // Initialize favorite state. Prefer server-side favorites for logged-in users.
     try {
-      const raw = localStorage.getItem('favorites');
-      const stored = raw ? JSON.parse(raw) : [];
-      if (Array.isArray(stored) && stored.length > 0 && typeof stored[0] === 'object') {
-        this.isFavorited = stored.some((p) => p.id === this.product.id);
-      } else {
-        this.isFavorited = Array.isArray(stored) && stored.includes(this.product.id);
+      const loggedIn = !!(localStorage.getItem('token'));
+
+      // If logged in, try to use a cached server favorites list on the window to avoid
+      // firing many API requests (many ProductCard instances). If not available, fetch
+      // once and store it on the window.
+      if (loggedIn) {
+        if (window.__favorites_cache && Array.isArray(window.__favorites_cache)) {
+          this.isFavorited = window.__favorites_cache.includes(this.product.id) || window.__favorites_cache.some(p => p === this.product.id || (p && p.id === this.product.id));
+        } else {
+          // mark temporarily from localStorage while we fetch server list
+          const raw = localStorage.getItem('favorites');
+          const stored = raw ? JSON.parse(raw) : [];
+          if (Array.isArray(stored) && stored.length > 0 && typeof stored[0] === 'object') {
+            this.isFavorited = stored.some((p) => p.id === this.product.id);
+          } else {
+            this.isFavorited = Array.isArray(stored) && stored.includes(this.product.id);
+          }
+
+          // fetch server favorites once and cache on window
+          import('@/api').then(({ default: api }) => {
+            api.get('/api/favorites').then(resp => {
+              const favs = resp.data || [];
+              // normalize to array of ids for quick lookup
+              const ids = favs.map(f => (typeof f === 'object' ? f.id : f));
+              window.__favorites_cache = ids;
+              this.isFavorited = ids.includes(this.product.id);
+              // also persist locally so anonymous views still work
+              try { localStorage.setItem('favorites', JSON.stringify(favs)); } catch(e) {}
+              window.dispatchEvent(new CustomEvent('favorites-remote-updated', { detail: ids }));
+            }).catch(() => {
+              // ignore fetch errors — keep localStorage-derived state
+            });
+          }).catch(() => {});
+        }
+        return;
+      }
+
+      // Not logged in: use localStorage favorites (ids or objects)
+      try {
+        const raw = localStorage.getItem('favorites');
+        const stored = raw ? JSON.parse(raw) : [];
+        if (Array.isArray(stored) && stored.length > 0 && typeof stored[0] === 'object') {
+          this.isFavorited = stored.some((p) => p.id === this.product.id);
+        } else {
+          this.isFavorited = Array.isArray(stored) && stored.includes(this.product.id);
+        }
+      } catch (e) {
+        // ignore
       }
     } catch (e) {
-      // ignore
+      // ignore any top-level errors
     }
   },
   methods: {
@@ -141,6 +184,14 @@ export default {
 
           // server update succeeded — update local indicator and notify
           this.isFavorited = newState;
+          // keep window cache in sync
+          try {
+            if (!window.__favorites_cache) window.__favorites_cache = [];
+            const idx = window.__favorites_cache.indexOf(this.product.id);
+            if (newState && idx === -1) window.__favorites_cache.push(this.product.id);
+            if (!newState && idx !== -1) window.__favorites_cache.splice(idx, 1);
+            window.dispatchEvent(new CustomEvent('favorites-remote-updated', { detail: window.__favorites_cache }));
+          } catch (e) {}
           window.dispatchEvent(new Event('favorites-updated'));
           return;
         } catch (err) {
@@ -181,6 +232,12 @@ export default {
 
         localStorage.setItem('favorites', JSON.stringify(stored));
         window.dispatchEvent(new CustomEvent('favorites-updated', { detail: stored }));
+        // also update window cache for anonymous/local changes
+        try {
+          if (!window.__favorites_cache) window.__favorites_cache = [];
+          window.__favorites_cache = stored.map(p => (typeof p === 'object' ? p.id : p));
+          window.dispatchEvent(new CustomEvent('favorites-remote-updated', { detail: window.__favorites_cache }));
+        } catch(e) {}
       } catch (e) {
         console.warn('Failed to update favorites in localStorage', e);
       }

@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Facades\Mail;
 
 class AdminController extends Controller
 {
@@ -120,7 +121,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Reset user password (sends reset link via email)
+     * Reset user password (sends temporary password via email)
      */
     public function resetUserPassword(Request $request, $id)
     {
@@ -128,14 +129,90 @@ class AdminController extends Controller
         
         // Generate temporary password
         $tempPassword = \Illuminate\Support\Str::random(12);
-        $user->password = Hash::make($tempPassword);
+        $hashedPassword = Hash::make($tempPassword);
+        $user->password = $hashedPassword;
         $user->save();
 
-        // In production, you would send email with reset link
-        // For now, we'll just return success
+        // Log for debugging
+        \Log::info("Temp password generated for user {$id} ({$user->email}). Password: {$tempPassword}");
+
+        // Send email with temporary password
+        try {
+            $htmlBody = "
+<html>
+<head><meta charset='utf-8'></head>
+<body style='font-family: Arial; line-height: 1.6; color: #333;'>
+    <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
+        <div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 5px;'>
+            <h1>Vaše dočasné heslo</h1>
+        </div>
+        
+        <div style='background: #f9f9f9; padding: 20px; border-radius: 5px; margin-top: 20px;'>
+            <p>Dobrý deň <strong>{$user->name}</strong>,</p>
+            
+            <p>Administrátor vám vygeneroval nové dočasné heslo na prístup do vášho konta.</p>
+            
+            <div style='background: white; border: 2px solid #667eea; padding: 15px; border-radius: 5px; text-align: center; margin: 20px 0;'>
+                <p style='margin: 0 0 10px 0; color: #666; font-size: 12px;'>Dočasné heslo:</p>
+                <code style='font-size: 18px; font-weight: bold; color: #667eea; font-family: Courier New, monospace;'>{$tempPassword}</code>
+            </div>
+            
+            <h3>Ako sa prihlásiť:</h3>
+            <ol>
+                <li>Prejdite na prihlásovaciu stránku</li>
+                <li>Zadajte vašu emailovú adresu</li>
+                <li>Zadajte toto dočasné heslo</li>
+                <li>Po prihlásení si prosím zmeniť heslo na nové silné heslo</li>
+            </ol>
+            
+            <p style='background: #fff3cd; border-left: 4px solid #ffc107; padding: 10px; border-radius: 3px;'>
+                <strong>⚠️ Bezpečnosť:</strong> Toto heslo je dočasné. Zmeniť si ho môžete v nastaveniach svojho profilu.
+            </p>
+        </div>
+        
+        <div style='text-align: center; color: #666; font-size: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;'>
+            <p>Ak ste si nepožiadali toto heslo alebo máte otázky, kontaktujte nás.</p>
+            <p>&copy; " . date('Y') . " " . config('app.name') . ". Všetky práva vyhradené.</p>
+        </div>
+    </div>
+</body>
+</html>
+            ";
+            
+            \Mail::html($htmlBody, function ($message) use ($user) {
+                $message->to($user->email)
+                        ->subject('Vaše dočasné heslo - Obnovenie prístupu')
+                        ->from(config('mail.from.address'), config('mail.from.name'));
+            });
+            
+            \Log::info("Email successfully sent to {$user->email}");
+        } catch (\Exception $e) {
+            \Log::error('Failed to send temp password email to ' . $user->email . ': ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+        }
+
+        // Send password change notification email (since password was reset)
+        try {
+            $changeTime = now()->format('d.m.Y H:i');
+            $htmlBody = view('emails.password-changed', [
+                'user' => $user,
+                'changeTime' => $changeTime
+            ])->render();
+
+            \Mail::html($htmlBody, function($message) use ($user) {
+                $message->to($user->email)
+                        ->subject('Vaše heslo bolo zmenené')
+                        ->from(config('mail.from.address'), config('mail.from.name'));
+            });
+
+            \Log::info("Password change notification email sent to user {$id} ({$user->email})");
+        } catch (\Exception $e) {
+            \Log::error("Failed to send password change notification email for user {$id}: " . $e->getMessage());
+            // Don't fail the password reset if email fails, just log it
+        }
         
         return response()->json([
-            'message' => 'Heslo bolo resetované. Email bol odoslaný na ' . $user->email
+            'message' => 'Dočasné heslo bolo odoslané na ' . $user->email
         ]);
     }
 
