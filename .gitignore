@@ -1,0 +1,2 @@
+# Ignore specific seeder with sensitive data
+backend/database/seeders/UserSeeder.php
