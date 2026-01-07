@@ -97,7 +97,7 @@
               />
               <button
                 @click="$refs.avatarInput.click()"
-                class="absolute bottom-0 right-0 btn-primary rounded-full p-2"
+                class="absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-2 shadow-lg transition-colors"
                 title="Zmeniť avatar"
               >
                 <svg
@@ -174,7 +174,7 @@
 
             <button
               @click="toggleEditMode"
-              class="px-4 py-2 btn-secondary rounded-lg font-medium disabled:opacity-50"
+              class="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg font-medium transition-colors"
             >
               {{ editMode ? "Zrušiť" : "Upraviť profil" }}
             </button>
@@ -324,7 +324,7 @@
                 <button
                   type="submit"
                   :disabled="isSaving"
-                  class="px-6 py-2 btn-primary rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   <svg
                     v-if="isSaving"
@@ -352,7 +352,7 @@
                   type="button"
                   @click="cancelEdit"
                   :disabled="isSaving"
-                  class="px-6 py-2 btn-secondary rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="px-6 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Zrušiť
                 </button>
@@ -417,7 +417,7 @@
               <button
                 type="submit"
                 :disabled="isChangingPassword"
-                class="px-6 py-2 btn-primary rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {{ isChangingPassword ? "Ukladám..." : "Zmeniť heslo" }}
               </button>
@@ -609,7 +609,7 @@
                   deleteAccountPassword = '';
                 "
                 :disabled="isDeletingAccount"
-                class="px-4 py-2 btn-secondary rounded-lg font-medium transition-colors disabled:opacity-50"
+                class="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg font-medium transition-colors disabled:opacity-50"
               >
                 Zrušiť
               </button>
