@@ -64,9 +64,9 @@
 
       <!-- Stock Info -->
       <p v-if="product.stock > 0" class="text-xs text-green-400 font-semibold mb-2">
-        ✓ Skladom ({{ product.stock }})
+        {{ $t('product.in_stock', { count: product.stock }) }}
       </p>
-      <p v-else class="text-xs text-red-400 font-semibold mb-2">✗ Vypredané</p>
+      <p v-else class="text-xs text-red-400 font-semibold mb-2">{{ $t('product.out_of_stock') }}</p>
 
       <!-- Price -->
       <div class="flex items-baseline gap-2 mb-3 mt-auto">
@@ -83,7 +83,7 @@
         :disabled="product.stock === 0"
         class="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-600 text-white font-semibold py-2 rounded text-xs transition transform hover:scale-105 disabled:cursor-not-allowed"
       >
-        {{ product.stock > 0 ? "Do košíka" : "Vypredané" }}
+        {{ product.stock > 0 ? $t('product.add_to_cart') : $t('product.out_of_stock') }}
       </button>
     </div>
   </div>

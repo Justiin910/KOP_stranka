@@ -34,7 +34,7 @@
             v-model="query"
             @keydown.enter.prevent="onSearch"
             type="search"
-            placeholder="Čo hľadáte? napr. iPhone 17 Pro..."
+            :placeholder="$t('search.placeholder')"
             class="w-full bg-gray-800 placeholder-gray-400 text-gray-100 rounded-md py-2 pl-10 pr-24 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow duration-200 text-sm"
             aria-label="Search"
           />
@@ -54,47 +54,151 @@
             @click="onSearch"
             class="absolute right-1 top-1/2 -translate-y-1/2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-3 py-1 rounded text-sm shadow-md transition transform hover:scale-110"
           >
-            Hľadať
+            {{ $t('search.button') }}
           </button>
         </div>
       </div>
 
       <!-- right: icons -->
       <div class="flex items-center gap-2 flex-shrink-0">
-        <Profile />
+        <!-- Language Dropdown -->
+        <div class="relative group" ref="languageDropdown">
+          <button
+            @click="showLanguageDropdown = !showLanguageDropdown"
+            class="p-2 rounded-full bg-gray-100/70 dark:bg-gray-800/70 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200 flex items-center pl-4 font-medium text-sm"
+          >
+            {{ currentLanguage.toUpperCase() }}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4 ml-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7"
+              ></path>
+            </svg>
+          </button>
+
+          <!-- Tooltip -->
+          <div
+            class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-1 bg-gray-800 dark:bg-gray-700 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap"
+          >
+            {{ $t('tooltip.language') }}
+            <div
+              class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800 dark:border-b-gray-700"
+            ></div>
+          </div>
+
+          <!-- Language Dropdown Menu -->
+          <div
+            v-if="showLanguageDropdown"
+            class="absolute right-0 mt-2 w-40 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden"
+          >
+            <button
+              @click="setLanguage('sk')"
+              :class="{
+                'bg-indigo-600 text-white': currentLanguage === 'sk',
+                'text-gray-100 hover:bg-gray-700': currentLanguage !== 'sk',
+              }"
+              class="w-full px-4 py-3 text-left text-sm font-medium transition"
+            >
+              Slovenčina
+            </button>
+            <button
+              @click="setLanguage('en')"
+              :class="{
+                'bg-indigo-600 text-white': currentLanguage === 'en',
+                'text-gray-100 hover:bg-gray-700': currentLanguage !== 'en',
+              }"
+              class="w-full px-4 py-3 text-left text-sm font-medium transition border-t border-gray-700"
+            >
+              English
+            </button>
+          </div>
+        </div>
+
+        <!-- Profile with Tooltip -->
+        <div class="relative group">
+          <Profile />
+          <!-- Tooltip -->
+          <div
+            class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-1 bg-gray-800 dark:bg-gray-700 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap"
+          >
+            {{ $t('tooltip.profile') }}
+            <div
+              class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800 dark:border-b-gray-700"
+            ></div>
+          </div>
+        </div>
         <!--     <span v-if="isLoggedIn" class="ml-2 text-sm text-gray-200 hidden md:inline">{{ user.name }}</span>
 
         <!-- Wishlist with counter -->
-        <button
-          @click="$router.push('/favorites')"
-          class="relative inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-800 hover:bg-gray-700 transition transform hover:scale-105 focus:outline-none"
-          title="Wishlist"
-        >
-          <font-awesome-icon icon="fa-regular fa-heart" />
-          <span
-            v-if="favoritesCount > 0"
-            class="absolute -top-2 -right-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-semibold leading-none text-indigo-800 bg-white rounded-full border border-gray-200"
+        <div class="relative group">
+          <button
+            @click="$router.push('/favorites')"
+            class="relative inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-100/70 dark:bg-gray-800/70 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200 focus:outline-none"
           >
-            {{ favoritesCount }}
-          </span>
-        </button>
+            <font-awesome-icon icon="fa-regular fa-heart" />
+            <span
+              v-if="favoritesCount > 0"
+              class="absolute -top-2 -right-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-semibold leading-none text-indigo-800 bg-white rounded-full border border-gray-200"
+            >
+              {{ favoritesCount }}
+            </span>
+          </button>
+          <!-- Tooltip -->
+          <div
+            class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-1 bg-gray-800 dark:bg-gray-700 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap"
+          >
+            {{ $t('tooltip.wishlist') }}
+            <div
+              class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800 dark:border-b-gray-700"
+            ></div>
+          </div>
+        </div>
 
-        <Notification />
+        <div class="relative group">
+          <Notification />
+          <!-- Tooltip -->
+          <div
+            class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-1 bg-gray-800 dark:bg-gray-700 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap"
+          >
+            {{ $t('tooltip.notifications') }}
+            <div
+              class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800 dark:border-b-gray-700"
+            ></div>
+          </div>
+        </div>
 
         <!-- Cart with counter -->
-        <button
-          @click="$router.push('/cart')"
-          class="relative inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-800 hover:bg-gray-700 transition transform hover:scale-105 focus:outline-none"
-          title="Cart"
-        >
-          <font-awesome-icon icon="fa-solid fa-cart-shopping" />
-          <span
-            v-if="cartCount > 0"
-            class="absolute -top-2 -right-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-semibold leading-none text-indigo-800 bg-white rounded-full border border-gray-200"
+        <div class="relative group">
+          <button
+            @click="$router.push('/cart')"
+            class="relative inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-100/70 dark:bg-gray-800/70 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200 focus:outline-none"
           >
-            {{ cartCount }}
-          </span>
-        </button>
+            <font-awesome-icon icon="fa-solid fa-cart-shopping" />
+            <span
+              v-if="cartCount > 0"
+              class="absolute -top-2 -right-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-semibold leading-none text-indigo-800 bg-white rounded-full border border-gray-200"
+            >
+              {{ cartCount }}
+            </span>
+          </button>
+          <!-- Tooltip -->
+          <div
+            class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-1 bg-gray-800 dark:bg-gray-700 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap"
+          >
+            {{ $t('tooltip.cart') }}
+            <div
+              class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800 dark:border-b-gray-700"
+            ></div>
+          </div>
+        </div>
       </div>
     </div>
   </nav>
@@ -118,6 +222,8 @@ export default {
       // cartCount provided by cart store (computed)
       favoritesCount: 0, // will be computed from storage/server
       showProfileDropdown: false,
+      showLanguageDropdown: false,
+      currentLanguage: "sk",
       isLoggedIn: false,
       user: {
         name: "Ján Novák",
@@ -127,6 +233,9 @@ export default {
   },
   mounted() {
     document.addEventListener("click", this.handleClickOutside);
+    // Load saved language preference
+    const savedLanguage = localStorage.getItem("language") || "sk";
+    this.currentLanguage = savedLanguage;
     // initialize favorites count from localStorage (or server if logged)
     this.updateFavoritesCount();
 
@@ -184,9 +293,13 @@ export default {
       this.showProfileDropdown = !this.showProfileDropdown;
     },
     handleClickOutside(event) {
-      const dropdown = this.$refs.profileDropdown;
-      if (dropdown && !dropdown.contains(event.target)) {
+      const profileDropdown = this.$refs.profileDropdown;
+      const languageDropdown = this.$refs.languageDropdown;
+      if (profileDropdown && !profileDropdown.contains(event.target)) {
         this.showProfileDropdown = false;
+      }
+      if (languageDropdown && !languageDropdown.contains(event.target)) {
+        this.showLanguageDropdown = false;
       }
     },
     goToLogin() {
@@ -267,6 +380,15 @@ export default {
       if (e.key === "favorites") {
         this.favoritesCount = this.getLocalFavoritesCount();
       }
+    },
+    setLanguage(lang) {
+      this.currentLanguage = lang;
+      localStorage.setItem("language", lang);
+      this.showLanguageDropdown = false;
+      // Emit language change event for i18n integration
+      window.dispatchEvent(
+        new CustomEvent("language-changed", { detail: { language: lang } })
+      );
     },
   },
   computed: {

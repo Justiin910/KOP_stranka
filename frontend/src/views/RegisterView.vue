@@ -22,10 +22,10 @@
           </svg>
           <div>
             <h3 class="font-semibold text-green-900 dark:text-green-100">
-              Účet vytvorený!
+              {{$t('auth.register.success_title')}}
             </h3>
             <p class="text-sm text-green-700 dark:text-green-300">
-              Overovací email bol odoslaný na <strong>{{ form.email }}</strong>
+              {{$t('auth.register.success_sent', { email: form.email })}}
             </p>
           </div>
         </div>
@@ -42,8 +42,8 @@
             />
           </svg>
         </div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Vytvorte si účet</h1>
-        <p class="text-gray-600 dark:text-gray-400 mt-2">Začnite nakupovať už dnes</p>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{$t('auth.register.title')}}</h1>
+        <p class="text-gray-600 dark:text-gray-400 mt-2">{{$t('auth.register.subtitle')}}</p>
       </div>
 
       <div
@@ -55,7 +55,7 @@
             <label
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Meno a priezvisko <span class="text-red-600 dark:text-red-400">*</span>
+              {{$t('auth.register.name_label')}} <span class="text-red-600 dark:text-red-400">*</span>
             </label>
             <input
               v-model="form.name"
@@ -65,7 +65,7 @@
                   registerError = '';
                 }
               "
-              placeholder="Ján Novák"
+              :placeholder="$t('auth.register.name_placeholder')"
               class="w-full py-3 px-4 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:ring-2 focus:ring-indigo-500"
             />
             <Transition name="slideDown">
@@ -83,7 +83,7 @@
             <label
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Email <span class="text-red-600 dark:text-red-400">*</span>
+              {{$t('auth.register.email_label')}} <span class="text-red-600 dark:text-red-400">*</span>
             </label>
             <input
               v-model="form.email"
@@ -94,7 +94,7 @@
                   registerError = '';
                 }
               "
-              placeholder="vas.email@priklad.sk"
+              :placeholder="$t('auth.register.email_placeholder')"
               class="w-full py-3 px-4 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:ring-2 focus:ring-indigo-500"
             />
             <Transition name="slideDown">
@@ -102,7 +102,7 @@
                 v-if="fieldErrors.email || (form.email && !validEmail)"
                 class="text-sm text-red-600 mt-2 flex items-center gap-2 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-md border border-red-200 dark:border-red-800"
               >
-                {{ fieldErrors.email || "Neplatný email" }}
+                {{$t('auth.register.invalid_email')}}
               </p>
             </Transition>
           </div>
@@ -112,7 +112,7 @@
             <label
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Telefón <span class="text-red-600 dark:text-red-400">*</span>
+              {{$t('auth.register.phone_label')}} <span class="text-red-600 dark:text-red-400">*</span>
             </label>
             <div class="flex gap-3">
               <select
@@ -132,7 +132,7 @@
                     registerError = '';
                   }
                 "
-                placeholder="912 345 678"
+                :placeholder="$t('auth.register.phone_placeholder')"
                 class="flex-1 py-3 px-4 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:ring-2 focus:ring-indigo-500"
               />
             </div>
@@ -141,7 +141,7 @@
                 v-if="fieldErrors.phone || (form.phone && phoneDigits !== 9)"
                 class="text-sm text-red-600 mt-2 flex items-center gap-2 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-md border border-red-200 dark:border-red-800"
               >
-                {{ fieldErrors.phone || "Telefón musí mať 9 číslic" }}
+                {{ fieldErrors.phone || $t('auth.register.phone_digits') }}
               </p>
             </Transition>
           </div>
@@ -151,7 +151,7 @@
             <label
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Heslo <span class="text-red-600 dark:text-red-400">*</span>
+              {{$t('auth.register.password_label')}} <span class="text-red-600 dark:text-red-400">*</span>
             </label>
             <div class="relative">
               <input
@@ -163,7 +163,7 @@
                     registerError = '';
                   }
                 "
-                placeholder="••••••••"
+                :placeholder="$t('auth.register.password_placeholder')"
                 class="w-full py-3 px-4 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 pr-12 focus:ring-2 focus:ring-indigo-500"
               />
               <button
@@ -213,7 +213,7 @@
                 v-if="fieldErrors.password || (form.password && form.password.length < 8)"
                 class="text-sm text-red-600 mt-2 flex items-center gap-2 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-md border border-red-200 dark:border-red-800"
               >
-                {{ fieldErrors.password || "Heslo musí mať aspoň 8 znakov" }}
+                {{ fieldErrors.password || $t('auth.register.password_min') }}
               </p>
             </Transition>
           </div>
@@ -223,7 +223,7 @@
             <label
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Potvrďte heslo <span class="text-red-600 dark:text-red-400">*</span>
+              {{$t('auth.register.confirm_password_label')}} <span class="text-red-600 dark:text-red-400">*</span>
             </label>
             <div class="relative">
               <input
@@ -235,7 +235,7 @@
                     registerError = '';
                   }
                 "
-                placeholder="••••••••"
+                :placeholder="$t('auth.register.confirm_password_placeholder')"
                 class="w-full py-3 px-4 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 pr-12 focus:ring-2 focus:ring-indigo-500"
               />
               <button
@@ -288,7 +288,7 @@
                 "
                 class="text-sm text-red-600 mt-2 flex items-center gap-2 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-md border border-red-200 dark:border-red-800"
               >
-                {{ fieldErrors.confirmPassword || "Heslá sa nezhodujú" }}
+                {{ fieldErrors.confirmPassword || $t('auth.register.passwords_mismatch') }}
               </p>
             </Transition>
           </div>
@@ -308,7 +308,7 @@
                 "
                 class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
               />
-              Súhlasím s podmienkami<span class="text-red-600 dark:text-red-400">*</span>
+              {{$t('auth.register.terms')}}<span class="text-red-600 dark:text-red-400">*</span>
             </label>
           </div>
 
@@ -317,18 +317,18 @@
             :disabled="!isFormValid || isSubmitting"
             class="w-full btn-primary-lg py-3 rounded-lg shadow-lg disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
-            <span v-if="isSubmitting">Vytváram účet...</span>
-            <span v-else>Vytvoriť účet</span>
+            <span v-if="isSubmitting">{{$t('auth.register.creating')}}</span>
+            <span v-else>{{$t('auth.register.create')}}</span>
           </button>
 
           <div class="mt-6 text-center">
-            <span class="text-sm text-gray-600 dark:text-gray-400">Už máte účet?</span>
+            <span class="text-sm text-gray-600 dark:text-gray-400">{{$t('auth.register.have_account')}}</span>
             <button
               @click="$router.push('/login')"
               type="button"
               class="ml-2 text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-semibold"
             >
-              Prihlásiť sa
+              {{$t('auth.register.sign_in')}}
             </button>
           </div>
         </form>

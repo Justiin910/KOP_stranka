@@ -4,7 +4,6 @@
     <button
       @click="toggleProfileDropdown"
       class="group inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-800 hover:bg-gray-700 transition transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-      title="Profile"
     >
       <font-awesome-icon
         v-if="isLoggedIn && user.name"
@@ -41,7 +40,7 @@
                 d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
               />
             </svg>
-            Prihlásiť sa
+            {{ $t('profile.login') }}
           </button>
           <button
             @click="goToRegister"
@@ -55,7 +54,7 @@
                 d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
               />
             </svg>
-            Registrovať sa
+            {{ $t('profile.register') }}
           </button>
         </template>
 
@@ -63,7 +62,7 @@
         <template v-else>
           <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
             <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">
-              {{ user.name || "Používateľ" }}
+              {{ user.name || $t('profile.guest') }}
             </p>
             <p class="text-xs text-gray-600 dark:text-gray-400 truncate">
               {{ user.email || "" }}
@@ -82,7 +81,7 @@
                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
               />
             </svg>
-            Môj profil
+            {{ $t('profile.my_profile') }}
           </button>
 
           <button
@@ -97,7 +96,7 @@
                 d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
               />
             </svg>
-            Moje objednávky
+            {{ $t('profile.orders') }}
           </button>
 
           <button
@@ -118,7 +117,7 @@
                 d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
               />
             </svg>
-            Nastavenia
+            {{ $t('profile.settings') }}
           </button>
 
           <!-- Admin Link (only for admin and owner roles) -->
@@ -135,7 +134,7 @@
                 d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
               />
             </svg>
-            Admin Panel
+            {{ $t('profile.admin_panel') }}
           </button>
 
           <div class="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
@@ -173,7 +172,7 @@
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              {{ isLoggingOut ? "Odhlasovanie..." : "Odhlásiť sa" }}
+              {{ isLoggingOut ? $t('profile.logging_out') : $t('profile.logout') }}
             </button>
           </div>
         </template>

@@ -5,10 +5,11 @@
         <!-- Contact Info Section -->
         <section class="space-y-8">
           <div>
-            <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">Kontakt</h1>
+            <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              {{ $t("pages.contact.title") }}
+            </h1>
             <p class="text-gray-700 dark:text-gray-300 text-lg leading-relaxed">
-              Ak máte otázky, obchodné ponuky alebo potrebujete pomoc, kontaktujte nás.
-              Radi vám pomôžeme.
+              {{ $t("pages.contact.intro") }}
             </p>
           </div>
 
@@ -35,10 +36,13 @@
                 </div>
               </div>
               <div>
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Sídlo</h3>
-                <p class="text-gray-700 dark:text-gray-300 text-sm mt-1">
-                  TechShop s.r.o.<br />Hlavná 123<br />010 01 Mesto
-                </p>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                  {{ $t("pages.contact.office_title") }}
+                </h3>
+                <p
+                  class="text-gray-700 dark:text-gray-300 text-sm mt-1"
+                  v-html="officeAddressHtml"
+                ></p>
               </div>
             </div>
 
@@ -64,13 +68,13 @@
               </div>
               <div>
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                  E-mail
+                  {{ $t("pages.contact.email_title") }}
                 </h3>
                 <p class="text-gray-700 dark:text-gray-300 text-sm mt-1">
                   <a
-                    href="mailto:techstore99x@gmail.com"
+                    :href="'mailto:' + $t('pages.contact.email_value')"
                     class="hover:text-indigo-600 dark:hover:text-indigo-400 transition"
-                    >techstore99x@gmail.com</a
+                    >{{ $t("pages.contact.email_value") }}</a
                   >
                 </p>
               </div>
@@ -98,13 +102,13 @@
               </div>
               <div>
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                  Telefón
+                  {{ $t("pages.contact.phone_title") }}
                 </h3>
                 <p class="text-gray-700 dark:text-gray-300 text-sm mt-1">
                   <a
-                    href="tel:+421900000000"
+                    :href="'tel:' + $t('pages.contact.phone_value').replace(/\s+/g, '')"
                     class="hover:text-indigo-600 dark:hover:text-indigo-400 transition"
-                    >+421 900 000 000</a
+                    >{{ $t("pages.contact.phone_value") }}</a
                   >
                 </p>
               </div>
@@ -132,11 +136,12 @@
               </div>
               <div>
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                  Otvorené
+                  {{ $t("pages.contact.hours_title") }}
                 </h3>
-                <p class="text-gray-700 dark:text-gray-300 text-sm mt-1">
-                  Pondelok – Piatok: 9:00 – 16:00<br />Sobota – Nedeľa: Zatvorené
-                </p>
+                <p
+                  class="text-gray-700 dark:text-gray-300 text-sm mt-1"
+                  v-html="hoursHtml"
+                ></p>
               </div>
             </div>
           </div>
@@ -147,23 +152,24 @@
           class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 border border-gray-100 dark:border-gray-700 h-fit"
         >
           <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Pošlite nám správu
+            {{ $t("pages.contact.form_title") }}
           </h2>
           <p class="text-gray-600 dark:text-gray-400 text-sm mb-6">
-            Odpovieme vám do 48 hodín. Vyplňte formulár a budeme v kontakte.
+            {{ $t("pages.contact.form_desc") }}
           </p>
           <form @submit.prevent="submitContact" class="space-y-5">
             <div>
               <label
                 for="name"
                 class="block text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2"
-                >Meno <span class="text-red-600 dark:text-red-400">*</span></label
+                >{{ $t("pages.contact.name_label") }}
+                <span class="text-red-600 dark:text-red-400">*</span></label
               >
               <input
                 id="name"
                 v-model="form.name"
                 type="text"
-                placeholder="Vaše celé meno"
+                :placeholder="$t('pages.contact.name_placeholder')"
                 @input="fieldErrors.name = null"
                 class="w-full px-4 py-3 border border-gray-300 dark:border-gray-500 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
               />
@@ -192,13 +198,14 @@
               <label
                 for="email"
                 class="block text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2"
-                >Email <span class="text-red-600 dark:text-red-400">*</span></label
+                >{{ $t("pages.contact.email_label") }}
+                <span class="text-red-600 dark:text-red-400">*</span></label
               >
               <input
                 id="email"
                 v-model="form.email"
                 type="text"
-                placeholder="vas.email@priklad.sk"
+                :placeholder="$t('pages.contact.email_placeholder')"
                 @input="fieldErrors.email = null"
                 class="w-full px-4 py-3 border border-gray-300 dark:border-gray-500 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
               />
@@ -227,13 +234,14 @@
               <label
                 for="subject"
                 class="block text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2"
-                >Predmet <span class="text-red-600 dark:text-red-400">*</span></label
+                >{{ $t("pages.contact.subject_label") }}
+                <span class="text-red-600 dark:text-red-400">*</span></label
               >
               <input
                 id="subject"
                 v-model="form.subject"
                 type="text"
-                placeholder="O čom je táto správa?"
+                :placeholder="$t('pages.contact.subject_placeholder')"
                 @input="fieldErrors.subject = null"
                 class="w-full px-4 py-3 border border-gray-300 dark:border-gray-500 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
               />
@@ -262,14 +270,15 @@
               <label
                 for="message"
                 class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >Správa <span class="text-red-600 dark:text-red-400">*</span></label
+                >{{ $t("pages.contact.message_label") }}
+                <span class="text-red-600 dark:text-red-400">*</span></label
               >
               <textarea
                 id="message"
                 v-model="form.message"
                 rows="5"
                 @input="fieldErrors.message = null"
-                placeholder="Prosím, podeľte sa s detailmi vašej otázky..."
+                :placeholder="$t('pages.contact.message_placeholder')"
                 class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition resize-none"
               ></textarea>
               <Transition name="slideDown">
@@ -294,17 +303,13 @@
             </div>
 
             <div>
-              <button
-                type="submit"
-                :disabled="sending"
-                class="w-full btn-primary-lg"
-              >
-                {{ sending ? "Odosielam..." : "Odoslať správu" }}
+              <button type="submit" :disabled="sending" class="w-full btn-primary-lg">
+                {{ sending ? $t("pages.contact.sending") : $t("pages.contact.submit") }}
               </button>
             </div>
 
             <p class="text-xs text-gray-500 dark:text-gray-400 text-center">
-              Očakávaný čas odpovede: 48 hodín
+              {{ $t("pages.contact.response_time") }}
             </p>
           </form>
         </section>
@@ -341,6 +346,14 @@ export default defineComponent({
       },
     };
   },
+  computed: {
+    officeAddressHtml() {
+      return this.$t("pages.contact.office_address").replace(/\n/g, "<br/>");
+    },
+    hoursHtml() {
+      return this.$t("pages.contact.hours_value").replace(/\n/g, "<br/>");
+    },
+  },
   methods: {
     clearFieldErrors() {
       this.fieldErrors = {
@@ -359,43 +372,38 @@ export default defineComponent({
 
       // Client-side validation with professional messages
       if (!this.form.name.trim()) {
-        this.fieldErrors.name =
-          "Prosím, uveďte svoje meno, aby sme vedeli, ako vás máme osloviť.";
-        this.ui.notify("Prosím, vyplňte všetky povinné polia.", "error");
+        this.fieldErrors.name = this.$t("pages.contact.validation.name_required");
+        this.ui.notify(this.$t("pages.contact.validation_notify"), "error");
         return;
       }
 
       if (!this.form.email.trim()) {
-        this.fieldErrors.email = "Potrebujeme váš e-mail, aby sme vám mohli odpovedať.";
-        this.ui.notify("Prosím, vyplňte všetky povinné polia.", "error");
+        this.fieldErrors.email = this.$t("pages.contact.validation.email_required");
+        this.ui.notify(this.$t("pages.contact.validation_notify"), "error");
         return;
       }
 
       if (!this.validateEmail(this.form.email)) {
-        this.fieldErrors.email = "Prosím, zadajte platnú e-mailovú adresu.";
-        this.ui.notify("Skontrolujte svoju e-mailovú adresu a skúste znova.", "error");
+        this.fieldErrors.email = this.$t("pages.contact.validation.email_invalid");
+        this.ui.notify(this.$t("pages.contact.input_check_notify"), "error");
         return;
       }
 
       if (!this.form.subject.trim()) {
-        this.fieldErrors.subject = "Prosím, uveďte predmet správy.";
-        this.ui.notify("Prosím, vyplňte všetky povinné polia.", "error");
+        this.fieldErrors.subject = this.$t("pages.contact.validation.subject_required");
+        this.ui.notify(this.$t("pages.contact.validation_notify"), "error");
         return;
       }
 
       if (!this.form.message.trim()) {
-        this.fieldErrors.message = "Prosím, napíšte nám, o čom by ste chceli hovoriť.";
-        this.ui.notify("Prosím, vyplňte všetky povinné polia.", "error");
+        this.fieldErrors.message = this.$t("pages.contact.validation.message_required");
+        this.ui.notify(this.$t("pages.contact.validation_notify"), "error");
         return;
       }
 
       if (this.form.message.trim().length < 10) {
-        this.fieldErrors.message =
-          "Prosím, poskytnite viac detailov o vašej otázke (minimálne 10 znakov).";
-        this.ui.notify(
-          "Vaša správa je príliš krátka. Prosím, poskytnite viac detailov.",
-          "error"
-        );
+        this.fieldErrors.message = this.$t("pages.contact.validation.message_short");
+        this.ui.notify(this.$t("pages.contact.validation_notify"), "error");
         return;
       }
 
@@ -409,10 +417,7 @@ export default defineComponent({
         });
 
         if (response.data.success) {
-          this.ui.notify(
-            "Ďakujeme! Vaša správa bola úspešne odoslaná. Budeme vám čoskoro odpovedať.",
-            "success"
-          );
+          this.ui.notify(this.$t("pages.contact.success_notify"), "success");
           // Reset form
           this.form = {
             name: "",
@@ -434,18 +439,14 @@ export default defineComponent({
               this.fieldErrors[field] = errors[field][0];
             }
           });
-          this.ui.notify("Prosím, skontrolujte váš vstup a skúste znova.", "error");
+          this.ui.notify(this.$t("pages.contact.validation_notify"), "error");
         } else if (error.response?.status === 500) {
           this.ui.notify(
-            error.response.data.message ||
-              "Máme technické ťažkosti. Prosím, skúste znova neskôr.",
+            error.response.data.message || this.$t("pages.contact.error_notify"),
             "error"
           );
         } else {
-          this.ui.notify(
-            "Vašu správu sa nepodarilo odoslať. Prosím, skontrolujte pripojenie a skúste znova.",
-            "error"
-          );
+          this.ui.notify(this.$t("pages.contact.error_notify"), "error");
         }
       } finally {
         this.sending = false;

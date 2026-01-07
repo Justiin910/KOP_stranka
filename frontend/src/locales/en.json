@@ -1,0 +1,310 @@
+{
+  "app": {
+    "name": "TechShop",
+    "tagline": "Smart Tech"
+  },
+  "search": {
+    "placeholder": "What are you looking for? e.g. iPhone 17 Pro...",
+    "button": "Search"
+  },
+  "tooltip": {
+    "language": "Language",
+    "profile": "Profile",
+    "wishlist": "Wishlist",
+    "notifications": "Notifications",
+    "cart": "Cart"
+  },
+  "nav": {
+    "login": "Log in",
+    "register": "Register",
+    "home": "Home"
+  }
+  ,
+  "home": {
+    "hero": {
+      "title": "Christmas Gifts 2025",
+      "subtitle": "Top technology at great prices",
+      "cta": "See offers"
+    },
+    "news": {
+      "heading": "News & Events",
+      "event1": {
+        "tag": "EVENT",
+        "title": "New Google Pixel 9 phones",
+        "desc": "Discover the latest generation of smartphones with AI features and improved camera.",
+        "cta": "Learn more →"
+      },
+      "event2": {
+        "tag": "NEW",
+        "title": "Apple AirPods Pro (3rd gen)",
+        "desc": "Premium wireless headphones with adaptive sound and improved ANC.",
+        "cta": "Extended pre-order →"
+      },
+      "event3": {
+        "tag": "Gaming",
+        "title": "Gaming week - Up to -30%",
+        "desc": "Consoles, accessories and PC components at unbeatable prices.",
+        "cta": "Shop deals →"
+      }
+    },
+    "banners": {
+      "free_shipping": {
+        "title": "Free shipping",
+        "desc": "Free shipping on orders over €50!",
+        "cta": "Learn more"
+      },
+      "warranty": {
+        "title": "Extended warranty",
+        "desc": "Extend your warranty up to 5 years with TechStore+",
+        "cta": "Activate"
+      }
+    },
+    "recommended": {
+      "title": "Recommended for you"
+    },
+    "bottom": {
+      "fast_delivery": {
+        "title": "Fast delivery",
+        "desc": "Expect your order as soon as tomorrow!"
+      },
+      "warranty_service": {
+        "title": "Warranty service",
+        "desc": "Our service network across Slovakia"
+      },
+      "verified_reviews": {
+        "title": "Verified reviews",
+        "desc": "Ratings from real customers"
+      }
+    }
+  },
+  "product": {
+    "in_stock": "✓ In stock ({count})",
+    "out_of_stock": "✗ Out of stock",
+    "add_to_cart": "Add to cart"
+  }
+  ,
+  "products": {
+    "items": "{count} items",
+    "all": "All",
+    "added_to_cart": "{name} added to cart!",
+    "sort": {
+      "bestsellers": "Bestsellers",
+      "cheapest": "Cheapest",
+      "expensive": "Most expensive",
+      "reviews": "By reviews",
+      "newest": "Newest"
+    }
+  },
+  "categories": {
+    "phones": "Phones",
+    "notebooks": "Notebooks",
+    "tablets": "Tablets",
+    "pocitace": "Computers",
+    "pcs": "Computers",
+    "accessories": "Accessories",
+    "monitors": "Monitors",
+    "peripherals": "Peripherals",
+    "mobily": "Mobiles"
+  }
+  ,
+  "footer": {
+    "brand": {
+      "title": "TechShop",
+      "desc": "Quality technology within reach."
+    },
+    "shopping": {
+      "title": "Shopping",
+      "delivery": "Delivery",
+      "refunds": "Refunds"
+    },
+    "orders": {
+      "title": "Orders",
+      "status": "Order status",
+      "contact": "Contact"
+    },
+    "company": {
+      "title": "Company",
+      "about": "About us",
+      "privacy": "Privacy policy"
+    },
+    "copyright": "© 2025 TechShop s.r.o. All rights reserved."
+  },
+  "sidebar": {
+    "heading": "Categories"
+  }
+  ,
+  "profile": {
+    "login": "Log in",
+    "register": "Register",
+    "guest": "User",
+    "my_profile": "My profile",
+    "orders": "My orders",
+    "settings": "Settings",
+    "admin_panel": "Admin Panel",
+    "logout": "Log out",
+    "logging_out": "Logging out...",
+    "loading": "Loading profile...",
+    "change_avatar": "Change avatar",
+    "verified": "Verified",
+    "unverified": "Unverified",
+    "resend": "Resend",
+    "sent": "Sent",
+    "verification_sent_title": "Verification sent",
+    "resend_verification_title": "Resend verification",
+    "orders_count": "Orders: {count}",
+    "cancel": "Cancel",
+    "edit_profile": "Edit profile",
+    "personal_info": "Personal information",
+    "name_label": "Full name",
+    "email_label": "Email",
+    "email_change_note": "After changing your email you will need to confirm the new address.",
+    "phone_label": "Phone",
+    "phone_placeholder": "912 345 678",
+    "address_label": "Address",
+    "address_placeholder": "Main St 123",
+    "city_label": "City",
+    "city_placeholder": "Bratislava",
+    "zip_label": "ZIP",
+    "zip_placeholder": "811 01",
+    "save_changes": "Save changes",
+    "saving": "Saving...",
+    "change_password_title": "Change password",
+    "sending": "Sending...",
+    "forgot_password": "Forgot password?",
+    "current_password_label": "Current password",
+    "new_password_label": "New password",
+    "confirm_password_label": "Confirm new password",
+    "change_password_button": "Change password",
+    "order_history": "Order history",
+    "view_all": "View all →",
+    "no_orders": "You have no orders yet",
+    "order_number": "Order #{id}",
+    "view_detail": "View detail →",
+    "danger_zone_title": "Danger zone",
+    "danger_zone_desc_html": "Deleting your account will remove access to all your data and orders. This action is <strong>irreversible</strong>.",
+    "delete_confirm_title": "Are you sure you want to delete your account?",
+    "delete_confirm_desc": "This action is permanent. All your data, orders and history will be permanently deleted.",
+    "confirm_delete_password_label": "To confirm, enter your password:",
+    "password_placeholder": "Your password",
+    "deleting": "Deleting...",
+    "delete_confirm_button": "Yes, delete account",
+    "member_since": "Member since {month}/{year}",
+    "member_since_unknown": "Member since ...",
+    "validation": {
+      "required_field": "{field} is required.",
+      "fill_required": "Please fill all required fields.",
+      "password_fields_required": "All password fields are required.",
+      "phone_required": "Phone is required.",
+      "phone_digits": "Phone must have exactly 9 digits.",
+      "email_invalid": "Invalid email."
+    }
+    ,"save_success": "Profile updated successfully!",
+    "save_failed": "Failed to save changes.",
+    "reset_link_sent": "A password reset link was sent to your email!",
+    "reset_link_failed": "Failed to send reset link.",
+    "verification_resent": "Verification email resent.",
+    "verification_failed": "Failed to resend verification."
+  }
+  ,
+  "auth": {
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to your account",
+      "email_label": "Email",
+      "email_placeholder": "you.email@example.com",
+      "password_label": "Password",
+      "password_placeholder": "••••••••",
+      "forgot_password": "Forgot password?",
+      "submitting": "Signing in...",
+      "submit": "Sign in",
+      "or_continue": "Or continue with",
+      "no_account": "Don't have an account?",
+      "sign_up": "Sign up",
+      "verified_message": "Email verified. You can now sign in."
+    },
+    "register": {
+      "title": "Create an account",
+      "subtitle": "Start shopping today",
+      "name_label": "Full name",
+      "name_placeholder": "John Doe",
+      "email_label": "Email",
+      "email_placeholder": "you.email@example.com",
+      "phone_label": "Phone",
+      "phone_placeholder": "912 345 678",
+      "password_label": "Password",
+      "password_placeholder": "••••••••",
+      "confirm_password_label": "Confirm password",
+      "confirm_password_placeholder": "••••••••",
+      "terms": "I agree to the terms",
+      "creating": "Creating account...",
+      "create": "Create account",
+      "have_account": "Already have an account?",
+      "sign_in": "Sign in",
+      "success_title": "Account created!",
+      "success_sent": "A verification email was sent to {email}",
+      "invalid_email": "Invalid email",
+      "password_min": "Password must be at least 8 characters",
+      "phone_digits": "Phone must have 9 digits",
+      "passwords_mismatch": "Passwords do not match"
+    }
+    ,
+    "password_reset": {
+      "title": "Forgot your password?",
+      "enter_email": "Enter your email and we'll send a password reset link",
+      "check_your_email": "Check your email",
+      "email_label": "Email",
+      "email_placeholder": "you.email@example.com",
+      "submit": "Send reset link",
+      "success_title": "Email sent!",
+      "success_sent": "We sent a password reset link to: {email}",
+      "info_text": "If you don't see the email within a few minutes, check your spam folder. The link is valid for 24 hours.",
+      "resend_prompt": "Didn't receive an email? Resend",
+      "resend_wait": "Resend ({seconds}s)",
+      "back_to_login": "Back to sign in",
+      "need_help": "Need help?",
+      "contact_support": "Contact support",
+      "invalid_email": "Enter a valid email.",
+      "send_failed": "Failed to send reset email. Please try again.",
+      "resend_failed": "Failed to resend email."
+    }
+  },
+  "pages": {
+    "contact": {
+      "title": "Contact",
+      "intro": "If you have questions, business offers or need help, contact us. We'll be happy to assist.",
+      "office_title": "Headquarters",
+      "office_address": "TechShop s.r.o.\nHlavná 123\n010 01 City",
+      "email_title": "E-mail",
+      "email_value": "techstore99x@gmail.com",
+      "phone_title": "Phone",
+      "phone_value": "+421 900 000 000",
+      "hours_title": "Open",
+      "hours_value": "Monday – Friday: 9:00 – 16:00\nSaturday – Sunday: Closed",
+      "form_title": "Send us a message",
+      "form_desc": "We will reply within 48 hours. Fill the form and we'll be in touch.",
+      "name_label": "Name",
+      "name_placeholder": "Your full name",
+      "email_label": "Email",
+      "email_placeholder": "you.email@example.com",
+      "subject_label": "Subject",
+      "subject_placeholder": "What's this message about?",
+      "message_label": "Message",
+      "message_placeholder": "Please share details of your question...",
+      "submit": "Send message",
+      "sending": "Sending...",
+      "response_time": "Expected response time: 48 hours",
+      "validation": {
+        "name_required": "Please provide your name so we know how to address you.",
+        "email_required": "We need your email so we can reply.",
+        "email_invalid": "Please enter a valid email address.",
+        "subject_required": "Please provide a subject for the message.",
+        "message_required": "Please tell us what you'd like to discuss.",
+        "message_short": "Please provide more details (minimum 10 characters)."
+      },
+      "success_notify": "Thank you! Your message was successfully sent. We will reply soon.",
+      "error_notify": "We couldn't send your message. Please check your connection and try again.",
+      "validation_notify": "Please fill in all required fields.",
+      "input_check_notify": "Please check your email address and try again."
+    }
+  }
+}

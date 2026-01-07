@@ -1,0 +1,310 @@
+{
+  "app": {
+    "name": "TechShop",
+    "tagline": "Smart Tech"
+  },
+  "search": {
+    "placeholder": "Čo hľadáte? napr. iPhone 17 Pro...",
+    "button": "Hľadať"
+  },
+  "tooltip": {
+    "language": "Jazyk",
+    "profile": "Profil",
+    "wishlist": "Obľúbené",
+    "notifications": "Upozornenia",
+    "cart": "Košík"
+  },
+  "nav": {
+    "login": "Prihlásiť sa",
+    "register": "Registrovať sa",
+    "home": "Domov"
+  }
+  ,
+  "home": {
+    "hero": {
+      "title": "Vianočné darčeky 2025",
+      "subtitle": "Najlepšie technológie za skvelé ceny",
+      "cta": "Pozrieť ponuku"
+    },
+    "news": {
+      "heading": "Novinky a udalosti",
+      "event1": {
+        "tag": "UDALOSŤ",
+        "title": "Nové telefóny Google Pixel 9",
+        "desc": "Objavte najnovšiu generáciu smartfónov s AI funkciami a vylepšeným fotoaparátom.",
+        "cta": "Zistiť viac →"
+      },
+      "event2": {
+        "tag": "NOVINKA",
+        "title": "Apple AirPods Pro (3. gen)",
+        "desc": "Luxusné bezdrôtové slúchadlá s adaptívnym zvukom a vylepšeným ANC.",
+        "cta": "Predĺžený predpredaj →"
+      },
+      "event3": {
+        "tag": "Gaming",
+        "title": "Gaming week - Až -30%",
+        "desc": "Herné konzoly, príslušenstvo a PC komponenty za bezkonkurenčné ceny.",
+        "cta": "Do akcie →"
+      }
+    },
+    "banners": {
+      "free_shipping": {
+        "title": "Doprava zdarma",
+        "desc": "Pri nákupe nad 50€ doprava úplne zadarmo!",
+        "cta": "Zistiť viac"
+      },
+      "warranty": {
+        "title": "Rozšírená záruka",
+        "desc": "Rozšírte si záruku až na 5 rokov s TechStore+",
+        "cta": "Aktivovať"
+      }
+    },
+    "recommended": {
+      "title": "Odporúčame pre vás"
+    },
+    "bottom": {
+      "fast_delivery": {
+        "title": "Rýchle dodanie",
+        "desc": "Z vašej objednávky sa môžete tešiť už zajtra!"
+      },
+      "warranty_service": {
+        "title": "Záručný servis",
+        "desc": "Vlastná servisná sieť po celom Slovensku"
+      },
+      "verified_reviews": {
+        "title": "Overené recenzie",
+        "desc": "Hodnotenia od skutočných zákazníkov"
+      }
+    }
+  },
+  "product": {
+    "in_stock": "✓ Skladom ({count})",
+    "out_of_stock": "✗ Vypredané",
+    "add_to_cart": "Do košíka"
+  }
+  ,
+  "products": {
+    "items": "{count} položiek",
+    "all": "Všetky",
+    "added_to_cart": "{name} pridané do košíka!",
+    "sort": {
+      "bestsellers": "Najpredávanejšie",
+      "cheapest": "Najlacnejšie",
+      "expensive": "Najdrahšie",
+      "reviews": "Podľa recenzií",
+      "newest": "Od najnovších"
+    }
+  },
+  "categories": {
+    "phones": "Telefóny",
+    "notebooks": "Notebooky",
+    "tablets": "Tablety",
+    "pocitace": "Počítače",
+    "pcs": "Počítače",
+    "accessories": "Príslušenstvo",
+    "monitors": "Monitory",
+    "peripherals": "Periférie",
+    "mobily": "Mobily"
+  }
+  ,
+  "footer": {
+    "brand": {
+      "title": "TechShop",
+      "desc": "Kvalitné technológie na dosah."
+    },
+    "shopping": {
+      "title": "Nákup",
+      "delivery": "Doručenie",
+      "refunds": "Vrátenia"
+    },
+    "orders": {
+      "title": "Objednávky",
+      "status": "Stav objednávky",
+      "contact": "Kontakt"
+    },
+    "company": {
+      "title": "Spoločnosť",
+      "about": "O nás",
+      "privacy": "Ochrana údajov"
+    },
+    "copyright": "© 2025 TechShop s.r.o. Všetky práva vyhradené."
+  },
+  "sidebar": {
+    "heading": "Kategórie"
+  }
+  ,
+  "profile": {
+    "login": "Prihlásiť sa",
+    "register": "Registrovať sa",
+    "guest": "Používateľ",
+    "my_profile": "Môj profil",
+    "orders": "Moje objednávky",
+    "settings": "Nastavenia",
+    "admin_panel": "Admin Panel",
+    "logout": "Odhlásiť sa",
+    "logging_out": "Odhlasovanie...",
+    "loading": "Načítavam profil...",
+    "change_avatar": "Zmeniť avatar",
+    "verified": "Overené",
+    "unverified": "Neoverené",
+    "resend": "Odoslať znova",
+    "sent": "Odoslané",
+    "verification_sent_title": "Overenie odoslané",
+    "resend_verification_title": "Odoslať overenie",
+    "orders_count": "Objednávky: {count}",
+    "cancel": "Zrušiť",
+    "edit_profile": "Upraviť profil",
+    "personal_info": "Osobné informácie",
+    "name_label": "Meno a priezvisko",
+    "email_label": "Email",
+    "email_change_note": "Po zmene emailu budete musieť potvrdiť novú adresu.",
+    "phone_label": "Telefón",
+    "phone_placeholder": "912 345 678",
+    "address_label": "Adresa",
+    "address_placeholder": "Hlavná 123",
+    "city_label": "Mesto",
+    "city_placeholder": "Bratislava",
+    "zip_label": "PSČ",
+    "zip_placeholder": "811 01",
+    "save_changes": "Uložiť zmeny",
+    "saving": "Ukladám...",
+    "change_password_title": "Zmena hesla",
+    "sending": "Odosiela sa...",
+    "forgot_password": "Zabudli ste heslo?",
+    "current_password_label": "Súčasné heslo",
+    "new_password_label": "Nové heslo",
+    "confirm_password_label": "Potvrdiť nové heslo",
+    "change_password_button": "Zmeniť heslo",
+    "order_history": "História objednávok",
+    "view_all": "Zobraziť všetky →",
+    "no_orders": "Zatiaľ nemáte žiadne objednávky",
+    "order_number": "Objednávka #{id}",
+    "view_detail": "Zobraziť detail →",
+    "danger_zone_title": "Nebezpečná zóna",
+    "danger_zone_desc_html": "Po zmazaní účtu stratíte prístup ku všetkým vašim údajom a objednávkam. Táto akcia je <strong>nevratná</strong>.",
+    "delete_confirm_title": "Naozaj chcete zmazať účet?",
+    "delete_confirm_desc": "Táto akcia je nevratná. Všetky vaše údaje, objednávky a história budú permanentne zmazané.",
+    "confirm_delete_password_label": "Pre potvrdenie zadajte svoje heslo:",
+    "password_placeholder": "Vaše heslo",
+    "deleting": "Mažem...",
+    "delete_confirm_button": "Áno, zmazať účet",
+    "member_since": "Člen od {month}/{year}",
+    "member_since_unknown": "Člen od ...",
+    "validation": {
+      "required_field": "{field} je povinné.",
+      "fill_required": "Prosím vyplňte všetky povinné polia.",
+      "password_fields_required": "Všetky polia hesla sú povinné.",
+      "phone_required": "Telefón je povinný.",
+      "phone_digits": "Telefón musí mať presne 9 číslic.",
+      "email_invalid": "Neplatný email."
+    }
+    ,"save_success": "Profil bol úspešne aktualizovaný!",
+    "save_failed": "Nepodarilo sa uložiť zmeny.",
+    "reset_link_sent": "Link na resetovanie hesla bol odoslaný na váš email!",
+    "reset_link_failed": "Nepodarilo sa odoslať reset link.",
+    "verification_resent": "Overovací email bol znovu odoslaný.",
+    "verification_failed": "Nepodarilo sa odoslať overenie."
+  }
+  ,
+  "auth": {
+    "login": {
+      "title": "Vitajte späť",
+      "subtitle": "Prihláste sa do svojho účtu",
+      "email_label": "Email",
+      "email_placeholder": "vas.email@priklad.sk",
+      "password_label": "Heslo",
+      "password_placeholder": "••••••••",
+      "forgot_password": "Zabudli ste heslo?",
+      "submitting": "Prihlasovanie...",
+      "submit": "Prihlásiť sa",
+      "or_continue": "Alebo pokračujte s",
+      "no_account": "Nemáte účet?",
+      "sign_up": "Zaregistrujte sa",
+      "verified_message": "Email bol overený. Teraz sa môžete prihlásiť."
+    },
+    "register": {
+      "title": "Vytvorte si účet",
+      "subtitle": "Začnite nakupovať už dnes",
+      "name_label": "Meno a priezvisko",
+      "name_placeholder": "Ján Novák",
+      "email_label": "Email",
+      "email_placeholder": "vas.email@priklad.sk",
+      "phone_label": "Telefón",
+      "phone_placeholder": "912 345 678",
+      "password_label": "Heslo",
+      "password_placeholder": "••••••••",
+      "confirm_password_label": "Potvrďte heslo",
+      "confirm_password_placeholder": "••••••••",
+      "terms": "Súhlasím s podmienkami",
+      "creating": "Vytváram účet...",
+      "create": "Vytvoriť účet",
+      "have_account": "Už máte účet?",
+      "sign_in": "Prihlásiť sa",
+      "success_title": "Účet vytvorený!",
+      "success_sent": "Overovací email bol odoslaný na {email}",
+      "invalid_email": "Neplatný email",
+      "password_min": "Heslo musí mať aspoň 8 znakov",
+      "phone_digits": "Telefón musí mať 9 číslic",
+      "passwords_mismatch": "Heslá sa nezhodujú"
+    }
+    ,
+    "password_reset": {
+      "title": "Zabudli ste heslo?",
+      "enter_email": "Zadajte svoj email a pošleme vám odkaz na obnovenie hesla",
+      "check_your_email": "Skontrolujte svoj email",
+      "email_label": "Email",
+      "email_placeholder": "vas.email@priklad.sk",
+      "submit": "Odoslať obnovovací odkaz",
+      "success_title": "Email bol odoslaný!",
+      "success_sent": "Odkaz na obnovenie hesla sme poslali na adresu: {email}",
+      "info_text": "Ak email neuvidíte do pár minút, skontrolujte prosím spam. Odkaz je platný 24 hodín.",
+      "resend_prompt": "Neprišiel email? Poslať znova",
+      "resend_wait": "Poslať znova ({seconds}s)",
+      "back_to_login": "Späť na prihlásenie",
+      "need_help": "Potrebujete pomoc?",
+      "contact_support": "Kontaktujte podporu",
+      "invalid_email": "Zadajte platný email.",
+      "send_failed": "Nepodarilo sa odoslať obnovovací email. Skúste znova.",
+      "resend_failed": "Nepodarilo sa znovu odoslať email."
+    }
+  },
+  "pages": {
+    "contact": {
+      "title": "Kontakt",
+      "intro": "Ak máte otázky, obchodné ponuky alebo potrebujete pomoc, kontaktujte nás. Radi vám pomôžeme.",
+      "office_title": "Sídlo",
+      "office_address": "TechShop s.r.o.\nHlavná 123\n010 01 Mesto",
+      "email_title": "E-mail",
+      "email_value": "techstore99x@gmail.com",
+      "phone_title": "Telefón",
+      "phone_value": "+421 900 000 000",
+      "hours_title": "Otvorené",
+      "hours_value": "Pondelok – Piatok: 9:00 – 16:00\nSobota – Nedeľa: Zatvorené",
+      "form_title": "Pošlite nám správu",
+      "form_desc": "Odpovieme vám do 48 hodín. Vyplňte formulár a budeme v kontakte.",
+      "name_label": "Meno",
+      "name_placeholder": "Vaše celé meno",
+      "email_label": "Email",
+      "email_placeholder": "vas.email@priklad.sk",
+      "subject_label": "Predmet",
+      "subject_placeholder": "O čom je táto správa?",
+      "message_label": "Správa",
+      "message_placeholder": "Prosím, podeľte sa s detailmi vašej otázky...",
+      "submit": "Odoslať správu",
+      "sending": "Odosielam...",
+      "response_time": "Očakávaný čas odpovede: 48 hodín",
+      "validation": {
+        "name_required": "Prosím, uveďte svoje meno, aby sme vedeli, ako vás máme osloviť.",
+        "email_required": "Potrebujeme váš e-mail, aby sme vám mohli odpovedať.",
+        "email_invalid": "Prosím, zadajte platnú e-mailovú adresu.",
+        "subject_required": "Prosím, uveďte predmet správy.",
+        "message_required": "Prosím, napíšte nám, o čom by ste chceli hovoriť.",
+        "message_short": "Prosím, poskytnite viac detailov o vašej otázke (minimálne 10 znakov)."
+      },
+      "success_notify": "Ďakujeme! Vaša správa bola úspešne odoslaná. Budeme vám čoskoro odpovedať.",
+      "error_notify": "Vašu správu sa nepodarilo odoslať. Prosím, skontrolujte pripojenie a skúste znova.",
+      "validation_notify": "Prosím, vyplňte všetky povinné polia.",
+      "input_check_notify": "Skontrolujte svoju e-mailovú adresu a skúste znova."
+    }
+  }
+}

@@ -20,13 +20,13 @@
 
           <div class="relative z-10">
             <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
-              Vianočné darčeky 2025
+              {{ $t('home.hero.title') }}
             </h1>
-            <p class="text-xl text-white/90 mb-6">Najlepšie technológie za skvelé ceny</p>
+            <p class="text-xl text-white/90 mb-6">{{ $t('home.hero.subtitle') }}</p>
             <button
               class="bg-white text-indigo-600 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition"
             >
-              Pozrieť ponuku
+              {{ $t('home.hero.cta') }}
             </button>
           </div>
         </div>
@@ -35,7 +35,7 @@
       <!-- News/Events Grid -->
       <section class="mb-12">
         <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-          Novinky a udalosti
+          {{ $t('home.news.heading') }}
         </h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <!-- Event Card 1 -->
@@ -48,17 +48,16 @@
             />
             <div class="p-6">
               <span class="text-xs font-semibold text-indigo-600 dark:text-indigo-400"
-                >UDALOSŤ</span
+                >{{ $t('home.news.event1.tag') }}</span
               >
               <h3 class="text-lg font-bold text-gray-900 dark:text-white mt-2 mb-2">
-                Nové telefóny Google Pixel 9
+                {{ $t('home.news.event1.title') }}
               </h3>
               <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                Objavte najnovšiu generáciu smartfónov s AI funkciami a vylepšeným
-                fotoaparátom.
+                {{ $t('home.news.event1.desc') }}
               </p>
               <span class="text-sm text-indigo-600 dark:text-indigo-400 font-medium"
-                >Zistiť viac →</span
+                >{{ $t('home.news.event1.cta') }}</span
               >
             </div>
           </div>
@@ -73,16 +72,16 @@
             />
             <div class="p-6">
               <span class="text-xs font-semibold text-purple-600 dark:text-purple-400"
-                >NOVINKA</span
+                >{{ $t('home.news.event2.tag') }}</span
               >
               <h3 class="text-lg font-bold text-gray-900 dark:text-white mt-2 mb-2">
-                Apple AirPods Pro (3. gen)
+                {{ $t('home.news.event2.title') }}
               </h3>
               <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                Luxusné bezdrôtové slúchadlá s adaptívnym zvukom a vylepšeným ANC.
+                {{ $t('home.news.event2.desc') }}
               </p>
               <span class="text-sm text-purple-600 dark:text-purple-400 font-medium"
-                >Predĺžený predpredaj →</span
+                >{{ $t('home.news.event2.cta') }}</span
               >
             </div>
           </div>
@@ -97,16 +96,16 @@
             />
             <div class="p-6">
               <span class="text-xs font-semibold text-orange-600 dark:text-orange-400"
-                >Gaming</span
+                >{{ $t('home.news.event3.tag') }}</span
               >
               <h3 class="text-lg font-bold text-gray-900 dark:text-white mt-2 mb-2">
-                Gaming week - Až -30%
+                {{ $t('home.news.event3.title') }}
               </h3>
               <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                Herné konzoly, príslušenstvo a PC komponenty za bezkonkurenčné ceny.
+                {{ $t('home.news.event3.desc') }}
               </p>
               <span class="text-sm text-orange-600 dark:text-orange-400 font-medium"
-                >Do akcie →</span
+                >{{ $t('home.news.event3.cta') }}</span
               >
             </div>
           </div>
@@ -117,45 +116,51 @@
       <section class="mb-12">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Info Banner 1 -->
-          <div class="relative rounded-xl overflow-hidden">
+          <div
+            class="relative rounded-xl overflow-hidden shadow-lg border border-white/10 hover:shadow-xl transition-shadow"
+          >
             <div
-              class="absolute inset-0 bg-gradient-to-r from-green-600 to-green-500"
+              class="absolute inset-0 bg-gradient-to-r from-green-800/70 to-green-700/40"
             ></div>
 
             <div
-              class="absolute inset-0 bg-[url('https://picsum.photos/1500/900?random=3')] bg-cover bg-right opacity-25"
+              class="absolute inset-0 bg-[url('https://picsum.photos/1500/900?random=3')] bg-cover bg-right opacity-40"
             ></div>
 
-            <div class="relative p-6 text-white">
-              <h3 class="text-2xl font-bold mb-2">Doprava zdarma</h3>
-              <p class="text-white/90 mb-4">Pri nákupe nad 50€ doprava úplne zadarmo!</p>
-              <button
-                class="bg-white text-green-600 px-6 py-2 rounded-full font-semibold text-sm hover:bg-gray-100 transition"
-              >
-                Zistiť viac
-              </button>
+            <div class="relative p-8 text-white">
+              <h3 class="text-3xl font-bold mb-3">{{ $t('home.banners.free_shipping.title') }}</h3>
+                  <p class="text-white/80 mb-6 text-base leading-relaxed">
+                    {{ $t('home.banners.free_shipping.desc') }}
+                  </p>
+                  <button
+                    class="bg-white/20 hover:bg-white/30 text-white px-7 py-2.5 rounded-full font-semibold text-sm border border-white/40 transition-all duration-200"
+                  >
+                    {{ $t('home.banners.free_shipping.cta') }}
+                  </button>
             </div>
           </div>
 
           <!-- Info Banner 2 -->
-          <div class="relative rounded-xl overflow-hidden">
+          <div
+            class="relative rounded-xl overflow-hidden shadow-lg border border-white/10 hover:shadow-xl transition-shadow"
+          >
             <div
-              class="absolute inset-0 bg-gradient-to-r from-yellow-600 to-orange-600"
+              class="absolute inset-0 bg-gradient-to-r from-yellow-800/70 to-orange-800/40"
             ></div>
 
             <div
-              class="absolute inset-0 bg-[url('https://picsum.photos/id/1025/800/600')] bg-cover bg-right opacity-25"
+              class="absolute inset-0 bg-[url('https://picsum.photos/id/1025/800/600')] bg-cover bg-right opacity-40"
             ></div>
 
-            <div class="relative p-6 text-white">
-              <h3 class="text-2xl font-bold mb-2">Rozšírená záruka</h3>
-              <p class="text-white/90 mb-4">
-                Rozšírte si záruku až na 5 rokov s TechStore+
+            <div class="relative p-8 text-white">
+              <h3 class="text-3xl font-bold mb-3">{{ $t('home.banners.warranty.title') }}</h3>
+              <p class="text-white/80 mb-6 text-base leading-relaxed">
+                {{ $t('home.banners.warranty.desc') }}
               </p>
               <button
-                class="bg-white text-orange-600 px-6 py-2 rounded-full font-semibold text-sm hover:bg-gray-100 transition"
+                class="bg-white/20 hover:bg-white/30 text-white px-7 py-2.5 rounded-full font-semibold text-sm border border-white/40 transition-all duration-200"
               >
-                Aktivovať
+                {{ $t('home.banners.warranty.cta') }}
               </button>
             </div>
           </div>
@@ -166,7 +171,7 @@
       <section class="mb-12">
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-            Odporúčame pre vás
+            {{ $t('home.recommended.title') }}
           </h2>
         </div>
 
@@ -182,7 +187,7 @@
 
       <!-- Bottom Info Section -->
       <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 text-center">
+          <div class="bg-white dark:bg-gray-800 rounded-xl p-6 text-center">
           <div
             class="w-16 h-16 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center mx-auto mb-4"
           >
@@ -190,9 +195,9 @@
               class="fa-solid fa-truck text-indigo-600 dark:text-indigo-400 text-2xl"
             ></i>
           </div>
-          <h3 class="font-bold text-gray-900 dark:text-white mb-2">Rýchle dodanie</h3>
+          <h3 class="font-bold text-gray-900 dark:text-white mb-2">{{ $t('home.bottom.fast_delivery.title') }}</h3>
           <p class="text-sm text-gray-600 dark:text-gray-300">
-            Z vašej objednávky sa môžete tešiť už zajtra!
+            {{ $t('home.bottom.fast_delivery.desc') }}
           </p>
         </div>
 
@@ -204,9 +209,9 @@
               class="fa-solid fa-shield-halved text-green-600 dark:text-green-400 text-2xl"
             ></i>
           </div>
-          <h3 class="font-bold text-gray-900 dark:text-white mb-2">Záručný servis</h3>
+          <h3 class="font-bold text-gray-900 dark:text-white mb-2">{{ $t('home.bottom.warranty_service.title') }}</h3>
           <p class="text-sm text-gray-600 dark:text-gray-300">
-            Vlastná servisná sieť po celom Slovensku
+            {{ $t('home.bottom.warranty_service.desc') }}
           </p>
         </div>
 
@@ -216,9 +221,9 @@
           >
             <i class="fa-solid fa-star text-purple-600 dark:text-purple-400 text-2xl"></i>
           </div>
-          <h3 class="font-bold text-gray-900 dark:text-white mb-2">Overené recenzie</h3>
+          <h3 class="font-bold text-gray-900 dark:text-white mb-2">{{ $t('home.bottom.verified_reviews.title') }}</h3>
           <p class="text-sm text-gray-600 dark:text-gray-300">
-            Hodnotenia od skutočných zákazníkov
+            {{ $t('home.bottom.verified_reviews.desc') }}
           </p>
         </div>
       </section>

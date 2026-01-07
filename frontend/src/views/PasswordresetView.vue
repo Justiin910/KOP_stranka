@@ -23,13 +23,13 @@
           </svg>
         </div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-          Zabudli ste heslo?
+          {{ $t("auth.password_reset.title") }}
         </h1>
         <p class="text-gray-600 dark:text-gray-400 mt-2 max-w-sm mx-auto">
           {{
             !emailSent
-              ? "Zadajte svoj email a pošleme vám odkaz na obnovenie hesla"
-              : "Skontrolujte svoj email"
+              ? $t("auth.password_reset.enter_email")
+              : $t("auth.password_reset.check_your_email")
           }}
         </p>
       </div>
@@ -46,7 +46,7 @@
               for="email"
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Email
+              {{ $t("auth.password_reset.email_label") }}
             </label>
             <div class="relative">
               <div
@@ -71,7 +71,7 @@
                 v-model="email"
                 type="email"
                 required
-                placeholder="vas.email@priklad.sk"
+                :placeholder="$t('auth.password_reset.email_placeholder')"
                 class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
               />
             </div>
@@ -83,7 +83,7 @@
             :disabled="!email"
             class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg transition-colors shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] disabled:bg-gray-300 disabled:cursor-not-allowed dark:disabled:bg-gray-700 mb-4"
           >
-            Odoslať obnovovací odkaz
+            {{ $t("auth.password_reset.submit") }}
           </button>
 
           <!-- Back to Login -->
@@ -99,7 +99,7 @@
                 d="M10 19l-7-7m0 0l7-7m-7 7h18"
               />
             </svg>
-            Späť na prihlásenie
+            {{ $t("auth.password_reset.back_to_login") }}
           </router-link>
         </form>
 
@@ -125,11 +125,10 @@
           </div>
 
           <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
-            Email bol odoslaný!
+            {{ $t("auth.password_reset.success_title") }}
           </h3>
           <p class="text-gray-600 dark:text-gray-400 mb-6">
-            Odkaz na obnovenie hesla sme poslali na adresu:<br />
-            <span class="font-semibold text-gray-900 dark:text-white">{{ email }}</span>
+            {{ $t("auth.password_reset.success_sent", { email }) }}
           </p>
 
           <!-- Info Box -->
@@ -152,8 +151,7 @@
               </svg>
               <div class="text-left">
                 <p class="text-sm text-blue-800 dark:text-blue-300">
-                  Ak email neuvidíte do pár minút, skontrolujte prosím spam folder. Odkaz
-                  je platný 24 hodín.
+                  {{ $t("auth.password_reset.info_text") }}
                 </p>
               </div>
             </div>
@@ -167,8 +165,8 @@
           >
             {{
               resendCooldown > 0
-                ? `Poslať znova (${resendCooldown}s)`
-                : "Neprišiel email? Poslať znova"
+                ? $t("auth.password_reset.resend_wait", { seconds: resendCooldown })
+                : $t("auth.password_reset.resend_prompt")
             }}
           </button>
 
@@ -185,7 +183,7 @@
                 d="M10 19l-7-7m0 0l7-7m-7 7h18"
               />
             </svg>
-            Späť na prihlásenie
+            {{ $t("auth.password_reset.back_to_login") }}
           </router-link>
         </div>
       </div>
@@ -193,12 +191,14 @@
       <!-- Additional Help -->
       <div class="mt-6 text-center">
         <p class="text-sm text-gray-600 dark:text-gray-400">
-          Potrebujete pomoc?
+          {{ $t("auth.password_reset.need_help") }}
           <a
             href="#"
             class="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium"
           >
-            Kontaktujte podporu
+            <router-link to="/contact">
+              {{ $t("auth.password_reset.contact_support") }}
+            </router-link>
           </a>
         </p>
       </div>
@@ -229,7 +229,7 @@ export default {
       const email = this.email.trim();
 
       if (!this.validateEmail(email)) {
-        this.errorMessage = "Zadajte platný email.";
+        this.errorMessage = this.$t("auth.password_reset.invalid_email");
         return;
       }
 
@@ -245,7 +245,7 @@ export default {
         this.errorMessage =
           error.response?.data?.errors?.email?.[0] ||
           error.response?.data?.message ||
-          "Nepodarilo sa odoslať obnovovací email. Skúste znova.";
+          this.$t("auth.password_reset.send_failed");
       }
     },
 
@@ -262,7 +262,7 @@ export default {
       const email = this.email.trim();
 
       if (!this.validateEmail(email)) {
-        this.errorMessage = "Zadajte platný email.";
+        this.errorMessage = this.$t("auth.password_reset.invalid_email");
         return;
       }
       if (this.resendCooldown > 0) return; // ochrana proti klikanie
@@ -279,7 +279,7 @@ export default {
         const msg =
           error.response?.data?.errors?.email?.[0] ||
           error.response?.data?.message ||
-          "Nepodarilo sa znovu odoslať email.";
+          this.$t("auth.password_reset.resend_failed");
 
         this.errorMessage = msg;
 

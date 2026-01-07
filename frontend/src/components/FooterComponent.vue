@@ -5,9 +5,9 @@
       <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
         <!-- Brand column -->
         <div class="text-center">
-          <h3 class="font-semibold text-gray-900 dark:text-white mb-4">TechShop</h3>
+          <h3 class="font-semibold text-gray-900 dark:text-white mb-4">{{ $t('footer.brand.title') }}</h3>
           <p class="text-sm text-gray-600 dark:text-gray-400">
-            Kvalitné technológie na dosah.
+            {{ $t('footer.brand.desc') }}
           </p>
           <div class="flex gap-3 mt-5 justify-center">
             <img src="@/assets/mastercardLogo.png" alt="Mastercard" class="h-6" />
@@ -17,14 +17,14 @@
 
         <!-- Shopping -->
         <div class="text-center">
-          <h4 class="font-semibold text-gray-900 dark:text-white mb-4 text-sm">Nákup</h4>
+          <h4 class="font-semibold text-gray-900 dark:text-white mb-4 text-sm">{{ $t('footer.shopping.title') }}</h4>
           <ul class="space-y-2 text-sm">
             <li>
               <router-link
                 to="/delivery"
                 class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition"
               >
-                Doručenie
+                {{ $t('footer.shopping.delivery') }}
               </router-link>
             </li>
             <li>
@@ -32,7 +32,7 @@
                 to="/refunds"
                 class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition"
               >
-                Vrátenia
+                {{ $t('footer.shopping.refunds') }}
               </router-link>
             </li>
           </ul>
@@ -41,7 +41,7 @@
         <!-- Orders -->
         <div class="text-center">
           <h4 class="font-semibold text-gray-900 dark:text-white mb-4 text-sm">
-            Objednávky
+            {{ $t('footer.orders.title') }}
           </h4>
           <ul class="space-y-2 text-sm">
             <li>
@@ -49,7 +49,7 @@
                 to="/orders"
                 class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition"
               >
-                Stav objednávky
+                {{ $t('footer.orders.status') }}
               </router-link>
             </li>
             <li>
@@ -57,7 +57,7 @@
                 to="/contact"
                 class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition"
               >
-                Kontakt
+                {{ $t('footer.orders.contact') }}
               </router-link>
             </li>
           </ul>
@@ -66,7 +66,7 @@
         <!-- Company -->
         <div class="text-center">
           <h4 class="font-semibold text-gray-900 dark:text-white mb-4 text-sm">
-            Spoločnosť
+            {{ $t('footer.company.title') }}
           </h4>
           <ul class="space-y-2 text-sm">
             <li>
@@ -74,7 +74,7 @@
                 to="/aboutus"
                 class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition"
               >
-                O nás
+                {{ $t('footer.company.about') }}
               </router-link>
             </li>
             <li>
@@ -82,7 +82,7 @@
                 to="/privacy-policy"
                 class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition"
               >
-                Ochrana údajov
+                {{ $t('footer.company.privacy') }}
               </router-link>
             </li>
           </ul>
@@ -92,7 +92,7 @@
       <!-- Divider -->
       <div class="border-t border-gray-200 dark:border-gray-800 text-center">
         <p class="text-sm text-gray-500 dark:text-gray-400">
-          © 2025 TechShop s.r.o. Všetky práva vyhradené.
+          {{ $t('footer.copyright') }}
         </p>
       </div>
     </div>

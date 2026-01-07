@@ -6,6 +6,9 @@ import '../src/assets/main.css'
 
 import App from './App.vue'
 import router from './router'
+import { createI18n } from 'vue-i18n'
+import sk from './locales/sk.json'
+import en from './locales/en.json'
 
 
 const app = createApp(App)
@@ -22,6 +25,16 @@ const pinia = createPinia()
 app.use(pinia)
 app.use(router)
 .component("font-awesome-icon", FontAwesomeIcon)
+
+// Setup i18n
+const savedLang = localStorage.getItem('language') || 'sk'
+const i18n = createI18n({
+	legacy: false,
+	locale: savedLang,
+	fallbackLocale: 'sk',
+	messages: { sk, en }
+})
+app.use(i18n)
 
 // Preload server favorites once on app start when logged in to ensure
 // product cards can reflect favorite status immediately after refresh.
@@ -56,3 +69,13 @@ import { useUiStore } from './stores/uiStore'
 }
 
 app.mount('#app')
+
+// Listen for language switch events from UI and update i18n
+window.addEventListener('language-changed', (e: any) => {
+	try {
+		const lang = (e && e.detail && e.detail.language) || localStorage.getItem('language') || 'sk'
+		i18n.global.locale.value = lang
+	} catch (err) {
+		// ignore
+	}
+})

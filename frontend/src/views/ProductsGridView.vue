@@ -7,15 +7,17 @@
     <!-- Products Section -->
     <section class="flex-1 px-10 py-12">
       <!-- SORT BAR (Alza style) -->
-        <!-- BREADCRUMBS -->
-        <nav class="text-sm text-gray-600 dark:text-gray-300 mb-3 flex items-center gap-2">
-          <router-link to="/" class="hover:underline">Domov</router-link>
-          <span>/</span>
-          <span class="text-gray-900 dark:text-gray-100 font-semibold capitalize">{{ getCategoryLabel($route.params.catkey) }}</span>
-        </nav>
+      <!-- BREADCRUMBS -->
+      <nav class="text-sm text-gray-600 dark:text-gray-300 mb-3 flex items-center gap-2">
+        <router-link to="/" class="hover:underline">{{ $t('nav.home') }}</router-link>
+        <span>/</span>
+        <span class="text-gray-900 dark:text-gray-100 font-semibold capitalize">{{
+          getCategoryLabel($route.params.catkey)
+        }}</span>
+      </nav>
 
-        <div class="mb-6">
-        <p class="text-sm text-white mb-3">{{ products.length }} položiek</p>
+      <div class="mb-6">
+        <p class="text-sm text-white mb-3">{{ $t('products.items', { count: products.length }) }}</p>
 
         <div
           class="flex items-center gap-2 border-b border-gray-300 dark:border-gray-700 overflow-x-auto pb-2"
@@ -31,7 +33,7 @@
                 : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700',
             ]"
           >
-            {{ option.label }}
+            {{ $t('products.sort.' + option.value) }}
           </button>
         </div>
       </div>
@@ -101,18 +103,12 @@ export default {
     },
 
     getCategoryLabel(category) {
-      const categoryMap = {
-        phones: "Telefóny",
-        notebooks: "Notebooky",
-        tablets: "Tablety",
-        pocitace: "Počítače",
-        pcs: "Počítače",
-        accessories: "Príslušenstvo",
-        monitors: "Monitory",
-        peripherals: "Periférie",
-        mobily: "Mobily",
-      };
-      return categoryMap[category] || category || "Všetky";
+      if (!category) return this.$t('products.all');
+      const key = `categories.${category}`;
+      const translated = this.$t(key);
+      // If translation returns the key itself, fallback to category or 'all'
+      if (translated === key) return category || this.$t('products.all');
+      return translated;
     },
 
     addToCart(product) {
@@ -125,7 +121,7 @@ export default {
         description: product.description,
         quantity: 1,
       });
-      alert(`${product.title} pridané do košíka!`);
+      alert(this.$t('products.added_to_cart', { name: product.title }));
     },
 
     setSort(type) {

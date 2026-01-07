@@ -15,7 +15,6 @@
               cy="12"
               r="10"
               stroke="currentColor"
-              stroke-width="4"
             ></circle>
             <path
               class="opacity-75"
@@ -23,566 +22,342 @@
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-          <p class="mt-4 text-gray-600 dark:text-gray-400">Načítavam profil...</p>
+          <p class="mt-4 text-gray-600 dark:text-gray-400">{{ $t("profile.loading") }}</p>
         </div>
       </div>
 
-      <!-- Profile Content -->
-      <template v-else>
-        <!-- Success Message -->
-        <div
-          ref="messageContainer"
-          v-if="successMessage"
-          class="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4"
-        >
-          <div class="flex items-center gap-3">
-            <svg
-              class="w-6 h-6 text-green-600 dark:text-green-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <p class="text-sm text-green-800 dark:text-green-200">{{ successMessage }}</p>
-          </div>
+      <!-- Success Message -->
+      <div
+        v-if="successMessage"
+        ref="messageContainer"
+        class="mb-6 bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800 rounded-lg p-4"
+      >
+        <div class="flex items-center gap-3">
+          <svg
+            class="w-6 h-6 text-green-600 dark:text-green-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <p class="text-sm text-green-800 dark:text-green-200">{{ successMessage }}</p>
         </div>
+      </div>
 
-        <!-- Error Message -->
-        <div
-          ref="messageContainer"
-          v-if="errorMessage"
-          class="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4"
-        >
-          <div class="flex items-center gap-3">
-            <svg
-              class="w-6 h-6 text-red-600 dark:text-red-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <p class="text-sm text-red-800 dark:text-red-200">{{ errorMessage }}</p>
-          </div>
+      <!-- Error Message -->
+      <div
+        v-if="errorMessage"
+        ref="messageContainer"
+        class="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4"
+      >
+        <div class="flex items-center gap-3">
+          <svg
+            class="w-6 h-6 text-red-600 dark:text-red-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <p class="text-sm text-red-800 dark:text-red-200">{{ errorMessage }}</p>
         </div>
+      </div>
 
-        <!-- Profile Header -->
-        <div
-          class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 mb-6"
-        >
-          <div class="flex items-start gap-6">
-            <div class="relative">
-              <div
-                class="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold"
-              >
-                {{ getInitials(user.name) }}
-              </div>
-              <input
-                ref="avatarInput"
-                type="file"
-                accept="image/*"
-                @change="handleAvatarChange"
-                class="hidden"
-              />
-              <button
-                @click="$refs.avatarInput.click()"
-                class="absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-2 shadow-lg transition-colors"
-                title="Zmeniť avatar"
-              >
-                <svg
-                  class="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-                  />
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            <div class="flex-1">
-              <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-                {{ user.name }}
-              </h1>
-              <div class="flex items-center gap-2 mt-1">
-                <p class="text-gray-600 dark:text-gray-400">{{ user.email }}</p>
-                <span
-                  v-if="user.email_verified_at"
-                  class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800 rounded-full dark:bg-green-900 dark:text-green-200"
-                >
-                  Overené
-                </span>
-                <span
-                  v-else
-                  class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full dark:bg-yellow-900 dark:text-yellow-200"
-                >
-                  Neoverené
-                  <button
-                    @click="resendVerification"
-                    :disabled="verificationSent"
-                    class="ml-2 underline text-xs font-medium"
-                    :class="{
-                      'text-blue-700 dark:text-blue-300 cursor-pointer hover:text-blue-900 dark:hover:text-blue-200': !verificationSent,
-                      'text-gray-400 cursor-not-allowed': verificationSent,
-                    }"
-                    :title="
-                      verificationSent
-                        ? 'Email už bol odoslaný'
-                        : 'Znovu odoslať overovací email'
-                    "
-                  >
-                    {{ verificationSent ? "Odoslané!" : "Znovu odoslať" }}
-                  </button>
-                </span>
-              </div>
-
-              <div class="flex gap-2 mt-3">
-                <span
-                  class="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm font-medium rounded-full"
-                >
-                  {{ formatMemberSince(user.created_at) }}
-                </span>
-                <span
-                  class="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-sm font-medium rounded-full"
-                >
-                  {{ orders.length }} objednávok
-                </span>
-              </div>
-            </div>
-
-            <button
-              @click="toggleEditMode"
-              class="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg font-medium transition-colors"
-            >
-              {{ editMode ? "Zrušiť" : "Upraviť profil" }}
-            </button>
-          </div>
-        </div>
-
-        <!-- Profile Details -->
-        <div
-          class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8"
-        >
-          <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
-            Osobné údaje
-          </h2>
-
-          <form @submit.prevent="saveProfile">
-            <div class="space-y-6">
-              <!-- Name -->
-              <div>
-                <label
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >
-                  Meno a priezvisko *
-                </label>
-                <input
-                  v-model="formData.name"
-                  :disabled="!editMode"
-                  type="text"
-                  required
-                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                />
-              </div>
-
-              <!-- Email -->
-              <div>
-                <label
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >
-                  Email *
-                </label>
-                <input
-                  v-model="formData.email"
-                  :disabled="!editMode"
-                  type="email"
-                  required
-                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                />
-                <p v-if="editMode" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Po zmene emailu budete musieť potvrdiť novú adresu.
-                </p>
-              </div>
-
-              <!-- Phone -->
-              <div>
-                <label
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >
-                  Telefón
-                </label>
-
-                <!-- Edit Mode - Country code + input -->
-                <div v-if="editMode" class="flex gap-3">
-                  <select
-                    v-model="phoneCountryCode"
-                    class="py-3 px-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white w-32 focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option v-for="c in countries" :key="c.code" :value="c.code">
-                      {{ c.flag }} {{ c.code }}
-                    </option>
-                  </select>
-                  <input
-                    v-model="phoneNumber"
-                    @input="formatPhoneInput"
-                    type="tel"
-                    placeholder="912 345 678"
-                    class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-
-                <!-- Display Mode - Formatted phone -->
-                <input
-                  v-else
-                  :value="formattedPhoneDisplay"
-                  disabled
-                  type="text"
-                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white disabled:cursor-not-allowed"
-                />
-
-                <p
-                  v-if="editMode && phoneDigits > 0 && phoneDigits !== 9"
-                  class="text-red-500 text-sm mt-1"
-                >
-                  Telefón musí mať 9 číslic
-                </p>
-              </div>
-
-              <!-- Address -->
-              <div>
-                <label
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >
-                  Adresa
-                </label>
-                <input
-                  v-model="formData.address"
-                  :disabled="!editMode"
-                  type="text"
-                  placeholder="Hlavná 123"
-                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                />
-              </div>
-
-              <!-- City and ZIP -->
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                  >
-                    Mesto
-                  </label>
-                  <input
-                    v-model="formData.city"
-                    :disabled="!editMode"
-                    type="text"
-                    placeholder="Bratislava"
-                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
-                <div>
-                  <label
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                  >
-                    PSČ
-                  </label>
-                  <input
-                    v-model="formData.zip"
-                    :disabled="!editMode"
-                    type="text"
-                    placeholder="811 01"
-                    @input="formatZip"
-                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
-              </div>
-
-              <!-- Save Button -->
-              <div v-if="editMode" class="flex gap-3 pt-4">
-                <button
-                  type="submit"
-                  :disabled="isSaving"
-                  class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                >
-                  <svg
-                    v-if="isSaving"
-                    class="animate-spin h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      class="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      stroke-width="4"
-                    ></circle>
-                    <path
-                      class="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  {{ isSaving ? "Ukladám..." : "Uložiť zmeny" }}
-                </button>
-                <button
-                  type="button"
-                  @click="cancelEdit"
-                  :disabled="isSaving"
-                  class="px-6 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Zrušiť
-                </button>
-              </div>
-            </div>
-          </form>
-        </div>
-
-        <!-- Change Password Section -->
-        <div
-          class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 mt-6"
-        >
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white">Zmena hesla</h2>
-            <button
-              @click="sendPasswordResetEmail"
-              :disabled="isSendingResetLink"
-              class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium disabled:opacity-50"
-            >
-              {{ isSendingResetLink ? "Odosiela sa..." : "Zabudli ste heslo?" }}
-            </button>
-          </div>
-
-          <form @submit.prevent="changePassword">
-            <div class="space-y-6">
-              <div>
-                <label
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >
-                  Súčasné heslo
-                </label>
-                <input
-                  v-model="passwordForm.current_password"
-                  type="password"
-                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >
-                  Nové heslo
-                </label>
-                <input
-                  v-model="passwordForm.password"
-                  type="password"
-                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >
-                  Potvrdiť nové heslo
-                </label>
-                <input
-                  v-model="passwordForm.password_confirmation"
-                  type="password"
-                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <button
-                type="submit"
-                :disabled="isChangingPassword"
-                class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {{ isChangingPassword ? "Ukladám..." : "Zmeniť heslo" }}
-              </button>
-            </div>
-          </form>
-        </div>
-
-        <!-- Order History -->
-        <div
-          class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 mt-6"
-        >
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white">
-              História objednávok
-            </h2>
-            <router-link
-              to="/orders"
-              class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
-            >
-              Zobraziť všetky →
-            </router-link>
-          </div>
-
-          <div v-if="orders.length === 0" class="text-center py-8">
-            <svg
-              class="w-16 h-16 mx-auto text-gray-400 mb-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-              />
-            </svg>
-            <p class="text-gray-600 dark:text-gray-400">
-              Zatiaľ nemáte žiadne objednávky
-            </p>
-          </div>
-
-          <div v-else class="space-y-4">
+      <!-- Profile Header -->
+      <div
+        class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 mb-6"
+      >
+        <div class="flex items-start gap-6">
+          <div class="relative">
             <div
-              v-for="order in orders.slice(0, 5)"
-              :key="order.id"
-              class="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-              @click="goToOrder(order.id)"
+              class="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold"
             >
-              <div class="flex-1">
-                <div class="flex items-center gap-3">
-                  <span class="font-semibold text-gray-900 dark:text-white"
-                    >Objednávka #{{ order.id }}</span
-                  >
-                  <span
-                    class="px-2 py-1 text-xs font-medium rounded"
-                    :class="getStatusClass(order.status)"
-                  >
-                    {{ order.status }}
-                  </span>
-                </div>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  {{ formatDate(order.created_at) }}
-                </p>
-              </div>
-              <div class="text-right">
-                <p class="font-bold text-gray-900 dark:text-white">
-                  {{ formatPrice(order.total) }} €
-                </p>
-                <p
-                  class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 mt-1"
+              {{ getInitials(user.name) }}
+            </div>
+            <input
+              ref="avatarInput"
+              type="file"
+              accept="image/*"
+              @change="handleAvatarChange"
+              class="hidden"
+            />
+            <button
+              @click="$refs.avatarInput.click()"
+              class="absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-2 shadow-lg transition-colors"
+              :title="$t('profile.change_avatar')"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <div class="flex-1">
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+              {{ user.name }}
+            </h1>
+            <div class="flex items-center gap-2 mt-1">
+              <p class="text-gray-600 dark:text-gray-400">{{ user.email }}</p>
+              <span
+                v-if="user.email_verified_at"
+                class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800 rounded-full dark:bg-green-900 dark:text-green-200"
+                >{{ $t("profile.verified") }}</span
+              >
+              <span
+                v-else
+                class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full dark:bg-yellow-900 dark:text-yellow-200"
+              >
+                {{ $t("profile.unverified") }}
+                <button
+                  @click="resendVerification"
+                  :disabled="verificationSent"
+                  class="ml-2 underline text-xs font-medium"
+                  :class="{
+                    'text-blue-700 dark:text-blue-300 cursor-pointer hover:text-blue-900 dark:hover:text-blue-200': !verificationSent,
+                    'text-gray-400 cursor-not-allowed': verificationSent,
+                  }"
+                  :title="
+                    verificationSent
+                      ? $t('profile.verification_sent_title')
+                      : $t('profile.resend_verification_title')
+                  "
                 >
-                  Zobraziť detail →
-                </p>
-              </div>
+                  {{ verificationSent ? $t("profile.sent") : $t("profile.resend") }}
+                </button>
+              </span>
+            </div>
+
+            <div class="flex gap-2 mt-3">
+              <span
+                class="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm font-medium rounded-full"
+                >{{ formatMemberSince(user.created_at) }}</span
+              >
+              <span
+                class="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-sm font-medium rounded-full"
+                >{{ $t("profile.orders_count", { count: orders.length }) }}</span
+              >
             </div>
           </div>
-        </div>
-
-        <!-- Danger Zone - Delete Account -->
-        <div
-          class="bg-red-50 dark:bg-red-900/10 rounded-lg shadow-sm border-2 border-red-200 dark:border-red-800 p-8 mt-6"
-        >
-          <h2 class="text-xl font-bold text-red-900 dark:text-red-400 mb-2">
-            Nebezpečná zóna
-          </h2>
-          <p class="text-sm text-red-700 dark:text-red-300 mb-6">
-            Po zmazaní účtu stratíte prístup ku všetkým vašim údajom a objednávkam. Táto
-            akcia je <strong>nevratná</strong>.
-          </p>
 
           <button
-            @click="showDeleteConfirmation = true"
-            class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+            @click="toggleEditMode"
+            class="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg font-medium transition-colors"
           >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-              />
-            </svg>
-            Zmazať účet
+            {{ editMode ? $t("profile.cancel") : $t("profile.edit_profile") }}
           </button>
         </div>
+      </div>
 
-        <!-- Delete Confirmation Modal -->
-        <div
-          v-if="showDeleteConfirmation"
-          class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-          @click.self="showDeleteConfirmation = false"
-        >
-          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
-            <div class="flex items-start gap-4 mb-6">
-              <div
-                class="flex-shrink-0 w-12 h-12 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center"
+      <!-- Profile Details -->
+      <div
+        class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8"
+      >
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
+          {{ $t("profile.personal_info") }}
+        </h2>
+
+        <form @submit.prevent="saveProfile" novalidate>
+          <div class="space-y-6">
+            <!-- Name -->
+            <div>
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >{{ $t("profile.name_label") }}
+                <span v-if="editMode" class="text-red-600 dark:text-red-400"
+                  >*</span
+                ></label
               >
-                <svg
-                  class="w-6 h-6 text-red-600 dark:text-red-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              <input
+                v-model="formData.name"
+                :disabled="!editMode"
+                type="text"
+                :aria-invalid="!!fieldErrors.name"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
+              />
+              <Transition name="slideDown">
+                <p
+                  v-if="fieldErrors.name"
+                  class="text-sm text-red-600 mt-2 flex items-center gap-2 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-md border border-red-200 dark:border-red-800"
                 >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                  />
-                </svg>
-              </div>
-              <div class="flex-1">
-                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">
-                  Naozaj chcete zmazať účet?
-                </h3>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  Táto akcia je nevratná. Všetky vaše údaje, objednávky a história budú
-                  permanentne zmazané.
-                </p>
-
-                <div class="mb-4">
-                  <label
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  <svg
+                    class="w-4 h-4 flex-shrink-0"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
                   >
-                    Pre potvrdenie zadajte svoje heslo:
-                  </label>
-                  <input
-                    v-model="deleteAccountPassword"
-                    type="password"
-                    placeholder="Vaše heslo"
-                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                  />
-                </div>
+                    <path
+                      fill-rule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                      clip-rule="evenodd"
+                    ></path>
+                  </svg>
+                  {{ fieldErrors.name }}
+                </p>
+              </Transition>
+            </div>
+
+            <!-- Email -->
+            <div>
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >{{ $t("profile.email_label") }}
+                <span v-if="editMode" class="text-red-600 dark:text-red-400"
+                  >*</span
+                ></label
+              >
+              <input
+                v-model="formData.email"
+                :disabled="!editMode"
+                type="email"
+                :aria-invalid="!!fieldErrors.email"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
+              />
+              <Transition name="slideDown">
+                <p
+                  v-if="fieldErrors.email"
+                  class="text-sm text-red-600 mt-2 flex items-center gap-2 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-md border border-red-200 dark:border-red-800"
+                >
+                  <svg
+                    class="w-4 h-4 flex-shrink-0"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                      clip-rule="evenodd"
+                    ></path>
+                  </svg>
+                  {{ fieldErrors.email }}
+                </p>
+              </Transition>
+              <p v-if="editMode" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {{ $t("profile.email_change_note") }}
+              </p>
+            </div>
+
+            <!-- Phone -->
+            <div>
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >{{ $t("profile.phone_label") }}
+                <span v-if="editMode" class="text-red-600 dark:text-red-400"
+                  >*</span
+                ></label
+              >
+
+              <!-- Edit Mode - Country code + input -->
+              <div v-if="editMode" class="flex gap-3">
+                <select
+                  v-model="phoneCountryCode"
+                  class="py-3 px-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white w-32 focus:ring-2 focus:ring-blue-500"
+                >
+                  <option v-for="c in countries" :key="c.code" :value="c.code">
+                    {{ c.flag }} {{ c.code }}
+                  </option>
+                </select>
+                <input
+                  v-model="phoneNumber"
+                  @input="formatPhoneInput"
+                  type="tel"
+                  :placeholder="$t('profile.phone_placeholder')"
+                  class="flex px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <!-- Display Mode - Formatted phone -->
+              <input
+                v-else
+                :value="formattedPhoneDisplay"
+                disabled
+                type="text"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white disabled:cursor-not-allowed"
+              />
+
+              <p
+                v-if="editMode && phoneDigits > 0 && phoneDigits !== 9"
+                class="text-red-500 text-sm mt-1"
+              >
+                {{ $t("profile.validation.phone_digits") }}
+              </p>
+            </div>
+
+            <!-- Address -->
+            <div>
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >{{ $t("profile.address_label") }}</label
+              >
+              <input
+                v-model="formData.address"
+                :disabled="!editMode"
+                type="text"
+                :placeholder="$t('profile.address_placeholder')"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
+              />
+            </div>
+
+            <!-- City and ZIP -->
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >{{ $t("profile.city_label") }}</label
+                >
+                <input
+                  v-model="formData.city"
+                  :disabled="!editMode"
+                  type="text"
+                  placeholder="Bratislava"
+                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
+                />
+              </div>
+              <div>
+                <label
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >{{ $t("profile.zip_label") }}</label
+                >
+                <input
+                  v-model="formData.zip"
+                  :disabled="!editMode"
+                  type="text"
+                  :placeholder="$t('profile.zip_placeholder')"
+                  @input="formatZip"
+                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
+                />
               </div>
             </div>
 
-            <div class="flex gap-3">
+            <!-- Save Button -->
+            <div v-if="editMode" class="flex gap-3 pt-4">
               <button
-                @click="deleteAccount"
-                :disabled="isDeletingAccount || !deleteAccountPassword"
-                class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                type="submit"
+                :disabled="isSaving"
+                class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 <svg
-                  v-if="isDeletingAccount"
+                  v-if="isSaving"
                   class="animate-spin h-5 w-5"
                   fill="none"
                   viewBox="0 0 24 24"
@@ -601,22 +376,276 @@
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   ></path>
                 </svg>
-                {{ isDeletingAccount ? "Mažem..." : "Áno, zmazať účet" }}
+                {{ isSaving ? $t("profile.saving") : $t("profile.save_changes") }}
               </button>
               <button
-                @click="
-                  showDeleteConfirmation = false;
-                  deleteAccountPassword = '';
-                "
-                :disabled="isDeletingAccount"
-                class="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+                type="button"
+                @click="cancelEdit"
+                :disabled="isSaving"
+                class="px-6 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Zrušiť
+                {{ $t("profile.cancel") }}
               </button>
             </div>
           </div>
+        </form>
+      </div>
+
+      <!-- Change Password Section -->
+      <div
+        class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 mt-6"
+      >
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+            {{ $t("profile.change_password_title") }}
+          </h2>
+          <button
+            @click="sendPasswordResetEmail"
+            :disabled="isSendingResetLink"
+            class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium disabled:opacity-50"
+          >
+            {{
+              isSendingResetLink ? $t("profile.sending") : $t("profile.forgot_password")
+            }}
+          </button>
         </div>
-      </template>
+
+        <form @submit.prevent="changePassword">
+          <div class="space-y-6">
+            <div>
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >{{ $t("profile.current_password_label") }}</label
+              >
+              <input
+                v-model="passwordForm.current_password"
+                type="password"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >{{ $t("profile.new_password_label") }}</label
+              >
+              <input
+                v-model="passwordForm.password"
+                type="password"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >{{ $t("profile.confirm_password_label") }}</label
+              >
+              <input
+                v-model="passwordForm.password_confirmation"
+                type="password"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            <button
+              type="submit"
+              :disabled="isChangingPassword"
+              class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {{
+                isChangingPassword
+                  ? $t("profile.saving")
+                  : $t("profile.change_password_button")
+              }}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Order History -->
+      <div
+        class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 mt-6"
+      >
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+            {{ $t("profile.order_history") }}
+          </h2>
+          <router-link
+            to="/orders"
+            class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+            >{{ $t("profile.view_all") }}</router-link
+          >
+        </div>
+
+        <div v-if="orders.length === 0" class="text-center py-8">
+          <svg
+            class="w-16 h-16 mx-auto text-gray-400 mb-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+            />
+          </svg>
+          <p class="text-gray-600 dark:text-gray-400">{{ $t("profile.no_orders") }}</p>
+        </div>
+
+        <div v-else class="space-y-4">
+          <div
+            v-for="order in orders.slice(0, 5)"
+            :key="order.id"
+            class="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+            @click="goToOrder(order.id)"
+          >
+            <div class="flex-1">
+              <div class="flex items-center gap-3">
+                <span class="font-semibold text-gray-900 dark:text-white">{{
+                  $t("profile.order_number", { id: order.id })
+                }}</span>
+                <span
+                  class="px-2 py-1 text-xs font-medium rounded"
+                  :class="getStatusClass(order.status)"
+                  >{{ order.status }}</span
+                >
+              </div>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                {{ formatDate(order.created_at) }}
+              </p>
+            </div>
+            <div class="text-right">
+              <p class="font-bold text-gray-900 dark:text-white">
+                {{ formatPrice(order.total) }} €
+              </p>
+              <p
+                class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 mt-1"
+              >
+                {{ $t("profile.view_detail") }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danger Zone - Delete Account -->
+      <div
+        class="bg-red-50 dark:bg-red-900/10 rounded-lg shadow-sm border-2 border-red-200 dark:border-red-800 p-8 mt-6"
+      >
+        <h2 class="text-xl font-bold text-red-900 dark:text-red-400 mb-2">
+          {{ $t("profile.danger_zone_title") }}
+        </h2>
+        <p
+          class="text-sm text-red-700 dark:text-red-300 mb-6"
+          v-html="$t('profile.danger_zone_desc_html')"
+        ></p>
+
+        <button
+          @click="showDeleteConfirmation = true"
+          class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+            />
+          </svg>
+          {{ $t("profile.delete_confirm_button") }}
+        </button>
+      </div>
+
+      <!-- Delete Confirmation Modal -->
+      <div
+        v-if="showDeleteConfirmation"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+        @click.self="showDeleteConfirmation = false"
+      >
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+          <div class="flex items-start gap-4 mb-6">
+            <div
+              class="flex-shrink-0 w-12 h-12 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center"
+            >
+              <svg
+                class="w-6 h-6 text-red-600 dark:text-red-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                {{ $t("profile.delete_confirm_title") }}
+              </h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                {{ $t("profile.delete_confirm_desc") }}
+              </p>
+
+              <div class="mb-4">
+                <label
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >{{ $t("profile.confirm_delete_password_label") }}</label
+                >
+                <input
+                  v-model="deleteAccountPassword"
+                  type="password"
+                  :placeholder="$t('profile.password_placeholder')"
+                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-3">
+            <button
+              @click="deleteAccount"
+              :disabled="isDeletingAccount || !deleteAccountPassword"
+              class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              <svg
+                v-if="isDeletingAccount"
+                class="animate-spin h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+              {{
+                isDeletingAccount
+                  ? $t("profile.deleting")
+                  : $t("profile.delete_confirm_button")
+              }}
+            </button>
+            <button
+              @click="(showDeleteConfirmation = false), (deleteAccountPassword = '')"
+              :disabled="isDeletingAccount"
+              class="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+            >
+              {{ $t("profile.cancel") }}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -661,6 +690,11 @@ export default {
         current_password: "",
         password: "",
         password_confirmation: "",
+      },
+      fieldErrors: {
+        name: null,
+        email: null,
+        phone: null,
       },
       orders: [],
       showDeleteConfirmation: false,
@@ -736,7 +770,7 @@ export default {
         }
       } catch (error) {
         console.error("Error loading user data:", error);
-        this.errorMessage = "Nepodarilo sa načítať údaje profilu.";
+        this.errorMessage = this.$t("profile.load_failed");
         throw error; // Re-throw so mounted() can handle redirect
       } finally {
         this.loading = false;
@@ -747,14 +781,14 @@ export default {
       this.verificationSent = true;
       try {
         await api.post("/api/email/verification-notification", {});
-        this.successMessage = "Overovací email bol znovu odoslaný.";
+        this.successMessage = this.$t("profile.verification_resent");
         // Reset "Odoslané" po 8 sekundách
         this.resendTimeout = setTimeout(() => {
           this.verificationSent = false;
         }, 8000);
       } catch (error) {
         this.errorMessage =
-          error.response?.data?.message || "Nepodarilo sa odoslať overenie.";
+          error.response?.data?.message || this.$t("profile.verification_failed");
         this.verificationSent = false;
       }
     },
@@ -808,16 +842,55 @@ export default {
     async saveProfile() {
       if (this.isSaving) return;
 
-      // Client-side plausibility check for email
-      if (!this.isValidEmail(this.formData.email)) {
-        this.errorMessage = "Neplatný email.";
+      // Clear prior field errors
+      this.fieldErrors = {
+        name: null,
+        email: null,
+        subject: null,
+        message: null,
+        phone: null,
+      };
+
+      // Required fields: name and email always, phone when editing
+      if (!this.formData.name || !this.formData.name.trim()) {
+        this.fieldErrors.name = this.$t("profile.validation.required_field", {
+          field: this.$t("profile.name_label"),
+        });
+        this.errorMessage = this.fieldErrors.name;
         this.scrollToMessages();
         return;
       }
 
-      if (this.phoneNumber && this.phoneDigits !== 9) {
-        this.errorMessage = "Telefón musí mať presne 9 číslic.";
+      if (!this.formData.email || !this.formData.email.trim()) {
+        this.fieldErrors.email = this.$t("profile.validation.required_field", {
+          field: this.$t("profile.email_label"),
+        });
+        this.errorMessage = this.fieldErrors.email;
+        this.scrollToMessages();
         return;
+      }
+
+      // Client-side plausibility check for email
+      if (!this.isValidEmail(this.formData.email)) {
+        this.fieldErrors.email = this.$t("profile.validation.email_invalid");
+        this.errorMessage = this.fieldErrors.email;
+        this.scrollToMessages();
+        return;
+      }
+
+      if (this.editMode) {
+        if (!this.phoneNumber || !this.phoneNumber.trim()) {
+          this.fieldErrors.phone = this.$t("profile.validation.phone_required");
+          this.errorMessage = this.fieldErrors.phone;
+          this.scrollToMessages();
+          return;
+        }
+        if (this.phoneDigits !== 9) {
+          this.fieldErrors.phone = this.$t("profile.validation.phone_digits");
+          this.errorMessage = this.fieldErrors.phone;
+          this.scrollToMessages();
+          return;
+        }
       }
 
       this.isSaving = true;
@@ -842,7 +915,7 @@ export default {
         localStorage.setItem("user", JSON.stringify(this.user));
         window.dispatchEvent(new Event("user-logged-in"));
 
-        this.successMessage = "Profil bol úspešne aktualizovaný!";
+        this.successMessage = this.$t("profile.save_success");
         this.editMode = false;
         this.originalFormData = null;
         this.scrollToMessages();
@@ -859,7 +932,7 @@ export default {
           this.errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
         } else {
           this.errorMessage =
-            error.response?.data?.message || "Nepodarilo sa uložiť zmeny.";
+            error.response?.data?.message || this.$t("profile.save_failed");
         }
       } finally {
         this.isSaving = false;
@@ -881,23 +954,23 @@ export default {
         !this.passwordForm.password ||
         !this.passwordForm.password_confirmation
       ) {
-        this.errorMessage = "Všetky polia hesla sú povinné.";
+        this.errorMessage = this.$t("profile.validation.password_fields_required");
         return;
       }
 
       if (this.passwordForm.password !== this.passwordForm.password_confirmation) {
-        this.errorMessage = "Nové heslá sa nezhodujú.";
+        this.errorMessage = this.$t("profile.validation.passwords_mismatch");
         this.scrollToMessages();
         return;
       }
 
       if (this.passwordForm.password.length < 8) {
-        this.errorMessage = "Heslo musí mať aspoň 8 znakov.";
+        this.errorMessage = this.$t("profile.validation.password_min_length", { min: 8 });
         this.scrollToMessages();
         return;
       }
       if (this.passwordForm.current_password === this.passwordForm.password) {
-        this.errorMessage = "Nové heslo nesmie byť rovnaké ako aktuálne heslo.";
+        this.errorMessage = this.$t("profile.validation.password_same_as_current");
         this.scrollToMessages();
         return;
       }
@@ -910,7 +983,7 @@ export default {
         // Laravel Breeze API endpoint pre zmenu hesla
         await api.put("/api/user/password", this.passwordForm);
 
-        this.successMessage = "Heslo bolo úspešne zmenené!";
+        this.successMessage = this.$t("profile.password_changed");
         this.scrollToMessages();
 
         this.passwordForm = {
@@ -931,7 +1004,7 @@ export default {
           this.errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
         } else {
           this.errorMessage =
-            error.response?.data?.message || "Nepodarilo sa zmeniť heslo.";
+            error.response?.data?.message || this.$t("profile.password_change_failed");
         }
         this.scrollToMessages();
       } finally {
@@ -951,7 +1024,7 @@ export default {
           email: this.user.email,
         });
 
-        this.successMessage = "Link na resetovanie hesla bol odoslaný na váš email!";
+        this.successMessage = this.$t("profile.reset_link_sent");
         this.scrollToMessages();
 
         setTimeout(() => {
@@ -966,7 +1039,7 @@ export default {
           this.errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
         } else {
           this.errorMessage =
-            error.response?.data?.message || "Nepodarilo sa odoslať reset link.";
+            error.response?.data?.message || this.$t("profile.reset_link_failed");
         }
         this.scrollToMessages();
       } finally {
@@ -995,7 +1068,7 @@ export default {
         window.dispatchEvent(new Event("user-logged-out"));
 
         // Zobraz success správu
-        alert("Váš účet bol úspešne zmazaný.");
+        alert(this.$t("profile.account_deleted"));
 
         // Presmeruj na homepage
         this.$router.push("/");
@@ -1010,10 +1083,10 @@ export default {
           const firstError = Object.values(errors)[0];
           this.errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
         } else if (error.response?.status === 403) {
-          this.errorMessage = "Nesprávne heslo.";
+          this.errorMessage = this.$t("profile.invalid_password");
         } else {
           this.errorMessage =
-            error.response?.data?.message || "Nepodarilo sa zmazať účet.";
+            error.response?.data?.message || this.$t("profile.delete_failed");
         }
 
         this.scrollToMessages();
@@ -1039,11 +1112,11 @@ export default {
       return name.substring(0, 2).toUpperCase();
     },
     formatMemberSince(date) {
-      if (!date) return "Člen od ...";
+      if (!date) return this.$t("profile.member_since_unknown");
       const d = new Date(date);
       const year = d.getFullYear();
       const month = d.getMonth() + 1;
-      return `Člen od ${month}/${year}`;
+      return this.$t("profile.member_since", { month, year });
     },
     formatDate(date) {
       if (!date) return "";

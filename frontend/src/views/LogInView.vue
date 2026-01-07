@@ -12,8 +12,8 @@
             />
           </svg>
         </div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Vitajte späť</h1>
-        <p class="text-gray-600 dark:text-gray-400 mt-2">Prihláste sa do svojho účtu</p>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{$t('auth.login.title')}}</h1>
+        <p class="text-gray-600 dark:text-gray-400 mt-2">{{$t('auth.login.subtitle')}}</p>
       </div>
 
       <!-- Login Form -->
@@ -27,7 +27,7 @@
               for="email"
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Email
+              {{$t('auth.login.email_label')}}
             </label>
             <div class="relative">
               <div
@@ -52,7 +52,7 @@
                 v-model="form.email"
                 type="text"
                 @input="fieldErrors.email = null"
-                placeholder="vas.email@priklad.sk"
+                :placeholder="$t('auth.login.email_placeholder')"
                 :disabled="isSubmitting"
                 class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               />
@@ -66,7 +66,7 @@
               for="password"
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Heslo
+              {{$t('auth.login.password_label')}}
             </label>
             <div class="relative">
               <div
@@ -91,7 +91,7 @@
                 v-model="form.password"
                 :type="showPassword ? 'text' : 'password'"
                 @input="fieldErrors.password = null"
-                placeholder="••••••••"
+                :placeholder="$t('auth.login.password_placeholder')"
                 :disabled="isSubmitting"
                 class="w-full pl-10 pr-12 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               />
@@ -146,7 +146,7 @@
               to="/password-reset"
               class="text-sm text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium"
             >
-              Zabudli ste heslo?
+              {{$t('auth.login.forgot_password')}}
             </router-link>
           </div>
 
@@ -220,9 +220,9 @@
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              Prihlasovanie...
+              {{$t('auth.login.submitting')}}
             </span>
-            <span v-else>Prihlásiť sa</span>
+            <span v-else>{{$t('auth.login.submit')}}</span>
           </button>
         </form>
 
@@ -233,19 +233,19 @@
           </div>
           <div class="relative flex justify-center text-sm">
             <span class="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-              Alebo pokračujte s
+              {{$t('auth.login.or_continue')}}
             </span>
           </div>
         </div>
 
         <!-- Sign Up Link -->
         <p class="text-center text-sm text-gray-600 dark:text-gray-400 mt-6">
-          Nemáte účet?
+          {{$t('auth.login.no_account')}}
           <router-link
             to="/register"
             class="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 font-semibold"
           >
-            Zaregistrujte sa
+            {{$t('auth.login.sign_up')}}
           </router-link>
         </p>
       </div>
@@ -278,7 +278,7 @@ export default {
     // Show success banner if redirected after email verification
     const q = this.$route.query;
     if (q && (q.verified === "1" || q.verified === "true")) {
-      this.verifiedMessage = "Email bol overený. Teraz sa môžete prihlásiť.";
+      this.verifiedMessage = this.$t('auth.login.verified_message');
     }
 
     this.$nextTick(() => {
