@@ -1,9 +1,7 @@
 <template>
-  <div class="flex bg-gray-100 dark:bg-gray-900 min-h-screen">
+  <div class="page-admin-bg">
     <!-- Sidebar -->
-    <aside
-      class="w-64 bg-white dark:bg-gray-800 shadow-lg h-full min-h-screen overflow-y-auto"
-    >
+    <aside class="w-64 bg-white dark:bg-gray-800 shadow-lg h-auto">
       <div class="p-6">
         <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">Admin Panel</h2>
         <nav class="space-y-2">
@@ -161,7 +159,7 @@
           <button
             @click="fetchUsers"
             :disabled="usersLoading"
-            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+            class="px-4 py-2 btn-danger text-sm disabled:opacity-50"
           >
             {{ usersLoading ? "Načítava sa..." : "Skúsiť znovu" }}
           </button>
@@ -176,10 +174,7 @@
             <strong>Poznámka:</strong> Žiadni používatelia sa nenachádzajú. Skontrolujte,
             že ste prihlásený/á a že máte oprávnenia na prístup k administrácii.
           </p>
-          <button
-            @click="fetchUsers"
-            class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg text-sm font-medium transition-colors"
-          >
+          <button @click="fetchUsers" class="px-4 py-2 btn-warning text-sm">
             Skúsiť znovu
           </button>
         </div>
@@ -227,28 +222,49 @@
             <div class="flex gap-2">
               <button
                 @click="editUser(user)"
-                class="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors"
+                class="flex-1 px-4 py-2 btn-primary text-sm rounded-lg"
                 :disabled="currentUser.role === 'admin' && user.role === 'owner'"
-                :title="currentUser.role === 'admin' && user.role === 'owner' ? 'Nemôžete upravovať Owner účet' : ''"
-                :class="{ 'opacity-50 cursor-not-allowed': currentUser.role === 'admin' && user.role === 'owner' }"
+                :title="
+                  currentUser.role === 'admin' && user.role === 'owner'
+                    ? 'Nemôžete upravovať Owner účet'
+                    : ''
+                "
+                :class="{
+                  'opacity-50 cursor-not-allowed':
+                    currentUser.role === 'admin' && user.role === 'owner',
+                }"
               >
                 Upraviť
               </button>
               <button
                 @click="resetUserPassword(user.id)"
-                class="flex-1 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg text-sm font-medium transition-colors"
+                class="flex-1 px-4 py-2 btn-warning text-sm rounded-lg"
                 :disabled="currentUser.role === 'admin' && user.role === 'owner'"
-                :title="currentUser.role === 'admin' && user.role === 'owner' ? 'Nemôžete resetovať heslo Owner účtu' : ''"
-                :class="{ 'opacity-50 cursor-not-allowed': currentUser.role === 'admin' && user.role === 'owner' }"
+                :title="
+                  currentUser.role === 'admin' && user.role === 'owner'
+                    ? 'Nemôžete resetovať heslo Owner účtu'
+                    : ''
+                "
+                :class="{
+                  'opacity-50 cursor-not-allowed':
+                    currentUser.role === 'admin' && user.role === 'owner',
+                }"
               >
                 Reset hesla
               </button>
               <button
                 @click="deleteUser(user.id)"
-                class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-colors"
+                class="flex-1 px-4 py-2 btn-danger text-sm rounded-lg"
                 :disabled="currentUser.role === 'admin' && user.role === 'owner'"
-                :title="currentUser.role === 'admin' && user.role === 'owner' ? 'Nemôžete vymazať Owner účet' : ''"
-                :class="{ 'opacity-50 cursor-not-allowed': currentUser.role === 'admin' && user.role === 'owner' }"
+                :title="
+                  currentUser.role === 'admin' && user.role === 'owner'
+                    ? 'Nemôžete vymazať Owner účet'
+                    : ''
+                "
+                :class="{
+                  'opacity-50 cursor-not-allowed':
+                    currentUser.role === 'admin' && user.role === 'owner',
+                }"
               >
                 Vymazať
               </button>
@@ -268,8 +284,11 @@
             class="flex-1 mr-4 px-4 py-2 bg-white dark:bg-gray-800 text-gray-800 dark:text-white rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
           <button
-            @click="showAddProduct = true"
-            class="px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg transition-all"
+            @click="
+              showAddProduct = true;
+              resetProductForm();
+            "
+            class="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium hover:shadow-lg transition-all"
           >
             + Pridať produkt
           </button>
@@ -280,38 +299,24 @@
           <div
             v-for="product in filteredProducts"
             :key="product.id"
-            class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+            class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow flex flex-col"
           >
-            <img
-              :src="product.image"
-              :alt="product.name"
-              class="w-full h-48 object-cover"
+            <ProductCard
+              :product="product"
+              :show-actions="false"
+              :show-favorite="false"
             />
-            <div class="p-4">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                {{ product.name }}
-              </h3>
-              <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                {{ product.brand }}
-              </p>
-              <div class="flex justify-between items-center mb-4">
-                <span class="text-2xl font-bold text-gray-900 dark:text-white"
-                  >{{ product.price }} €</span
-                >
-                <span class="text-sm text-gray-600 dark:text-gray-400"
-                  >Sklad: {{ product.stock }}</span
-                >
-              </div>
+            <div class="p-4 mt-auto">
               <div class="flex gap-2">
                 <button
                   @click="editProduct(product)"
-                  class="flex-1 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-sm font-medium transition-colors"
+                  class="flex-1 px-4 py-2 btn-primary text-sm rounded-lg"
                 >
                   Upraviť
                 </button>
                 <button
                   @click="deleteProduct(product.id)"
-                  class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-colors"
+                  class="flex-1 px-4 py-2 btn-danger text-sm rounded-lg"
                 >
                   Vymazať
                 </button>
@@ -540,7 +545,9 @@
 
           <!-- Password: owners get manual set + generate; admins get generate-only -->
           <div v-if="currentUser.role === 'owner'">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
               Nastaviť heslo
             </label>
             <input
@@ -570,7 +577,9 @@
           </div>
 
           <div v-else-if="currentUser.role === 'admin'">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
               Generovať heslo
             </label>
             <div class="flex gap-3 mt-3">
@@ -658,14 +667,326 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal for Add/Edit Product -->
+    <transition name="modal">
+      <div
+        v-if="showAddProduct || editingProduct"
+        class="fixed inset-0 backdrop-blur-lg flex items-center justify-center z-50"
+      >
+        <div
+          class="modal-content bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+          @click.stop
+        >
+          <div class="flex justify-between items-center mb-8">
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white">
+              {{ editingProduct ? "Upraviť produkt" : "Pridať nový produkt" }}
+            </h2>
+            <button
+              type="button"
+              @click="
+                showAddProduct = false;
+                editingProduct = null;
+              "
+              class="text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+            >
+              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                ></path>
+              </svg>
+            </button>
+          </div>
+          <form @submit.prevent="saveProduct" class="space-y-6">
+            <!-- Name -->
+            <div>
+              <label
+                class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
+              >
+                Názov
+              </label>
+              <input
+                v-model="currentProduct.name"
+                type="text"
+                placeholder="Názov produktu"
+                required
+                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
+
+            <!-- Brand -->
+            <div>
+              <label
+                class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
+              >
+                Značka
+              </label>
+              <input
+                v-model="currentProduct.brand"
+                type="text"
+                placeholder="Značka produktu"
+                required
+                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
+
+            <!-- Category -->
+            <div>
+              <label
+                class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
+              >
+                Kategória
+              </label>
+              <select
+                v-model="currentProduct.category"
+                required
+                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              >
+                <option value="">-- Vyberte kategóriu --</option>
+                <option v-for="cat in uniqueCategories" :key="cat" :value="cat">
+                  {{ cat }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Pricing Section -->
+            <div class="border-t border-gray-300 dark:border-gray-600 pt-6 mt-6">
+              <h3 class="text-base font-bold text-gray-900 dark:text-white mb-5">
+                Ceny a zľavy
+              </h3>
+
+              <!-- Current Status Summary -->
+              <div
+                v-if="editingProduct && originalProduct"
+                class="bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg p-4 mb-5"
+              >
+                <div
+                  v-if="originalProduct.discount_value > 0"
+                  class="grid grid-cols-3 gap-4 text-sm"
+                >
+                  <div>
+                    <p class="text-blue-600 dark:text-blue-300 font-semibold">
+                      Aktuálna cena
+                    </p>
+                    <p class="text-lg font-bold text-blue-900 dark:text-blue-100">
+                      {{ originalProduct.oldPrice }}€
+                    </p>
+                  </div>
+                  <div>
+                    <p class="text-blue-600 dark:text-blue-300 font-semibold">Zľava</p>
+                    <p class="text-lg font-bold text-blue-900 dark:text-blue-100">
+                      {{ originalProduct.discount_value
+                      }}{{ originalProduct.discount_type === "percent" ? "%" : "€" }}
+                    </p>
+                  </div>
+                  <div>
+                    <p class="text-blue-600 dark:text-blue-300 font-semibold">
+                      Finálna cena
+                    </p>
+                    <p class="text-lg font-bold text-blue-900 dark:text-blue-100">
+                      {{ originalProduct.price }}€
+                    </p>
+                  </div>
+                </div>
+                <div v-else class="flex items-center justify-between">
+                  <div>
+                    <p class="text-blue-600 dark:text-blue-300 font-semibold mb-2">
+                      Aktuálna cena
+                    </p>
+                    <p class="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                      {{ originalProduct.oldPrice }}€
+                    </p>
+                  </div>
+                  <div
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900 border border-green-300 dark:border-green-700 rounded-lg"
+                  >
+                    <span class="text-green-700 dark:text-green-200 font-semibold"
+                      >✓ Bez zľavy</span
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <!-- Base Price Input -->
+              <div class="mb-5">
+                <label
+                  class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
+                >
+                  Aktuálna cena (€) *
+                </label>
+                <input
+                  v-model.number="currentProduct.oldPrice"
+                  type="number"
+                  step="1.00"
+                  placeholder="0.00"
+                  required
+                  class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+
+              <!-- Discount Controls -->
+              <div class="grid grid-cols-3 gap-6 mb-5">
+                <div>
+                  <label
+                    class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    Typ zľavy
+                  </label>
+                  <select
+                    v-model="currentProduct.discount_type"
+                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  >
+                    <option value="percent">Percento (%)</option>
+                    <option value="fixed">Fixná suma (€)</option>
+                  </select>
+                </div>
+                <div>
+                  <label
+                    class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    Veľkosť zľavy
+                    <span
+                      v-if="currentProduct.discount_value > 0"
+                      class="text-indigo-600 dark:text-indigo-400 font-bold"
+                    >
+                      {{ currentProduct.discount_value
+                      }}{{ currentProduct.discount_type === "percent" ? "%" : "€" }}
+                    </span>
+                  </label>
+                  <input
+                    v-model.number="currentProduct.discount_value"
+                    type="number"
+                    step="1.00"
+                    min="0"
+                    placeholder="0"
+                    :max="currentProduct.discount_type === 'percent' ? 100 : undefined"
+                    @input="clampDiscountValue"
+                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-lg"
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    Finálna cena
+                  </label>
+                  <div
+                    class="w-full px-4 py-3 border border-indigo-300 dark:border-indigo-600 rounded-lg bg-indigo-50 dark:bg-indigo-900 text-indigo-900 dark:text-indigo-100 text-lg font-bold"
+                  >
+                    {{ calculateFinalPrice() }}€
+                  </div>
+                  <p
+                    v-if="currentProduct.discount_value > 0"
+                    class="text-xs text-gray-600 dark:text-gray-400 mt-2"
+                  >
+                    Zľava: {{ getDiscountAmount() }}€
+                  </p>
+                </div>
+              </div>
+
+              <button
+                v-if="currentProduct.discount_value > 0"
+                type="button"
+                @click="removeDiscount"
+                class="text-sm font-medium px-4 py-2 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded-lg hover:bg-red-200 dark:hover:bg-red-800 transition-colors"
+              >
+                Odstrániť zľavu
+              </button>
+            </div>
+
+            <!-- Stock -->
+            <div>
+              <label
+                class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
+              >
+                Sklad (ks) *
+              </label>
+              <input
+                v-model.number="currentProduct.stock"
+                type="number"
+                placeholder="0"
+                required
+                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
+
+            <!-- Image URL -->
+            <div>
+              <label
+                class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
+              >
+                URL obrázka
+              </label>
+              <input
+                v-model="currentProduct.image"
+                type="url"
+                placeholder="https://example.com/image.jpg"
+                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
+
+            <!-- Description -->
+            <div>
+              <label
+                class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
+              >
+                Popis
+              </label>
+              <textarea
+                v-model="currentProduct.description"
+                placeholder="Podrobný popis produktu..."
+                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                rows="4"
+              ></textarea>
+            </div>
+
+            <!-- Buttons -->
+            <div
+              class="flex gap-4 mt-8 pt-6 border-t border-gray-300 dark:border-gray-600"
+            >
+              <button
+                type="submit"
+                :disabled="productSaving"
+                class="flex-1 btn-primary text-white rounded-lg font-semibold hover:shadow-lg transition-all disabled:opacity-50"
+              >
+                {{
+                  productSaving
+                    ? "Ukladá sa..."
+                    : editingProduct
+                    ? "Uložiť zmeny"
+                    : "Pridať produkt"
+                }}
+              </button>
+              <button
+                type="button"
+                @click="
+                  showAddProduct = false;
+                  editingProduct = null;
+                "
+                class="flex-1 px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg font-semibold hover:shadow-lg transition-all"
+              >
+                Zrušiť
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script>
 import api from "@/api.ts";
+import ProductCard from "@/components/ProductCard.vue";
 
 export default {
   name: "AdminView",
+  components: {
+    ProductCard,
+  },
   data() {
     return {
       activeTab: "stats",
@@ -682,6 +1003,21 @@ export default {
       generatedPassword: "",
       showGeneratedPassword: false,
       showPasswordConfirmation: false,
+      editingProduct: null,
+      currentProduct: {
+        name: "",
+        brand: "",
+        category: "",
+        price: 0,
+        oldPrice: null,
+        stock: 0,
+        image: "",
+        description: "",
+        discount_type: "percent",
+        discount_value: 0,
+      },
+      originalProduct: null,
+      productSaving: false,
       currentUser: JSON.parse(localStorage.getItem("user") || "{}"),
 
       allTabs: [
@@ -817,44 +1153,7 @@ export default {
 
       users: [],
 
-      products: [
-        {
-          id: 1,
-          name: "iPhone 15 Pro",
-          brand: "Apple",
-          price: 1299,
-          stock: 10,
-          image:
-            "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600&q=80",
-        },
-        {
-          id: 2,
-          name: "AirPods Pro",
-          brand: "Apple",
-          price: 279,
-          stock: 15,
-          image:
-            "https://images.unsplash.com/photo-1606841837239-c5a1a4a07af7?w=600&q=80",
-        },
-        {
-          id: 3,
-          name: "MacBook Air M2",
-          brand: "Apple",
-          price: 1199,
-          stock: 5,
-          image:
-            "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600&q=80",
-        },
-        {
-          id: 4,
-          name: "Samsung Galaxy S24",
-          brand: "Samsung",
-          price: 999,
-          stock: 8,
-          image:
-            "https://images.unsplash.com/photo-1681592744820-6a0f4f1d3b5b?w=600&q=80",
-        },
-      ],
+      products: [],
     };
   },
   mounted() {
@@ -866,6 +1165,8 @@ export default {
       }
     });
     this.fetchUsers();
+    this.loadProducts();
+    this.updateBodyScroll();
   },
   computed: {
     tabs() {
@@ -899,12 +1200,90 @@ export default {
       const search = this.productSearch.toLowerCase();
       return this.products.filter(
         (product) =>
-          product.name.toLowerCase().includes(search) ||
-          product.brand.toLowerCase().includes(search)
+          (product.name || product.title || "").toLowerCase().includes(search) ||
+          (product.brand || "").toLowerCase().includes(search) ||
+          (product.category || "").toLowerCase().includes(search)
       );
     },
+    uniqueCategories() {
+      const categories = new Set(this.products.map((p) => p.category).filter(Boolean));
+      return Array.from(categories).sort();
+    },
   },
+
+  watch: {
+    showAddProduct() {
+      this.updateBodyScroll();
+    },
+    editingProduct() {
+      this.updateBodyScroll();
+    },
+    "currentProduct.discount_value"() {
+      // When discount value is set to 0, restore price to oldPrice
+      if (this.currentProduct.discount_value === 0 && this.currentProduct.oldPrice) {
+        this.currentProduct.price = this.currentProduct.oldPrice;
+      }
+    },
+  },
+
+  beforeUnmount() {
+    // cleanup any scroll locks/listeners when component unmounts
+    this._removePreventScrollListeners();
+  },
+
   methods: {
+    updateBodyScroll() {
+      const modalOpen = !!this.showAddProduct || !!this.editingProduct;
+      if (modalOpen) {
+        // Keep scrollbar visible but prevent page scrolling by intercepting scroll/touch/key events
+        this._addPreventScrollListeners();
+      } else {
+        this._removePreventScrollListeners();
+      }
+    },
+
+    _preventDefault(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      return false;
+    },
+    _onWheel(e) {
+      // allow inner modal scrolling when target is inside modal-content
+      const modal = document.querySelector(".modal-content");
+      if (!modal) return;
+      if (modal.contains(e.target)) return; // let modal handle scrolling
+      this._preventDefault(e);
+    },
+    _onTouchMove(e) {
+      const modal = document.querySelector(".modal-content");
+      if (!modal) return;
+      if (modal.contains(e.target)) return;
+      this._preventDefault(e);
+    },
+    _onKeyDown(e) {
+      // prevent PageUp, PageDown, Space, Arrow keys from scrolling background
+      const keys = [32, 33, 34, 35, 36, 37, 38, 39, 40];
+      if (keys.includes(e.keyCode)) {
+        // if focus is inside modal allow default
+        const modal = document.querySelector(".modal-content");
+        if (modal && modal.contains(document.activeElement)) return;
+        this._preventDefault(e);
+      }
+    },
+    _addPreventScrollListeners() {
+      if (this._preventListenersAdded) return;
+      // use non-passive to be able to preventDefault
+      window.addEventListener("wheel", this._onWheel, { passive: false });
+      window.addEventListener("touchmove", this._onTouchMove, { passive: false });
+      window.addEventListener("keydown", this._onKeyDown, { passive: false });
+      this._preventListenersAdded = true;
+    },
+    _removePreventScrollListeners() {
+      if (!this._preventListenersAdded) return;
+      window.removeEventListener("wheel", this._onWheel, { passive: false });
+      window.removeEventListener("touchmove", this._onTouchMove, { passive: false });
+      window.removeEventListener("keydown", this._onKeyDown, { passive: false });
+      this._preventListenersAdded = false;
+    },
     getStatusClass(status) {
       const classes = {
         Doručené: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
@@ -928,8 +1307,8 @@ export default {
     },
     async deleteUser(id) {
       const target = this.users.find((u) => u.id === id);
-      if (this.currentUser?.role === 'admin' && target?.role === 'owner') {
-        alert('Nemôžete vymazať Owner účet.');
+      if (this.currentUser?.role === "admin" && target?.role === "owner") {
+        alert("Nemôžete vymazať Owner účet.");
         return;
       }
 
@@ -948,8 +1327,8 @@ export default {
     },
     async resetUserPassword(id) {
       const target = this.users.find((u) => u.id === id);
-      if (this.currentUser?.role === 'admin' && target?.role === 'owner') {
-        alert('Nemôžete resetovať heslo Owner účtu.');
+      if (this.currentUser?.role === "admin" && target?.role === "owner") {
+        alert("Nemôžete resetovať heslo Owner účtu.");
         return;
       }
 
@@ -969,8 +1348,8 @@ export default {
     },
     editUser(user) {
       // Prevent admins from editing owner accounts
-      if (this.currentUser?.role === 'admin' && user?.role === 'owner') {
-        alert('Nemôžete upravovať Owner účet.');
+      if (this.currentUser?.role === "admin" && user?.role === "owner") {
+        alert("Nemôžete upravovať Owner účet.");
         return;
       }
 
@@ -1157,14 +1536,229 @@ export default {
           this.usersLoading = false;
         });
     },
+    async loadProducts() {
+      try {
+        const response = await api.get("api/admin/products");
+        this.products = response.data;
+      } catch (error) {
+        console.error("Error loading products:", error);
+      }
+    },
     editProduct(product) {
-      alert(`Úprava produktu: ${product.name}`);
+      const productData = {
+        name: product.name || product.title || "",
+        title: product.title || product.name || "",
+        brand: product.brand || "",
+        category: product.category || "",
+        price: typeof product.price !== "undefined" ? product.price : 0,
+        oldPrice:
+          typeof product.oldPrice !== "undefined" && product.oldPrice
+            ? product.oldPrice
+            : typeof product.price !== "undefined"
+            ? product.price
+            : 0,
+        monthlyPrice:
+          typeof product.monthlyPrice !== "undefined" ? product.monthlyPrice : null,
+        stock: typeof product.stock !== "undefined" ? product.stock : 0,
+        image: product.image || "",
+        description: product.description || "",
+        rating: typeof product.rating !== "undefined" ? product.rating : 0,
+        reviews: typeof product.reviews !== "undefined" ? product.reviews : 0,
+        specs: product.specs || null,
+        discount_type: product.discount_type || "percent",
+        discount_value:
+          typeof product.discount_value !== "undefined" ? product.discount_value : 0,
+      };
+
+      // Store original state for the blue box (won't change as user edits)
+      this.originalProduct = JSON.parse(JSON.stringify(productData));
+
+      // Set editable form data
+      this.currentProduct = productData;
+      this.editingProduct = product;
+      this.showAddProduct = false;
+    },
+    async saveProduct() {
+      this.productSaving = true;
+      try {
+        // Smart price calculation: oldPrice is always the base price (price without discount)
+        let finalPrice = this.currentProduct.price;
+        let finalOldPrice = this.currentProduct.oldPrice;
+        let finalDiscountType = this.currentProduct.discount_type || "percent";
+        let finalDiscountValue = this.currentProduct.discount_value || 0;
+
+        // Always keep oldPrice as the base price
+        if (!finalOldPrice || finalOldPrice === 0) {
+          finalOldPrice = finalPrice;
+        }
+
+        // If discount is applied, calculate the final price from oldPrice
+        if (finalDiscountValue > 0) {
+          if (finalDiscountType === "percent") {
+            finalPrice = (
+              finalOldPrice -
+              (finalOldPrice * finalDiscountValue) / 100
+            ).toFixed(2);
+          } else {
+            finalPrice = (finalOldPrice - finalDiscountValue).toFixed(2);
+          }
+        } else {
+          // If no discount, price equals oldPrice
+          finalPrice = finalOldPrice;
+        }
+
+        // Only send form fields, not all product fields
+        const payload = {
+          name: this.currentProduct.name,
+          brand: this.currentProduct.brand,
+          category: this.currentProduct.category,
+          price: parseFloat(finalPrice),
+          oldPrice: parseFloat(finalOldPrice),
+          stock: this.currentProduct.stock,
+          image: this.currentProduct.image,
+          description: this.currentProduct.description,
+          discount_type: finalDiscountValue > 0 ? finalDiscountType : null,
+          discount_value: finalDiscountValue > 0 ? finalDiscountValue : null,
+        };
+
+        if (this.editingProduct) {
+          // Update existing product and use API returned product
+          const response = await api.put(
+            `api/admin/products/${this.editingProduct.id}`,
+            payload
+          );
+          const updated = response.data.product || this.currentProduct;
+          const index = this.products.findIndex((p) => p.id === this.editingProduct.id);
+          if (index !== -1) {
+            this.products.splice(index, 1, updated);
+          }
+          alert("Produkt bol aktualizovaný!");
+        } else {
+          // Create new product
+          const response = await api.post("api/admin/products", payload);
+          this.products.push(response.data.product);
+          alert("Produkt bol vytvorený!");
+        }
+        this.editingProduct = null;
+        this.showAddProduct = false;
+        this.currentProduct = {
+          name: "",
+          category: "",
+          price: 0,
+          oldPrice: null,
+          stock: 0,
+          image: "",
+          description: "",
+          discount_type: "percent",
+          discount_value: 0,
+        };
+      } catch (error) {
+        console.error("Error saving product:", error);
+        alert("Chyba pri ukladaní produktu");
+      } finally {
+        this.productSaving = false;
+      }
     },
     async deleteProduct(id) {
       if (await window.appConfirm("Naozaj chcete vymazať tento produkt?")) {
-        this.products = this.products.filter((product) => product.id !== id);
-        alert("Produkt vymazaný!");
+        try {
+          await api.delete(`api/admin/products/${id}`);
+          this.products = this.products.filter((product) => product.id !== id);
+          alert("Produkt vymazaný!");
+        } catch (error) {
+          console.error("Error deleting product:", error);
+          alert("Chyba pri vymazávaní produktu");
+        }
       }
+    },
+    resetProductForm() {
+      this.currentProduct = {
+        name: "",
+        brand: "",
+        category: "",
+        price: 0,
+        oldPrice: null,
+        stock: 0,
+        image: "",
+        description: "",
+        discount_type: "percent",
+        discount_value: 0,
+      };
+      this.originalProduct = null;
+    },
+    clampDiscountValue(e) {
+      // get the typed value (string) or fallback to model
+      const raw = e && e.target ? e.target.value : this.currentProduct.discount_value;
+      let val = parseFloat(raw);
+      if (Number.isNaN(val)) {
+        this.currentProduct.discount_value = 0;
+        return;
+      }
+
+      // Enforce percent limits
+      if (this.currentProduct.discount_type === "percent") {
+        if (val > 100) val = 100;
+      }
+
+      // Never allow negative
+      if (val < 0) val = 0;
+
+      // For fixed discounts, don't allow discount > oldPrice (prevents negative final price)
+      if (
+        this.currentProduct.discount_type === "fixed" &&
+        this.currentProduct.oldPrice != null
+      ) {
+        if (val > this.currentProduct.oldPrice) val = this.currentProduct.oldPrice;
+      }
+
+      // Round to 2 decimals and set back
+      this.currentProduct.discount_value = Math.round(val * 100) / 100;
+    },
+    calculateFinalPrice() {
+      // If no discount set, return the base price (oldPrice)
+      if (
+        this.currentProduct.discount_value === 0 ||
+        !this.currentProduct.discount_type
+      ) {
+        return this.currentProduct.oldPrice || this.currentProduct.price;
+      }
+
+      // Use oldPrice as the base price for discount calculation
+      const basePrice = this.currentProduct.oldPrice || this.currentProduct.price;
+      const discount = this.currentProduct.discount_value;
+
+      if (this.currentProduct.discount_type === "percent") {
+        return (basePrice - (basePrice * discount) / 100).toFixed(2);
+      } else {
+        return (basePrice - discount).toFixed(2);
+      }
+    },
+    getDiscountAmount() {
+      // If no discount set, return 0
+      if (
+        this.currentProduct.discount_value === 0 ||
+        !this.currentProduct.discount_type
+      ) {
+        return "0.00";
+      }
+
+      // Always use oldPrice if it exists (it's the base for discount calculation)
+      // If oldPrice doesn't exist, use price
+      const basePrice = this.currentProduct.oldPrice || this.currentProduct.price;
+      const discount = this.currentProduct.discount_value;
+
+      if (this.currentProduct.discount_type === "percent") {
+        return ((basePrice * discount) / 100).toFixed(2);
+      } else {
+        return discount.toFixed(2);
+      }
+    },
+    removeDiscount() {
+      // When removing discount, price becomes equal to oldPrice (base price)
+      this.currentProduct.price = this.currentProduct.oldPrice;
+      // Clear discount fields only
+      this.currentProduct.discount_type = "percent";
+      this.currentProduct.discount_value = 0;
     },
   },
 };
@@ -1179,5 +1773,41 @@ export default {
   main {
     margin-left: 0;
   }
+}
+
+/* Modal animation */
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 240ms ease;
+}
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+.modal-enter-to,
+.modal-leave-from {
+  opacity: 1;
+}
+
+/* Animate modal content separately (scale + translate) */
+.modal-enter-active .modal-content,
+.modal-leave-active .modal-content {
+  transition: transform 260ms cubic-bezier(0.2, 0.9, 0.2, 1), opacity 260ms ease;
+}
+.modal-enter-from .modal-content {
+  transform: translateY(12px) scale(0.98);
+  opacity: 0;
+}
+.modal-enter-to .modal-content {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+.modal-leave-from .modal-content {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+.modal-leave-to .modal-content {
+  transform: translateY(12px) scale(0.98);
+  opacity: 0;
 }
 </style>

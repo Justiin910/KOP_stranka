@@ -45,7 +45,7 @@ class LoginRequest extends FormRequest
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => __('auth.failed'),
+                'email' => 'Nesprávny email alebo heslo.',
             ]);
         }
 
@@ -68,10 +68,7 @@ class LoginRequest extends FormRequest
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
-            'email' => trans('auth.throttle', [
-                'seconds' => $seconds,
-                'minutes' => ceil($seconds / 60),
-            ]),
+            'email' => 'Príliš mnoho pokusov o prihlásenie. Skúste prosím znova o ' . ceil($seconds / 60) . ' minút.',
         ]);
     }
 

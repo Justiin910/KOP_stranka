@@ -1,7 +1,7 @@
 <template>
-  <div class="flex bg-gray-100 dark:bg-gray-900 min-h-screen">
+  <div class="page-home-bg">
     <!-- Sidebar -->
-    <aside class="left-0 top-0 h-full z-50">
+    <aside class="left-0 top-0 h-auto z-50">
       <SideBarComponent />
     </aside>
 

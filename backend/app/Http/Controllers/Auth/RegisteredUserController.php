@@ -30,14 +30,14 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        // Extra safeguard: explicit DNS check for domain (MX or A record)
+        // Extra safeguard: explicit DNS check for domain (require MX records only)
         $email = $request->string('email');
         $domain = substr(strrchr($email, '@'), 1);
         if ($domain) {
-            $hasMx = function_exists('checkdnsrr') && (checkdnsrr($domain, 'MX') || checkdnsrr($domain, 'A'));
+            $hasMx = function_exists('checkdnsrr') && checkdnsrr($domain, 'MX');
             if (!$hasMx) {
                 throw ValidationException::withMessages([
-                    'email' => ['Email domain appears invalid or has no DNS records.'],
+                    'email' => ['E-mailová doména nemá MX záznamy alebo neexistuje.'],
                 ]);
             }
         }

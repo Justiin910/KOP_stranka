@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-white dark:bg-gray-900">
+  <div class="page-cart-bg">
     <div class="max-w-7xl mx-auto px-6 py-12">
       <!-- Progress Steps -->
       <div class="mb-12">
@@ -140,14 +140,14 @@
 
             <button
               @click="proceedToCheckout"
-              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors"
+              class="w-full btn-primary-lg py-3 rounded-lg"
             >
               Pokračovať
             </button>
 
             <button
               @click="continueShopping"
-              class="w-full mt-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-semibold py-3 rounded-lg transition-colors"
+              class="w-full mt-3 btn-secondary py-3 rounded-lg"
             >
               Pokračovať v nákupe
             </button>

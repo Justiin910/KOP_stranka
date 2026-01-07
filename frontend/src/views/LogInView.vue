@@ -1,7 +1,5 @@
 <template>
-  <div
-    class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center px-4 py-12"
-  >
+  <div class="page-login-bg">
     <div class="w-full max-w-md">
       <!-- Logo/Header -->
       <div class="text-center mb-8">
@@ -52,12 +50,13 @@
               <input
                 id="email"
                 v-model="form.email"
-                type="email"
-                required
+                type="text"
+                @input="fieldErrors.email = null"
                 placeholder="vas.email@priklad.sk"
                 :disabled="isSubmitting"
                 class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               />
+              <!-- field-level errors intentionally omitted; use top banner only -->
             </div>
           </div>
 
@@ -91,11 +90,12 @@
                 id="password"
                 v-model="form.password"
                 :type="showPassword ? 'text' : 'password'"
-                required
+                @input="fieldErrors.password = null"
                 placeholder="••••••••"
                 :disabled="isSubmitting"
                 class="w-full pl-10 pr-12 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               />
+              <!-- field-level errors intentionally omitted; use top banner only -->
               <button
                 type="button"
                 @click="showPassword = !showPassword"
@@ -202,7 +202,7 @@
           <button
             type="submit"
             :disabled="isSubmitting"
-            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg transition-colors shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            class="w-full btn-primary-lg py-3 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
             <span v-if="isSubmitting" class="flex items-center justify-center gap-2">
               <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
@@ -268,6 +268,10 @@ export default {
       showPassword: false,
       loginError: "",
       isSubmitting: false,
+      fieldErrors: {
+        email: null,
+        password: null,
+      },
     };
   },
   mounted() {
@@ -282,6 +286,11 @@ export default {
     });
   },
   methods: {
+    validateEmail(email) {
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return re.test(email);
+    },
+
     async handleLogin() {
       if (this.isSubmitting) return;
 
@@ -311,21 +320,44 @@ export default {
         console.error("Login error:", err);
 
         if (err.response?.status === 422) {
-          // Validation errors
-          const errors = err.response.data.errors;
-          if (errors?.email) {
-            this.loginError = errors.email[0];
-          } else if (errors?.password) {
-            this.loginError = errors.password[0];
+          // Validation errors from backend — map to Slovak messages
+          const errors = err.response.data.errors || {};
+          if (errors?.email?.[0]) {
+            const m = errors.email[0];
+            if (m === "The email field is required.")
+              this.fieldErrors.email = "Pole e-mail je povinné.";
+            else if (m === "The email must be a valid email address.")
+              this.fieldErrors.email = "E-mail musí byť platná e-mailová adresa.";
+            else this.fieldErrors.email = "Neplatný e-mail.";
+            this.loginError = this.fieldErrors.email;
+          } else if (errors?.password?.[0]) {
+            const m = errors.password[0];
+            if (m === "The password field is required.")
+              this.fieldErrors.password = "Pole heslo je povinné.";
+            else this.fieldErrors.password = "Neplatné heslo.";
+            this.loginError = this.fieldErrors.password;
+          } else if (err.response.data.message) {
+            // Laravel ValidationException returns the message here sometimes
+            const msg = err.response.data.message;
+            if (msg === "These credentials do not match our records.")
+              this.loginError = "Nezodpovedajúce prihlasovacie údaje.";
+            else if (msg === "The given data was invalid.")
+              this.loginError = "Zadané údaje sú neplatné.";
+            else this.loginError = "Nesprávny email alebo heslo.";
           } else {
             this.loginError = "Nesprávny email alebo heslo.";
           }
         } else if (err.response?.status === 429) {
           this.loginError = "Príliš mnoho pokusov. Skúste znova neskôr.";
+        } else if (err.response?.status === 401) {
+          this.loginError = "Nesprávny email alebo heslo.";
         } else if (err.response?.data?.message) {
-          this.loginError = err.response.data.message;
+          const msg = err.response.data.message;
+          if (msg === "These credentials do not match our records.")
+            this.loginError = "Nezodpovedajúce prihlasovacie údaje.";
+          else this.loginError = "Chyba: " + msg;
         } else {
-          this.loginError = "Chyba pri prihlasovaní. Skúste to znova.";
+          this.loginError = "Chyba pri prihlasovaní. Skúste to prosím znova.";
         }
       } finally {
         this.isSubmitting = false;
@@ -334,3 +366,18 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.slideDown-enter-active,
+.slideDown-leave-active {
+  transition: all 0.28s ease;
+}
+.slideDown-enter-from {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+.slideDown-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+</style>

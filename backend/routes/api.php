@@ -11,7 +11,10 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
-use App\Http\Controllers\CartController;use App\Http\Controllers\AdminController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ContactController;
+
 // Get authenticated user
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
@@ -32,6 +35,9 @@ Route::get('/category/{category}', [ProductController::class, 'byCategory']);
 Route::get('/products/recommended', [RecommendedProductController::class, 'recommended']);
 Route::get('/products/search', [ProductController::class, 'search']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
+
+// Contact form
+Route::post('/contact', [ContactController::class, 'send']);
 
 // User profile management
 Route::middleware('auth:sanctum')->group(function () {
@@ -67,4 +73,10 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::post('/admin/users/{id}/reset-password', [AdminController::class, 'resetUserPassword']);
     Route::post('/admin/users/{id}/set-password', [AdminController::class, 'setUserPassword']);
     Route::get('/admin/stats', [AdminController::class, 'getStats']);
+    
+    // Product management
+    Route::get('/admin/products', [AdminController::class, 'getProducts']);
+    Route::post('/admin/products', [AdminController::class, 'createProduct']);
+    Route::put('/admin/products/{id}', [AdminController::class, 'updateProduct']);
+    Route::delete('/admin/products/{id}', [AdminController::class, 'deleteProduct']);
 });

@@ -15,6 +15,7 @@ import RefundView from '@/views/Footer/RefundView.vue'
 import AboutusView from '@/views/Footer/AboutusView.vue'
 import DeliveryView from '@/views/Footer/DeliveryView.vue'
 import PrivacyView from '@/views/Footer/PrivacyView.vue'
+import ContactView from '@/views/Footer/ContactView.vue'
 import ProductView from '@/views/ProductView.vue'
 import AdminView from '@/views/AdminView.vue'
 import ProductsGridView from '@/views/ProductsGridView.vue'
@@ -101,6 +102,11 @@ const router = createRouter({
       component: AboutusView,
     },
     {
+      path: '/contact',
+      name: 'contact',
+      component: ContactView,
+    },
+    {
       path: '/delivery',
       name: 'delivery',
       component: DeliveryView,
@@ -183,6 +189,10 @@ router.beforeEach((to, from, next) => {
   }
 
   return next()
+})
+
+router.afterEach(() => {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 })
 
 export default router

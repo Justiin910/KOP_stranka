@@ -53,12 +53,12 @@
               </router-link>
             </li>
             <li>
-              <a
-                href="#"
+              <router-link
+                to="/contact"
                 class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition"
               >
                 Kontakt
-              </a>
+              </router-link>
             </li>
           </ul>
         </div>

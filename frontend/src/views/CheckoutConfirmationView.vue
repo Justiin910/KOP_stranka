@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-white dark:bg-gray-900">
+  <div class="page-checkout-confirmation-bg">
     <div class="max-w-2xl mx-auto px-6 py-12">
       <!-- Success message -->
       <div class="text-center mb-12">
@@ -210,7 +210,7 @@
       <div class="flex gap-4 mt-12">
         <router-link
           to="/"
-          class="flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg"
+          class="flex-1 text-center btn-primary-lg"
         >
           Pokračovať v nákupoch
         </router-link>

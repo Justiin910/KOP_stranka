@@ -1,1 +1,100 @@
 @import 'tailwindcss';
+
+/* ============================================
+   PAGE BACKGROUND COLORS
+   ============================================
+   All view/page background colors defined here
+   for centralized management and clarity.
+   ============================================ */
+
+/* HomeView: light gray bg */
+.page-home-bg {
+  @apply bg-gray-100 dark:bg-gray-900 flex min-h-screen;
+}
+
+/* LogInView: gradient from light gray to gray */
+.page-login-bg {
+  @apply min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center px-4 py-12;
+}
+
+/* RegisterView: vibrant gradient indigo/purple/pink */
+.page-register-bg {
+  @apply min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center px-4 py-12;
+}
+
+/* ContactView: white bg with padding */
+.page-contact-bg {
+  @apply min-h-screen bg-white dark:bg-gray-900 py-16;
+}
+
+/* CartView: white bg */
+.page-cart-bg {
+  @apply min-h-screen bg-white dark:bg-gray-900;
+}
+
+/* CheckoutPaymentView: white bg */
+.page-checkout-payment-bg {
+  @apply min-h-screen bg-white dark:bg-gray-900;
+}
+
+/* CheckoutDeliveryView: white bg */
+.page-checkout-delivery-bg {
+  @apply min-h-screen bg-white dark:bg-gray-900;
+}
+
+/* CheckoutConfirmationView: white bg */
+.page-checkout-confirmation-bg {
+  @apply min-h-screen bg-white dark:bg-gray-900;
+}
+
+/* AdminView: light gray bg with flex layout */
+.page-admin-bg {
+  @apply flex bg-gray-100 dark:bg-gray-900 min-h-screen;
+}
+
+/* ============================================
+   BUTTON COLORS (STANDARDIZED)
+   ============================================
+   All buttons use these centralized colors
+   for consistency across the app.
+   ============================================ */
+
+/* Primary Button: Indigo (used in search bar, CTAs) */
+.btn-primary {
+  @apply bg-indigo-600 hover:bg-indigo-500 text-white font-medium transition;
+}
+
+/* Primary Button Small: for compact spaces like search button */
+.btn-primary-sm {
+  @apply bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-3 py-1 rounded text-sm shadow-md transition transform hover:scale-110;
+}
+
+/* Primary Button Large: for main CTAs */
+.btn-primary-lg {
+  @apply bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg transition-colors shadow-lg;
+}
+
+/* Primary Gradient: for scroll-to-top and hero buttons */
+.btn-primary-gradient {
+  @apply bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white transition-all;
+}
+
+/* Secondary Button: gray/neutral */
+.btn-secondary {
+  @apply bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-semibold transition-colors;
+}
+
+/* Danger Button: red */
+.btn-danger {
+  @apply bg-red-600 hover:bg-red-700 text-white transition;
+}
+
+/* Success Button: green */
+.btn-success {
+  @apply bg-green-600 hover:bg-green-700 text-white transition;
+}
+
+/* Warning Button: yellow/orange */
+.btn-warning {
+  @apply bg-yellow-600 hover:bg-yellow-700 text-white transition;
+}

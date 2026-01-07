@@ -22,6 +22,7 @@
 
       <!-- Favorite Button -->
       <button
+        v-if="showFavorite"
         @click.stop="toggleFavorite"
         class="absolute top-2 left-2 w-7 h-7 bg-gray-900 bg-opacity-70 rounded-full flex items-center justify-center hover:bg-opacity-100 transition"
       >
@@ -77,6 +78,7 @@
 
       <!-- Add to Cart Button -->
       <button
+        v-if="showActions"
         @click.stop="$emit('add-to-cart', product)"
         :disabled="product.stock === 0"
         class="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-600 text-white font-semibold py-2 rounded text-xs transition transform hover:scale-105 disabled:cursor-not-allowed"
@@ -96,6 +98,14 @@ export default {
     product: {
       type: Object,
       required: true,
+    },
+    showActions: {
+      type: Boolean,
+      default: true,
+    },
+    showFavorite: {
+      type: Boolean,
+      default: true,
     },
   },
   data() {

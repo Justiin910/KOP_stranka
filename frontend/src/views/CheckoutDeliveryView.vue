@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-white dark:bg-gray-900">
+  <div class="page-checkout-delivery-bg">
     <div class="max-w-7xl mx-auto px-6 py-12">
       <!-- Progress Steps -->
       <div class="mb-12">
@@ -313,7 +313,7 @@
 
             <button
               @click="proceedToPayment"
-              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors"
+              class="w-full btn-primary-lg"
             >
               Pokračovať na platbu
             </button>

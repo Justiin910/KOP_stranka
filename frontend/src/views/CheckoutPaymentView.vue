@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-white dark:bg-gray-900">
+  <div class="page-checkout-payment-bg">
     <div class="max-w-4xl mx-auto px-6 py-12">
       <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">Platba</h1>
 
@@ -251,7 +251,7 @@
 
             <button
               @click="confirmPayment"
-              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg"
+              class="w-full btn-primary-lg"
             >
               Potvrdiť objednávku
             </button>

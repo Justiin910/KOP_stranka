@@ -73,7 +73,7 @@
           <button
             @click="resendVerification"
             :disabled="isResending || cooldown > 0"
-            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg shadow-lg disabled:bg-gray-300 disabled:cursor-not-allowed transition"
+            class="w-full btn-primary-lg"
           >
             <span v-if="isResending">Posielam...</span>
             <span v-else-if="cooldown > 0">Znovu poslať ({{ cooldown }}s)</span>
@@ -82,7 +82,7 @@
 
           <button
             @click="logout"
-            class="w-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-semibold py-3 rounded-lg transition"
+            class="w-full btn-secondary font-semibold py-3 rounded-lg"
           >
             Odhlásiť sa
           </button>

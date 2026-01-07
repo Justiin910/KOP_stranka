@@ -64,7 +64,8 @@ class AdminController extends Controller
         // Base validation rules
         $rules = [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email,' . $id,
+            // Use RFC + DNS checks for admin email updates
+            'email' => 'required|email:rfc,dns|max:255|unique:users,email,' . $id,
             'phone' => 'nullable|string|max:20',
             'password' => ['nullable', 'confirmed', Password::defaults()],
         ];
@@ -75,6 +76,18 @@ class AdminController extends Controller
         }
 
         $validated = $request->validate($rules);
+
+        // Defensive MX-only DNS check for updated email address
+        $emailToCheck = $validated['email'] ?? null;
+        if ($emailToCheck) {
+            $domain = substr(strrchr($emailToCheck, '@'), 1);
+            if ($domain) {
+                $hasMx = function_exists('checkdnsrr') && checkdnsrr($domain, 'MX');
+                if (!$hasMx) {
+                    return response()->json(['message' => 'E-mailová doména nemá MX záznamy alebo je neplatná.'], 422);
+                }
+            }
+        }
 
         $user->name = $validated['name'];
         $user->email = $validated['email'];
@@ -256,6 +269,159 @@ class AdminController extends Controller
             'totalOrders' => $totalOrders,
             'totalUsers' => $totalUsers,
             'avgOrderValue' => round($avgOrderValue, 2),
+        ]);
+    }
+
+    /**
+     * Get all products for admin panel
+     */
+    public function getProducts()
+    {
+        $products = \App\Models\Product::all();
+        return response()->json($products);
+    }
+
+    /**
+     * Create a new product
+     */
+    public function createProduct(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'brand' => 'required|string|max:100',
+            'category' => 'required|string|max:100',
+            'price' => 'required|numeric|min:0',
+            'oldPrice' => 'nullable|numeric|min:0',
+            'stock' => 'required|integer|min:0',
+            'image' => 'nullable|string',
+            'description' => 'nullable|string',
+            'discount_type' => 'nullable|in:percent,fixed',
+            'discount_value' => 'nullable|numeric|min:0',
+        ]);
+
+        // Smart price handling: if discount is applied without oldPrice, use price as oldPrice
+        $finalPrice = $validated['price'];
+        $finalOldPrice = $validated['oldPrice'] ?? null;
+        $finalDiscountType = $validated['discount_type'] ?? null;
+        $finalDiscountValue = $validated['discount_value'] ?? null;
+
+        if ($finalDiscountValue && $finalDiscountValue > 0 && (!$finalOldPrice || $finalOldPrice == 0)) {
+            // Use current price as old price
+            $finalOldPrice = $finalPrice;
+            
+            // Calculate new price from discount
+            if ($finalDiscountType === 'percent') {
+                $finalPrice = $finalOldPrice - ($finalOldPrice * $finalDiscountValue / 100);
+            } else { // fixed
+                $finalPrice = $finalOldPrice - $finalDiscountValue;
+            }
+            $finalPrice = round($finalPrice, 2);
+        } elseif (!$finalDiscountValue || $finalDiscountValue == 0) {
+            // If no discount, clear oldPrice
+            $finalOldPrice = null;
+            $finalDiscountType = null;
+            $finalDiscountValue = null;
+        }
+
+        // Map 'name' to 'title' for database
+        $data = [
+            'title' => $validated['name'],
+            'brand' => $validated['brand'],
+            'category' => $validated['category'],
+            'price' => $finalPrice,
+            'oldPrice' => $finalOldPrice,
+            'stock' => $validated['stock'],
+            'image' => $validated['image'] ?? null,
+            'description' => $validated['description'] ?? null,
+            'discount_type' => $finalDiscountType,
+            'discount_value' => $finalDiscountValue,
+        ];
+
+        $product = \App\Models\Product::create($data);
+
+        return response()->json([
+            'message' => 'Produkt bol vytvorený',
+            'product' => $product
+        ], 201);
+    }
+
+    /**
+     * Update a product
+     */
+    public function updateProduct(Request $request, $id)
+    {
+        $product = \App\Models\Product::findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'brand' => 'required|string|max:100',
+            'category' => 'required|string|max:100',
+            'price' => 'required|numeric|min:0',
+            'oldPrice' => 'nullable|numeric|min:0',
+            'stock' => 'required|integer|min:0',
+            'image' => 'nullable|string',
+            'description' => 'nullable|string',
+            'discount_type' => 'nullable|in:percent,fixed',
+            'discount_value' => 'nullable|numeric|min:0',
+        ]);
+
+        // Smart price handling: when discount is applied, calculate final price from oldPrice
+        $finalPrice = $validated['price'];
+        $finalOldPrice = $validated['oldPrice'] ?? null;
+        $finalDiscountType = $validated['discount_type'] ?? null;
+        $finalDiscountValue = $validated['discount_value'] ?? null;
+
+        if ($finalDiscountValue && $finalDiscountValue > 0) {
+            // When discount is applied, oldPrice must be set (use current price if not provided)
+            if (!$finalOldPrice || $finalOldPrice == 0) {
+                $finalOldPrice = $finalPrice;
+            }
+            
+            // Always calculate new price from discount when discount is applied
+            if ($finalDiscountType === 'percent') {
+                $finalPrice = $finalOldPrice - ($finalOldPrice * $finalDiscountValue / 100);
+            } else { // fixed
+                $finalPrice = $finalOldPrice - $finalDiscountValue;
+            }
+            $finalPrice = round($finalPrice, 2);
+        } elseif (!$finalDiscountValue || $finalDiscountValue == 0) {
+            // If no discount, clear oldPrice
+            $finalOldPrice = null;
+            $finalDiscountType = null;
+            $finalDiscountValue = null;
+        }
+
+        $data = [
+            'title' => $validated['name'],
+            'brand' => $validated['brand'],
+            'category' => $validated['category'],
+            'price' => $finalPrice,
+            'oldPrice' => $finalOldPrice,
+            'stock' => $validated['stock'],
+            'image' => $validated['image'] ?? $product->image,
+            'description' => $validated['description'] ?? $product->description,
+            'discount_type' => $finalDiscountType,
+            'discount_value' => $finalDiscountValue,
+        ];
+
+        $product->update($data);
+
+        return response()->json([
+            'message' => 'Produkt bol aktualizovaný',
+            'product' => $product
+        ]);
+    }
+
+    /**
+     * Delete a product
+     */
+    public function deleteProduct($id)
+    {
+        $product = \App\Models\Product::findOrFail($id);
+        $product->delete();
+
+        return response()->json([
+            'message' => 'Produkt bol vymazaný'
         ]);
     }
 }

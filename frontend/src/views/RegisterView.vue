@@ -1,7 +1,5 @@
 <template>
-  <div
-    class="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-indigo-950 dark:to-purple-950 flex items-center justify-center px-4 py-12"
-  >
+  <div class="page-register-bg">
     <div class="w-full max-w-md relative">
       <!-- Success Message after Registration -->
       <div
@@ -57,14 +55,27 @@
             <label
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Meno a priezvisko
+              Meno a priezvisko <span class="text-red-600 dark:text-red-400">*</span>
             </label>
             <input
               v-model="form.name"
-              required
+              @input="
+                () => {
+                  fieldErrors.name = null;
+                  registerError = '';
+                }
+              "
               placeholder="Ján Novák"
               class="w-full py-3 px-4 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:ring-2 focus:ring-indigo-500"
             />
+            <Transition name="slideDown">
+              <p
+                v-if="fieldErrors.name"
+                class="text-sm text-red-600 mt-2 flex items-center gap-2 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-md border border-red-200 dark:border-red-800"
+              >
+                {{ fieldErrors.name }}
+              </p>
+            </Transition>
           </div>
 
           <!-- Email -->
@@ -72,19 +83,28 @@
             <label
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Email
+              Email <span class="text-red-600 dark:text-red-400">*</span>
             </label>
             <input
               v-model="form.email"
-              @input="validateEmail"
-              type="email"
-              required
+              @input="
+                () => {
+                  validateEmail();
+                  fieldErrors.email = null;
+                  registerError = '';
+                }
+              "
               placeholder="vas.email@priklad.sk"
               class="w-full py-3 px-4 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:ring-2 focus:ring-indigo-500"
             />
-            <p v-if="form.email && !validEmail" class="text-red-500 text-sm mt-1">
-              Neplatný email
-            </p>
+            <Transition name="slideDown">
+              <p
+                v-if="fieldErrors.email || (form.email && !validEmail)"
+                class="text-sm text-red-600 mt-2 flex items-center gap-2 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-md border border-red-200 dark:border-red-800"
+              >
+                {{ fieldErrors.email || "Neplatný email" }}
+              </p>
+            </Transition>
           </div>
 
           <!-- Phone -->
@@ -92,7 +112,7 @@
             <label
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Telefón
+              Telefón <span class="text-red-600 dark:text-red-400">*</span>
             </label>
             <div class="flex gap-3">
               <select
@@ -105,16 +125,25 @@
               </select>
               <input
                 v-model="form.phone"
-                @input="formatPhone"
-                type="tel"
-                required
+                @input="
+                  () => {
+                    formatPhone();
+                    fieldErrors.phone = null;
+                    registerError = '';
+                  }
+                "
                 placeholder="912 345 678"
                 class="flex-1 py-3 px-4 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:ring-2 focus:ring-indigo-500"
               />
             </div>
-            <p v-if="form.phone && phoneDigits !== 9" class="text-red-500 text-sm mt-1">
-              Telefón musí mať 9 číslic
-            </p>
+            <Transition name="slideDown">
+              <p
+                v-if="fieldErrors.phone || (form.phone && phoneDigits !== 9)"
+                class="text-sm text-red-600 mt-2 flex items-center gap-2 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-md border border-red-200 dark:border-red-800"
+              >
+                {{ fieldErrors.phone || "Telefón musí mať 9 číslic" }}
+              </p>
+            </Transition>
           </div>
 
           <!-- Password -->
@@ -122,13 +151,18 @@
             <label
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Heslo
+              Heslo <span class="text-red-600 dark:text-red-400">*</span>
             </label>
             <div class="relative">
               <input
                 :type="showPassword ? 'text' : 'password'"
                 v-model="form.password"
-                required
+                @input="
+                  () => {
+                    fieldErrors.password = null;
+                    registerError = '';
+                  }
+                "
                 placeholder="••••••••"
                 class="w-full py-3 px-4 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 pr-12 focus:ring-2 focus:ring-indigo-500"
               />
@@ -174,12 +208,14 @@
                 </svg>
               </button>
             </div>
-            <p
-              v-if="form.password && form.password.length < 8"
-              class="text-red-500 text-sm mt-1"
-            >
-              Heslo musí mať aspoň 8 znakov
-            </p>
+            <Transition name="slideDown">
+              <p
+                v-if="fieldErrors.password || (form.password && form.password.length < 8)"
+                class="text-sm text-red-600 mt-2 flex items-center gap-2 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-md border border-red-200 dark:border-red-800"
+              >
+                {{ fieldErrors.password || "Heslo musí mať aspoň 8 znakov" }}
+              </p>
+            </Transition>
           </div>
 
           <!-- Confirm Password -->
@@ -187,13 +223,18 @@
             <label
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Potvrďte heslo
+              Potvrďte heslo <span class="text-red-600 dark:text-red-400">*</span>
             </label>
             <div class="relative">
               <input
                 :type="showConfirmPassword ? 'text' : 'password'"
                 v-model="form.confirmPassword"
-                required
+                @input="
+                  () => {
+                    fieldErrors.confirmPassword = null;
+                    registerError = '';
+                  }
+                "
                 placeholder="••••••••"
                 class="w-full py-3 px-4 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 pr-12 focus:ring-2 focus:ring-indigo-500"
               />
@@ -239,12 +280,17 @@
                 </svg>
               </button>
             </div>
-            <p
-              v-if="form.confirmPassword && form.password !== form.confirmPassword"
-              class="text-red-500 text-sm mt-1"
-            >
-              Heslá sa nezhodujú
-            </p>
+            <Transition name="slideDown">
+              <p
+                v-if="
+                  fieldErrors.confirmPassword ||
+                  (form.confirmPassword && form.password !== form.confirmPassword)
+                "
+                class="text-sm text-red-600 mt-2 flex items-center gap-2 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-md border border-red-200 dark:border-red-800"
+              >
+                {{ fieldErrors.confirmPassword || "Heslá sa nezhodujú" }}
+              </p>
+            </Transition>
           </div>
 
           <!-- Terms -->
@@ -255,25 +301,25 @@
               <input
                 type="checkbox"
                 v-model="form.acceptTerms"
-                required
+                @change="
+                  () => {
+                    registerError = '';
+                  }
+                "
                 class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
               />
-              Súhlasím s podmienkami
+              Súhlasím s podmienkami<span class="text-red-600 dark:text-red-400">*</span>
             </label>
           </div>
 
           <button
             type="submit"
             :disabled="!isFormValid || isSubmitting"
-            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg shadow-lg disabled:bg-gray-300 disabled:cursor-not-allowed transition"
+            class="w-full btn-primary-lg py-3 rounded-lg shadow-lg disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             <span v-if="isSubmitting">Vytváram účet...</span>
             <span v-else>Vytvoriť účet</span>
           </button>
-
-          <p v-if="registerError" class="text-red-500 text-sm text-center mt-3">
-            {{ registerError }}
-          </p>
 
           <div class="mt-6 text-center">
             <span class="text-sm text-gray-600 dark:text-gray-400">Už máte účet?</span>
@@ -311,6 +357,13 @@ export default {
         password: "",
         confirmPassword: "",
         acceptTerms: false,
+      },
+      fieldErrors: {
+        name: null,
+        email: null,
+        phone: null,
+        password: null,
+        confirmPassword: null,
       },
       validEmail: true,
       showPassword: false,
@@ -358,16 +411,13 @@ export default {
         // Registration with phone
         const fullPhone = `${this.form.country}${this.form.phone.replace(/\D/g, "")}`;
 
-        const response = await api.post(
-          "/api/register",
-          {
-            name: this.form.name,
-            email: this.form.email,
-            phone: fullPhone,
-            password: this.form.password,
-            password_confirmation: this.form.confirmPassword,
-          }
-        );
+        const response = await api.post("/api/register", {
+          name: this.form.name,
+          email: this.form.email,
+          phone: fullPhone,
+          password: this.form.password,
+          password_confirmation: this.form.confirmPassword,
+        });
 
         // Store token (new users get 30-day default - persistent login)
         localStorage.setItem("token", response.data.token);
@@ -388,11 +438,18 @@ export default {
         }, 3000);
       } catch (err) {
         console.error("Registration error:", err);
-        this.registerError =
-          err.response?.data?.message ||
-          err.response?.data?.errors?.email?.[0] ||
-          err.response?.data?.errors?.phone?.[0] ||
-          "Chyba pri registrácii.";
+        const errors = err.response?.data?.errors || {};
+        this.fieldErrors.name = errors.name?.[0] || null;
+        this.fieldErrors.email = errors.email?.[0] || null;
+        this.fieldErrors.phone = errors.phone?.[0] || null;
+        this.fieldErrors.password = errors.password?.[0] || null;
+        this.fieldErrors.confirmPassword = errors.password?.[0] || null;
+
+        if (err.response?.status === 422) {
+          this.registerError = err.response?.data?.message || null;
+        } else {
+          this.registerError = err.response?.data?.message || "Chyba pri registrácii.";
+        }
       } finally {
         this.isSubmitting = false;
       }
@@ -400,3 +457,18 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.slideDown-enter-active,
+.slideDown-leave-active {
+  transition: all 0.28s ease;
+}
+.slideDown-enter-from {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+.slideDown-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+</style>

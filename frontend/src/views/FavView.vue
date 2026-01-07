@@ -111,7 +111,7 @@
           Pridajte si produkty do obľúbených pre rýchly prístup
         </p>
         <button
-          class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+          class="px-6 py-2 btn-primary rounded-lg font-medium"
         >
           <router-link
             to="/"
@@ -175,7 +175,7 @@
               <button
                 @click="addToCart(item.id)"
                 :disabled="!item.inStock"
-                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed dark:disabled:bg-gray-700"
+                class="px-4 py-2 btn-primary rounded-lg font-medium disabled:bg-gray-300 disabled:cursor-not-allowed dark:disabled:bg-gray-700"
               >
                 <svg
                   class="w-5 h-5"
@@ -258,7 +258,7 @@
                 <button
                   @click="addToCart(item.id)"
                   :disabled="!item.inStock"
-                  class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed dark:disabled:bg-gray-700 flex items-center gap-2"
+                  class="px-6 py-2 btn-primary rounded-lg font-medium disabled:bg-gray-300 disabled:cursor-not-allowed dark:disabled:bg-gray-700 flex items-center gap-2"
                 >
                   <svg
                     class="w-5 h-5"
