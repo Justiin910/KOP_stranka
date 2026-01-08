@@ -38,14 +38,14 @@
         </div>
       </div>
 
-      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">Nákupný košík</h1>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">{{ $t('cart.title') }}</h1>
 
       <!-- Empty Cart -->
       <div
         v-if="(cartStore?.cartItems?.length ?? 0) === 0"
         class="bg-gray-50 dark:bg-gray-800 rounded-lg p-8 text-center"
       >
-        <p class="text-gray-600 dark:text-gray-400">Váš košík je prázdny.</p>
+        <p class="text-gray-600 dark:text-gray-400">{{ $t('cart.empty') }}</p>
       </div>
 
       <!-- Cart with Items -->
@@ -93,7 +93,7 @@
                     @click="removeItem(item.id)"
                     class="text-red-600 hover:text-red-700 text-sm font-medium"
                   >
-                    Odstrániť
+                    {{ $t('cart.items.remove') }}
                   </button>
                 </div>
               </div>
@@ -105,7 +105,7 @@
                   v-if="item.quantity > 1"
                   class="text-sm text-gray-500 dark:text-gray-400"
                 >
-                  {{ formatPrice(item.price) }} € / ks
+                  {{ formatPrice(item.price) }} {{ $t('cart.items.per_unit') }}
                 </p>
               </div>
             </div>
@@ -118,22 +118,22 @@
             class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 sticky top-6"
           >
             <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
-              Súhrn objednávky
+              {{ $t('cart.summary.title') }}
             </h2>
 
               <div class="space-y-3 mb-6">
               <div class="flex justify-between text-gray-600 dark:text-gray-400">
-                <span>Medzisúčet</span>
+                <span>{{ $t('cart.summary.subtotal') }}</span>
                 <span>{{ formatPrice(cartStore?.subtotal ?? 0) }} €</span>
               </div>
               <div class="flex justify-between text-gray-600 dark:text-gray-400">
-                <span>Doprava</span>
+                <span>{{ $t('cart.summary.shipping') }}</span>
                 <span>{{ formatPrice(shipping) }} €</span>
               </div>
               <div
                 class="border-t border-gray-200 dark:border-gray-700 pt-3 flex justify-between text-lg font-bold text-gray-900 dark:text-white"
               >
-                <span>Celkom</span>
+                <span>{{ $t('cart.summary.total') }}</span>
                 <span>{{ formatPrice(total) }} €</span>
               </div>
             </div>
@@ -142,14 +142,14 @@
               @click="proceedToCheckout"
               class="w-full btn-primary-lg py-3 rounded-lg"
             >
-              Pokračovať
+              {{ $t('cart.summary.checkout') }}
             </button>
 
             <button
               @click="continueShopping"
               class="w-full mt-3 btn-secondary py-3 rounded-lg"
             >
-              Pokračovať v nákupe
+              {{ $t('cart.summary.continue_shopping') }}
             </button>
           </div>
         </div>
@@ -182,10 +182,10 @@ export default defineComponent({
     return {
       shipping: 4.99,
       steps: [
-        { label: "Košík", active: true },
-        { label: "Doručenie", active: false },
-        { label: "Platba", active: false },
-        { label: "Potvrdenie", active: false },
+        { label: this.$t('cart.steps.cart'), active: true },
+        { label: this.$t('cart.steps.delivery'), active: false },
+        { label: this.$t('cart.steps.payment'), active: false },
+        { label: this.$t('cart.steps.confirmation'), active: false },
       ],
     };
   },

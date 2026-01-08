@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('payment_token');
             $table->decimal('total', 10, 2);
             $table->string('status')->default('pending'); // pending, paid, cancelled, shipped, delivered
+            $table->text('notes')->nullable();
             $table->timestamps();
         });
 

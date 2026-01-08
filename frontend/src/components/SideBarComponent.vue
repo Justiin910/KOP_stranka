@@ -64,9 +64,12 @@ export default {
         this.items = response.data.map((cat) => ({
           key: cat.key_name,
           // Prefer localized object keys if backend supplies translations (e.g. cat.labels = { sk: '..', en: '...' })
+          // Otherwise prefer frontend locale translations under `categories.<key>` if available
           label:
             (cat.labels && cat.labels[lang]) ||
-            cat.label ||
+            (this.$te && this.$te("categories." + cat.key_name)
+              ? this.$t("categories." + cat.key_name)
+              : cat.label) ||
             (cat.labels && cat.labels["sk"]) ||
             cat.name ||
             cat.key_name,

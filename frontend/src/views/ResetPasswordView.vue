@@ -23,10 +23,10 @@
           </svg>
         </div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-          Obnovenie hesla
+          {{ $t("reset.title") }}
         </h1>
         <p class="text-gray-600 dark:text-gray-400 mt-2 max-w-sm mx-auto">
-          Zadajte nové heslo pre váš účet
+          {{ $t("reset.intro") }}
         </p>
       </div>
 
@@ -59,7 +59,7 @@
               />
             </svg>
           </div>
-          <p class="text-gray-600 dark:text-gray-400">Kontrolujem odkaz...</p>
+          <p class="text-gray-600 dark:text-gray-400">{{ $t("reset.checking_link") }}</p>
         </div>
 
         <!-- Reset Form -->
@@ -70,7 +70,7 @@
               for="password"
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Nové heslo
+              {{ $t("reset.new_password_label") }}
             </label>
             <div class="relative">
               <div
@@ -94,8 +94,7 @@
                 id="password"
                 v-model="password"
                 :type="showPassword ? 'text' : 'password'"
-                required
-                placeholder="Zadajte nové heslo"
+                :placeholder="$t('reset.password_placeholder')"
                 class="w-full pl-10 pr-12 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
               />
               <button
@@ -147,7 +146,7 @@
               for="password_confirmation"
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Potvrďte heslo
+              {{ $t("reset.confirm_password_label") }}
             </label>
             <div class="relative">
               <div
@@ -171,8 +170,7 @@
                 id="password_confirmation"
                 v-model="passwordConfirmation"
                 :type="showPasswordConfirm ? 'text' : 'password'"
-                required
-                placeholder="Potvrďte nové heslo"
+                :placeholder="$t('reset.confirm_password_placeholder')"
                 class="w-full pl-10 pr-12 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
               />
               <button
@@ -219,12 +217,16 @@
           </div>
 
           <!-- Password Requirements -->
-          <div class="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+          <div
+            class="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4"
+          >
             <p class="text-sm font-medium text-blue-900 dark:text-blue-400 mb-3">
-              Požiadavky na heslo:
+              {{ $t("reset.requirements_title") }}
             </p>
             <ul class="space-y-2">
-              <li class="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-300">
+              <li
+                class="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-300"
+              >
                 <svg
                   class="w-4 h-4"
                   :class="{ 'text-green-600 dark:text-green-400': password.length >= 8 }"
@@ -237,12 +239,16 @@
                     clip-rule="evenodd"
                   />
                 </svg>
-                Minimálne 8 znakov
+                {{ $t("reset.requirements.min_length") }}
               </li>
-              <li class="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-300">
+              <li
+                class="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-300"
+              >
                 <svg
                   class="w-4 h-4"
-                  :class="{ 'text-green-600 dark:text-green-400': /[a-z]/.test(password) }"
+                  :class="{
+                    'text-green-600 dark:text-green-400': /[a-z]/.test(password),
+                  }"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -252,12 +258,16 @@
                     clip-rule="evenodd"
                   />
                 </svg>
-                Malé písmená (a-z)
+                {{ $t("reset.requirements.lowercase") }}
               </li>
-              <li class="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-300">
+              <li
+                class="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-300"
+              >
                 <svg
                   class="w-4 h-4"
-                  :class="{ 'text-green-600 dark:text-green-400': /[A-Z]/.test(password) }"
+                  :class="{
+                    'text-green-600 dark:text-green-400': /[A-Z]/.test(password),
+                  }"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -267,12 +277,16 @@
                     clip-rule="evenodd"
                   />
                 </svg>
-                Veľké písmená (A-Z)
+                {{ $t("reset.requirements.uppercase") }}
               </li>
-              <li class="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-300">
+              <li
+                class="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-300"
+              >
                 <svg
                   class="w-4 h-4"
-                  :class="{ 'text-green-600 dark:text-green-400': /[0-9]/.test(password) }"
+                  :class="{
+                    'text-green-600 dark:text-green-400': /[0-9]/.test(password),
+                  }"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -282,7 +296,7 @@
                     clip-rule="evenodd"
                   />
                 </svg>
-                Čísla (0-9)
+                {{ $t("reset.requirements.digits") }}
               </li>
             </ul>
           </div>
@@ -294,7 +308,12 @@
             class="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 text-white font-semibold py-3 rounded-lg transition-colors shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed"
           >
             <span v-if="submitting" class="flex items-center justify-center gap-2">
-              <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                class="w-5 h-5 animate-spin"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -302,9 +321,9 @@
                   d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                 />
               </svg>
-              Obnovovanie...
+              {{ $t("reset.submitting") }}
             </span>
-            <span v-else>Obnoviť heslo</span>
+            <span v-else>{{ $t("reset.submit_button") }}</span>
           </button>
 
           <!-- Back to Login -->
@@ -320,7 +339,7 @@
                 d="M10 19l-7-7m0 0l7-7m-7 7h18"
               />
             </svg>
-            Späť na prihlásenie
+            {{ $t("reset.back_to_login") }}
           </router-link>
         </form>
       </div>
@@ -367,8 +386,7 @@ export default {
       this.email = this.$route.query.email;
 
       if (!this.token || !this.email) {
-        this.errorMessage =
-          "Odkaz na obnovenie hesla je neplatný alebo vypršal. Prosím požiadajte o nový odkaz.";
+        this.errorMessage = this.$t("reset.invalid_link");
         this.loading = false;
         return;
       }
@@ -380,8 +398,7 @@ export default {
       this.errorMessage = "";
 
       if (!this.isValid) {
-        this.errorMessage =
-          "Heslo nespĺňa všetky požiadavky. Prosím skontrolujte nižšie zoznamy.";
+        this.errorMessage = this.$t("reset.password_requirements_failed");
         return;
       }
 
@@ -407,14 +424,13 @@ export default {
         this.errorMessage =
           error.response?.data?.message ||
           error.response?.data?.errors?.email?.[0] ||
-          "Nepodarilo sa obnoviť heslo. Skúste znova alebo požiadajte o nový odkaz.";
+          this.$t("reset.reset_failed");
 
         // If token is invalid, show specific message
         if (error.response?.status === 422) {
           const errors = error.response.data.errors;
           if (errors.token) {
-            this.errorMessage =
-              "Odkaz na obnovenie hesla je neplatný alebo vypršal. Prosím požiadajte o nový odkaz.";
+            this.errorMessage = this.$t("reset.token_invalid");
           }
         }
       } finally {

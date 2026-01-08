@@ -50,30 +50,6 @@
         </div>
       </div>
 
-      <!-- Error Message -->
-      <div
-        v-if="errorMessage"
-        ref="messageContainer"
-        class="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4"
-      >
-        <div class="flex items-center gap-3">
-          <svg
-            class="w-6 h-6 text-red-600 dark:text-red-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <p class="text-sm text-red-800 dark:text-red-200">{{ errorMessage }}</p>
-        </div>
-      </div>
-
       <!-- Profile Header -->
       <div
         class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 mb-6"

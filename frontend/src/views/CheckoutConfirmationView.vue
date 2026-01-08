@@ -1,8 +1,45 @@
 <template>
   <div class="page-checkout-confirmation-bg">
-    <div class="max-w-2xl mx-auto px-6 py-12">
+    <div class="max-w-7xl mx-auto px-6 py-12">
+      <!-- Progress Steps -->
+      <div class="mb-12">
+        <div class="flex items-center justify-center">
+          <div v-for="(step, index) in steps" :key="index" class="flex items-center">
+            <div class="flex flex-col items-center">
+              <div
+                class="w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-colors"
+                :class="
+                  step.active
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-400'
+                "
+              >
+                {{ index + 1 }}
+              </div>
+              <span
+                class="mt-2 text-sm font-medium whitespace-nowrap"
+                :class="
+                  step.active
+                    ? 'text-blue-600 dark:text-blue-400'
+                    : 'text-gray-500 dark:text-gray-400'
+                "
+              >
+                {{ step.label }}
+              </span>
+            </div>
+            <div
+              v-if="index < steps.length - 1"
+              class="w-16 h-1 mx-4 mb-6"
+              :class="
+                steps[index + 1].active ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
+              "
+            ></div>
+          </div>
+        </div>
+      </div>
+
       <!-- Success message -->
-      <div class="text-center mb-12">
+      <div class="text-center mb-12 max-w-2xl mx-auto">
         <div
           class="inline-flex items-center justify-center w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full mb-4"
         >
@@ -170,7 +207,7 @@
           <div class="text-sm text-gray-600 dark:text-gray-400">
             <p>Vytvoreno: {{ formatDate(order.created_at) }}</p>
             <p>
-              Stav: <span class="font-medium">{{ getOrderStatus(order.status) }}</span>
+              Stav: <span class="font-medium">{{ getOrderStatus(order.status || 'pending') }}</span>
             </p>
           </div>
         </div>
@@ -241,21 +278,60 @@ export default {
     return {
       order: null,
       isAuthenticated: false,
+      steps: [
+        { label: 'Košík', active: false },
+        { label: 'Doručenie', active: false },
+        { label: 'Platba', active: false },
+        { label: 'Potvrdenie', active: true },
+      ],
     };
   },
   methods: {
     loadOrder() {
-      const raw = sessionStorage.getItem("checkoutOrder");
+      const raw = localStorage.getItem("checkoutOrder");
+      console.log("🔍 Loading order from localStorage:", raw ? "FOUND" : "NOT FOUND");
       if (!raw) {
         // redirect to home if no order
+        console.warn("⚠️ No order data - redirecting to home");
         this.router.push("/");
         return;
       }
       try {
         this.order = JSON.parse(raw);
+        console.log("✅ Order loaded:", this.order.reference);
+        
+        // Try to send confirmation email if user is logged in
+        this.sendConfirmationEmail();
       } catch (e) {
-        console.error("Invalid checkoutOrder in sessionStorage", e);
+        console.error("Invalid checkoutOrder in localStorage", e);
         this.router.push("/");
+      }
+    },
+
+    async sendConfirmationEmail() {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token || !this.order?.id) {
+          console.log("ℹ️ Skipping email: not authenticated or no order ID");
+          return;
+        }
+
+        console.log("📧 Sending confirmation email...");
+        const response = await fetch(`/api/orders/${this.order.id}/send-confirmation`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          console.log("✅ Confirmation email sent successfully");
+        } else {
+          console.warn("⚠️ Failed to send confirmation email:", response.status);
+        }
+      } catch (error) {
+        console.error("❌ Error sending confirmation email:", error);
       }
     },
 
@@ -303,7 +379,9 @@ export default {
 
     formatDate(dateString) {
       try {
+        if (!dateString) return "Neznámy dátum";
         const date = new Date(dateString);
+        if (isNaN(date.getTime())) return "Neznámy dátum";
         return date.toLocaleDateString("sk-SK", {
           year: "numeric",
           month: "long",
@@ -312,26 +390,18 @@ export default {
           minute: "2-digit",
         });
       } catch {
-        return dateString;
+        return "Neznámy dátum";
       }
     },
 
-    async checkAuthStatus() {
-      try {
-        const response = await fetch("/api/user", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("auth_token") || ""}`,
-          },
-        });
-        this.isAuthenticated = response.ok;
-      } catch (e) {
-        this.isAuthenticated = false;
-      }
-    },
   },
   mounted() {
     this.loadOrder();
-    this.checkAuthStatus();
+  },
+  unmounted() {
+    // Clear localStorage when leaving confirmation page
+    localStorage.removeItem("checkoutOrder");
+    localStorage.removeItem("checkoutDelivery");
   },
 };
 </script>

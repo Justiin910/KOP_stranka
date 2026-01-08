@@ -62,4 +62,32 @@ class ProductController extends Controller
         }
     }
 
+    /**
+     * Return products currently on sale (discount >= requested threshold)
+     */
+    public function sale(Request $request)
+    {
+        $minDiscount = (int) $request->query('min_discount', 10);
+        $limit = (int) $request->query('limit', 12);
+
+        try {
+            // Prefer records that have explicit discount fields
+            $query = DB::table('products')
+                ->where(function($q) use ($minDiscount) {
+                    // If discount_value column exists, use it
+                    $q->whereRaw("COALESCE(discount_value, 0) >= ?", [$minDiscount])
+                      // Or fallback to oldPrice/current price calculation
+                      ->orWhereRaw("CASE WHEN oldPrice IS NOT NULL AND oldPrice > 0 THEN ROUND((oldPrice - price) / oldPrice * 100) >= ? ELSE 0 END", [$minDiscount]);
+                })
+                ->orderByDesc('discount_value')
+                ->limit($limit);
+
+            $products = $query->get();
+            return response()->json($products);
+        } catch (\Exception $e) {
+            \Log::error('Failed to load sale products: ' . $e->getMessage());
+            return response()->json([]);
+        }
+    }
+
 }

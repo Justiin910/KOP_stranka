@@ -424,4 +424,178 @@ class AdminController extends Controller
             'message' => 'Produkt bol vymazaný'
         ]);
     }
+
+    /**
+     * Get all orders for admin panel
+     */
+    public function getOrders()
+    {
+        $orders = Order::with('items.product', 'user')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($order) {
+                // Get customer name - from user if exists, otherwise from address
+                $address = is_string($order->address) ? json_decode($order->address, true) : $order->address;
+                $customerName = $order->user ? $order->user->name : ($address['fullName'] ?? 'Guest');
+                
+                // Normalize and map status values to Slovak display labels
+                $rawStatus = strtolower(trim((string)($order->status ?? '')));
+                $displayStatus = '';
+                if (in_array($rawStatus, ['pending', 'čakajúce', 'cakajuce', 'cakajuce'])) {
+                    $displayStatus = 'čakajúce';
+                } elseif (in_array($rawStatus, ['processing', 'spracováva sa', 'spracovava sa', 'spracovava_sa'])) {
+                    $displayStatus = 'Spracováva sa';
+                } elseif (in_array($rawStatus, ['shipped', 'in transit', 'v preprave', 'v_preprave'])) {
+                    $displayStatus = 'V preprave';
+                } elseif (in_array($rawStatus, ['delivered', 'doručené', 'dorucene'])) {
+                    $displayStatus = 'Doručené';
+                } elseif (in_array($rawStatus, ['cancelled', 'canceled', 'zrušené', 'zrusene'])) {
+                    $displayStatus = 'Zrušené';
+                } else {
+                    // Fallback: use original status with ucfirst
+                    $displayStatus = $order->status ? ucfirst($order->status) : '';
+                }
+
+                return [
+                    'id' => $order->id,
+                    'reference' => $order->reference,
+                    'customerName' => $customerName,
+                    'email' => $order->user ? $order->user->email : ($address['email'] ?? 'N/A'),
+                    'items' => $order->items->count(),
+                    'total' => (float)$order->total,
+                    'status' => $displayStatus,
+                    'delivery_method' => $order->delivery_method,
+                    'payment_method' => $order->payment_method,
+                    'created_at' => $order->created_at->format('d.m.Y H:i'),
+                    'address' => $address,
+                    'order_items' => $order->items->map(function ($item) {
+                        return [
+                            'id' => $item->id,
+                            'product_id' => $item->product_id,
+                            'product_name' => $item->product->title ?? 'Deleted Product',
+                            'quantity' => $item->quantity,
+                            'price' => (float)$item->price,
+                        ];
+                    }),
+                ];
+            });
+
+        return response()->json($orders);
+
+    }
+
+    /**
+     * Delete an order
+     */
+    public function deleteOrder($id)
+    {
+        $order = Order::findOrFail($id);
+        $order->items()->delete();
+        $order->delete();
+
+        return response()->json([
+            'message' => 'Objednávka bola vymazaná'
+        ]);
+    }
+
+    /**
+     * Update an order
+     */
+    public function updateOrder(Request $request, $id)
+    {
+        $order = Order::with('items.product', 'user')->findOrFail($id);
+
+        // Validate input
+        $validated = $request->validate([
+            'status' => 'nullable|string',
+            'payment_method' => 'nullable|string',
+            'delivery_method' => 'nullable|string',
+            'address' => 'nullable|array',
+            'address.fullName' => 'nullable|string',
+            'address.email' => 'nullable|email',
+            'address.phone' => 'nullable|string',
+            'address.street' => 'nullable|string',
+            'address.city' => 'nullable|string',
+            'address.zip' => 'nullable|string',
+            'address.country' => 'nullable|string',
+            'items' => 'nullable|array',
+            'items.*.id' => 'nullable|integer',
+            'items.*.product_id' => 'nullable|integer',
+            'items.*.quantity' => 'nullable|integer|min:1',
+            'items.*.price' => 'nullable|numeric|min:0',
+        ]);
+
+        // Update basic order info
+        if (isset($validated['status'])) {
+            $order->status = $validated['status'];
+        }
+        if (isset($validated['payment_method'])) {
+            $order->payment_method = $validated['payment_method'];
+        }
+        if (isset($validated['delivery_method'])) {
+            $order->delivery_method = $validated['delivery_method'];
+        }
+        if (isset($validated['address'])) {
+            $order->address = json_encode($validated['address']);
+        }
+
+        // Update items if provided
+        if (isset($validated['items'])) {
+            $itemIds = [];
+            $newTotal = 0;
+
+            foreach ($validated['items'] as $itemData) {
+                if (isset($itemData['id'])) {
+                    // Update existing item
+                    $item = $order->items()->find($itemData['id']);
+                    if ($item) {
+                        $item->quantity = $itemData['quantity'] ?? $item->quantity;
+                        $item->price = $itemData['price'] ?? $item->price;
+                        $item->save();
+                        $itemIds[] = $item->id;
+                        $newTotal += $item->quantity * $item->price;
+                    }
+                }
+            }
+
+            // Delete items not in the update
+            $order->items()->whereNotIn('id', $itemIds)->delete();
+
+            // Update order total
+            $order->total = $newTotal;
+        }
+
+        $order->save();
+
+        // Return updated order
+        $order = $order->refresh();
+        $address = is_string($order->address) ? json_decode($order->address, true) : $order->address;
+        $customerName = $order->user ? $order->user->name : ($address['fullName'] ?? 'Guest');
+
+        return response()->json([
+            'message' => 'Objednávka bola aktualizovaná',
+            'order' => [
+                'id' => $order->id,
+                'reference' => $order->reference,
+                'customerName' => $customerName,
+                'email' => $order->user ? $order->user->email : ($address['email'] ?? 'N/A'),
+                'items' => $order->items->count(),
+                'total' => (float)$order->total,
+                'status' => ucfirst($order->status),
+                'delivery_method' => $order->delivery_method,
+                'payment_method' => $order->payment_method,
+                'created_at' => $order->created_at->format('d.m.Y H:i'),
+                'address' => $address,
+                'order_items' => $order->items->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'product_id' => $item->product_id,
+                        'product_name' => $item->product->name ?? 'Deleted Product',
+                        'quantity' => $item->quantity,
+                        'price' => (float)$item->price,
+                    ];
+                }),
+            ]
+        ]);
+    }
 }

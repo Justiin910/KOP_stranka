@@ -59,6 +59,11 @@
                 <th
                   class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                 >
+                  Referencia
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                >
                   Zákazník
                 </th>
                 <th
@@ -94,6 +99,11 @@
                 >
                   #{{ order.id }}
                 </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"
+                >
+                  {{ order.reference }}
+                </td>
                 <td class="px-6 py-4 text-sm">
                   <div class="text-gray-900 dark:text-white font-medium">
                     {{ order.customerName }}
@@ -101,7 +111,7 @@
                   <div class="text-gray-500 dark:text-gray-400">{{ order.email }}</div>
                 </td>
                 <td class="px-6 py-4 text-sm text-gray-900 dark:text-white">
-                  {{ order.items }} položiek
+                  {{ formatItems(order.items) }}
                 </td>
                 <td
                   class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white"
@@ -113,7 +123,7 @@
                     class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
                     :class="getStatusClass(order.status)"
                   >
-                    {{ order.status }}
+                    {{ formatStatus(order.status) }}
                   </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
@@ -402,48 +412,415 @@
       </div>
     </main>
 
-    <!-- Modal for Order Details -->
+    <!-- Modal for Order Details / Edit -->
     <div
       v-if="selectedOrder"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-      @click="selectedOrder = null"
+      class="fixed inset-0 bg-white/30 backdrop-blur-md flex items-center justify-center z-50 overflow-y-auto"
     >
       <div
-        class="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-2xl w-full mx-4"
+        class="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-4xl w-full mx-4 my-8"
         @click.stop
       >
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-          Objednávka #{{ selectedOrder.id }}
-        </h2>
-        <div class="space-y-4">
-          <div>
-            <p class="text-sm text-gray-600 dark:text-gray-400">Zákazník</p>
-            <p class="text-lg font-medium text-gray-900 dark:text-white">
-              {{ selectedOrder.customerName }}
-            </p>
-            <p class="text-sm text-gray-600 dark:text-gray-400">
-              {{ selectedOrder.email }}
-            </p>
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+            Objednávka #{{ selectedOrder.id }}
+          </h2>
+          <button
+            @click="
+              editingOrder = editingOrder
+                ? null
+                : JSON.parse(JSON.stringify(selectedOrder))
+            "
+            class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium"
+          >
+            {{ editingOrder ? "Zrušiť" : "Upraviť" }}
+          </button>
+        </div>
+
+        <div
+          v-if="orderError"
+          class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded"
+        >
+          {{ orderError }}
+        </div>
+
+        <div v-if="!editingOrder" class="space-y-6">
+          <!-- View Mode -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <p class="text-sm text-gray-600 dark:text-gray-400">Zákazník</p>
+              <p class="text-lg font-medium text-gray-900 dark:text-white">
+                {{ selectedOrder.customerName }}
+              </p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {{ selectedOrder.email }}
+              </p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-600 dark:text-gray-400">Referencie</p>
+              <p class="text-lg font-medium text-gray-900 dark:text-white">
+                {{ selectedOrder.reference }}
+              </p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {{ selectedOrder.created_at }}
+              </p>
+            </div>
           </div>
-          <div>
-            <p class="text-sm text-gray-600 dark:text-gray-400">Celková suma</p>
-            <p class="text-2xl font-bold text-gray-900 dark:text-white">
-              {{ selectedOrder.total }} €
-            </p>
+
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <p class="text-sm text-gray-600 dark:text-gray-400">Celková suma</p>
+              <p class="text-2xl font-bold text-gray-900 dark:text-white">
+                {{ selectedOrder.total }} €
+              </p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-600 dark:text-gray-400">Stav</p>
+              <span
+                class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
+                :class="getStatusClass(selectedOrder.status)"
+              >
+                {{ formatStatus(selectedOrder.status) }}
+              </span>
+            </div>
+            <div>
+              <p class="text-sm text-gray-600 dark:text-gray-400">Počet položiek</p>
+              <p class="text-2xl font-bold text-gray-900 dark:text-white">
+                {{ formatItems(selectedOrder.items) }}
+              </p>
+            </div>
           </div>
-          <div>
-            <p class="text-sm text-gray-600 dark:text-gray-400">Stav</p>
-            <span
-              class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
-              :class="getStatusClass(selectedOrder.status)"
-            >
-              {{ selectedOrder.status }}
-            </span>
+
+          <div v-if="selectedOrder.address" class="border-t pt-4">
+            <p class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
+              Doručovacia adresa
+            </p>
+            <div class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+              <p>{{ selectedOrder.address.fullName }}</p>
+              <p>{{ selectedOrder.address.street }}</p>
+              <p>{{ selectedOrder.address.zip }} {{ selectedOrder.address.city }}</p>
+              <p>{{ selectedOrder.address.country }}</p>
+              <p class="pt-2">Telefón: {{ selectedOrder.address.phone }}</p>
+              <p>Email: {{ selectedOrder.address.email }}</p>
+            </div>
+          </div>
+
+          <div class="border-t pt-4">
+            <p class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
+              Metódy
+            </p>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <span class="text-xs text-gray-600 dark:text-gray-400">Doručenie:</span>
+                <p class="text-sm text-gray-900 dark:text-white">
+                  {{ selectedOrder.delivery_method }}
+                </p>
+              </div>
+              <div>
+                <span class="text-xs text-gray-600 dark:text-gray-400">Platba:</span>
+                <p class="text-sm text-gray-900 dark:text-white">
+                  {{ selectedOrder.payment_method }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="border-t pt-4">
+            <p class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-3">
+              Položky objednávky
+            </p>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th class="px-4 py-2 text-left text-gray-600 dark:text-gray-400">
+                      Produkt
+                    </th>
+                    <th class="px-4 py-2 text-center text-gray-600 dark:text-gray-400">
+                      Množstvo
+                    </th>
+                    <th class="px-4 py-2 text-right text-gray-600 dark:text-gray-400">
+                      Cena
+                    </th>
+                    <th class="px-4 py-2 text-right text-gray-600 dark:text-gray-400">
+                      Spolu
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y">
+                  <tr v-for="item in selectedOrder.order_items" :key="item.id">
+                    <td class="px-4 py-2 text-gray-900 dark:text-white">
+                      {{ item.product_name }}
+                    </td>
+                    <td class="px-4 py-2 text-center text-gray-900 dark:text-white">
+                      {{ item.quantity }}
+                    </td>
+                    <td class="px-4 py-2 text-right text-gray-900 dark:text-white">
+                      {{ item.price.toFixed(2) }} €
+                    </td>
+                    <td
+                      class="px-4 py-2 text-right text-gray-900 dark:text-white font-semibold"
+                    >
+                      {{ (item.quantity * item.price).toFixed(2) }} €
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
+
+        <!-- Edit Mode -->
+        <div v-else class="space-y-6">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >Zákazník</label
+              >
+              <input
+                v-model="editingOrder.customerName"
+                type="text"
+                class="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg border border-gray-300 dark:border-gray-600"
+              />
+            </div>
+            <div>
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >Email</label
+              >
+              <input
+                v-model="editingOrder.email"
+                type="email"
+                class="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg border border-gray-300 dark:border-gray-600"
+              />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >Doručenie</label
+              >
+              <select
+                v-model="editingOrder.delivery_method"
+                class="w-full px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg border border-gray-300 dark:border-gray-600"
+              >
+                <option v-for="opt in deliveryOptions" :key="opt" :value="opt">
+                  {{ opt }}
+                </option>
+              </select>
+            </div>
+            <div>
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >Stav</label
+              >
+              <select
+                v-model="editingOrder.status"
+                class="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg border border-gray-300 dark:border-gray-600"
+              >
+                <option value="čakajúce">čakajúce</option>
+                <option value="Spracováva sa">Spracováva sa</option>
+                <option value="V preprave">V preprave</option>
+                <option value="Doručené">Doručené</option>
+                <option value="Zrušené">Zrušené</option>
+              </select>
+            </div>
+            <div>
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >Platba</label
+              >
+              <select
+                v-model="editingOrder.payment_method"
+                class="w-full px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg border border-gray-300 dark:border-gray-600"
+              >
+                <option v-for="opt in paymentOptions" :key="opt" :value="opt">
+                  {{ opt }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div v-if="editingOrder.address" class="border-t pt-4">
+            <p class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-3">
+              Doručovacia adresa
+            </p>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label
+                  class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >Meno</label
+                >
+                <input
+                  v-model="editingOrder.address.fullName"
+                  type="text"
+                  class="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg border border-gray-300 dark:border-gray-600 text-sm"
+                />
+              </div>
+              <div>
+                <label
+                  class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >Ulica</label
+                >
+                <input
+                  v-model="editingOrder.address.street"
+                  type="text"
+                  class="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg border border-gray-300 dark:border-gray-600 text-sm"
+                />
+              </div>
+              <div>
+                <label
+                  class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >PSČ</label
+                >
+                <input
+                  v-model="editingOrder.address.zip"
+                  type="text"
+                  class="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg border border-gray-300 dark:border-gray-600 text-sm"
+                />
+              </div>
+              <div>
+                <label
+                  class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >Mesto</label
+                >
+                <input
+                  v-model="editingOrder.address.city"
+                  type="text"
+                  class="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg border border-gray-300 dark:border-gray-600 text-sm"
+                />
+              </div>
+              <div>
+                <label
+                  class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >Krajina</label
+                >
+                <select
+                  v-model="editingOrder.address.country"
+                  class="w-full px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg border border-gray-300 dark:border-gray-600 text-sm"
+                >
+                  <option v-for="c in countryOptions" :key="c.code" :value="c.name">
+                    {{ c.name }}
+                  </option>
+                </select>
+              </div>
+              <div>
+                <label
+                  class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >Telefón</label
+                >
+                <input
+                  v-model="editingOrder.address.phone"
+                  @input="onPhoneInput"
+                  type="text"
+                  placeholder="0912345678 alebo +421912345678"
+                  class="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg border border-gray-300 dark:border-gray-600 text-sm"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="border-t pt-4">
+            <p class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-3">
+              Položky objednávky
+            </p>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th class="px-4 py-2 text-left text-gray-600 dark:text-gray-400">
+                      Produkt
+                    </th>
+                    <th class="px-4 py-2 text-center text-gray-600 dark:text-gray-400">
+                      Množstvo
+                    </th>
+                    <th class="px-4 py-2 text-right text-gray-600 dark:text-gray-400">
+                      Cena
+                    </th>
+                    <th class="px-4 py-2 text-right text-gray-600 dark:text-gray-400">
+                      Akcia
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y">
+                  <tr v-for="item in editingOrder.order_items" :key="item.id">
+                    <td class="px-4 py-2 text-gray-900 dark:text-white">
+                      {{ item.product_name }}
+                    </td>
+                    <td class="px-4 py-2 text-center">
+                      <input
+                        v-model.number="item.quantity"
+                        type="number"
+                        min="1"
+                        class="w-16 px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded border border-gray-300 dark:border-gray-600 text-center"
+                      />
+                    </td>
+                    <td class="px-4 py-2 text-right">
+                      <input
+                        v-model.number="item.price"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        class="w-24 px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded border border-gray-300 dark:border-gray-600 text-right"
+                      />
+                      €
+                    </td>
+                    <td class="px-4 py-2 text-right">
+                      <button
+                        @click="
+                          editingOrder.order_items = editingOrder.order_items.filter(
+                            (i) => i.id !== item.id
+                          )
+                        "
+                        class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 text-sm"
+                      >
+                        Odstrániť
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="border-t pt-4">
+            <p class="text-lg font-bold text-gray-900 dark:text-white">
+              Celkem:
+              {{
+                editingOrder.order_items
+                  .reduce((sum, item) => sum + item.quantity * item.price, 0)
+                  .toFixed(2)
+              }}
+              €
+            </p>
+          </div>
+
+          <div class="flex gap-3">
+            <button
+              @click="saveOrderChanges"
+              :disabled="orderSaving"
+              class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium disabled:opacity-50"
+            >
+              {{ orderSaving ? "Ukladám..." : "Uložiť zmeny" }}
+            </button>
+            <button
+              @click="editingOrder = null"
+              class="flex-1 px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-900 dark:text-white rounded-lg hover:bg-gray-400 dark:hover:bg-gray-700 font-medium"
+            >
+              Zrušiť
+            </button>
+          </div>
+        </div>
+
         <button
-          @click="selectedOrder = null"
-          class="mt-6 w-full px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg transition-all"
+          @click="
+            selectedOrder = null;
+            editingOrder = null;
+          "
+          class="mt-6 w-full px-4 py-2 btn-primary text-white rounded-lg font-medium hover:shadow-lg transition-all"
         >
           Zavrieť
         </button>
@@ -994,6 +1371,9 @@ export default {
       userSearch: "",
       productSearch: "",
       selectedOrder: null,
+      editingOrder: null,
+      orderSaving: false,
+      orderError: "",
       showAddProduct: false,
       editingUser: null,
       editingSaving: false,
@@ -1019,6 +1399,20 @@ export default {
       originalProduct: null,
       productSaving: false,
       currentUser: JSON.parse(localStorage.getItem("user") || "{}"),
+      deliveryOptions: [
+        "Kuriér - Slovenská pošta",
+        "Packeta - výdajné miesto",
+        "Osobný odber",
+      ],
+      paymentOptions: ["Platba kartou", "Dobierka", "Bankový prevod", "PayPal"],
+      countryOptions: [
+        { code: "SK", name: "Slovensko" },
+        { code: "CZ", name: "Česká republika" },
+        { code: "PL", name: "Poľsko" },
+        { code: "HU", name: "Maďarsko" },
+        { code: "AT", name: "Rakúsko" },
+        { code: "DE", name: "Nemecko" },
+      ],
 
       allTabs: [
         { id: "stats", label: "Štatistiky", description: "Prehľad výkonu vášho obchodu" },
@@ -1108,48 +1502,7 @@ export default {
         },
       ],
 
-      orders: [
-        {
-          id: 1001,
-          customerName: "Ján Novák",
-          email: "jan.novak@gmail.com",
-          items: 3,
-          total: 1599,
-          status: "Doručené",
-        },
-        {
-          id: 1002,
-          customerName: "Peter Malý",
-          email: "peter.maly@gmail.com",
-          items: 1,
-          total: 279,
-          status: "V preprave",
-        },
-        {
-          id: 1003,
-          customerName: "Mária Veselá",
-          email: "maria.vesela@gmail.com",
-          items: 2,
-          total: 2398,
-          status: "Spracováva sa",
-        },
-        {
-          id: 1004,
-          customerName: "Tomáš Horný",
-          email: "tomas.horny@gmail.com",
-          items: 4,
-          total: 456,
-          status: "Doručené",
-        },
-        {
-          id: 1005,
-          customerName: "Eva Nová",
-          email: "eva.nova@gmail.com",
-          items: 1,
-          total: 1199,
-          status: "Zrušené",
-        },
-      ],
+      orders: [],
 
       users: [],
 
@@ -1165,6 +1518,7 @@ export default {
       }
     });
     this.fetchUsers();
+    this.fetchOrders();
     this.loadProducts();
     this.updateBodyScroll();
   },
@@ -1179,12 +1533,15 @@ export default {
     filteredOrders() {
       if (!this.orderSearch) return this.orders;
       const search = this.orderSearch.toLowerCase();
-      return this.orders.filter(
-        (order) =>
-          order.id.toString().includes(search) ||
-          order.customerName.toLowerCase().includes(search) ||
-          order.email.toLowerCase().includes(search)
-      );
+      return this.orders.filter((order) => {
+        if (order.id && order.id.toString().includes(search)) return true;
+        if (order.reference && order.reference.toLowerCase().includes(search))
+          return true;
+        if (order.customerName && order.customerName.toLowerCase().includes(search))
+          return true;
+        if (order.email && order.email.toLowerCase().includes(search)) return true;
+        return false;
+      });
     },
     filteredUsers() {
       if (!this.userSearch) return this.users;
@@ -1288,21 +1645,110 @@ export default {
       const classes = {
         Doručené: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
         "V preprave": "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
-        "Spracováva sa":
-          "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
+        "Spracováva sa": "bg-orange-600 text-white dark:bg-orange-500 dark:text-white",
+        Čakajúce: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300",
+        Pending: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300",
         Zrušené: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
       };
       return (
         classes[status] || "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
       );
     },
+    formatStatus(status) {
+      if (!status) return "";
+      try {
+        return status.charAt(0).toUpperCase() + status.slice(1);
+      } catch (e) {
+        return status;
+      }
+    },
+    onPhoneInput(e) {
+      if (!this.editingOrder || !this.editingOrder.address) return;
+      const raw = e.target.value || "";
+      this.editingOrder.address.phone = this.formatPhone(raw);
+    },
+    formatPhone(value) {
+      if (!value) return "";
+      // keep leading + if present
+      const hasPlus = value.trim().startsWith("+");
+      let digits = value.replace(/\D/g, "");
+      // Handle Slovak country code +421
+      if (digits.startsWith("421")) {
+        const rest = digits.slice(3);
+        // format as +421 XXX XXX XXX
+        const groups = rest.replace(/(\d{3})(?=\d)/g, "$1 ");
+        return (hasPlus ? "+" : "+") + "421 " + groups;
+      }
+      // If starts with 0 (local), group as 3-3-3
+      if (digits.startsWith("0")) {
+        // e.g., 0912345678 -> 091 234 5678
+        if (digits.length <= 3) return digits;
+        if (digits.length <= 6) return digits.replace(/(\d{3})(\d+)/, "$1 $2");
+        return digits.replace(/(\d{3})(\d{3})(\d+)/, "$1 $2 $3");
+      }
+      // Generic grouping by 3
+      return digits.replace(/(\d{3})(?=\d)/g, "$1 ");
+    },
+    formatItems(count) {
+      const n = Number(count) || 0;
+      if (n === 1) return "1 položka";
+      if (n >= 2 && n <= 4) return n + " položky";
+      return n + " položiek";
+    },
     viewOrder(order) {
       this.selectedOrder = order;
     },
+    saveOrderChanges() {
+      this.orderSaving = true;
+      this.orderError = "";
+
+      const updateData = {
+        status: this.editingOrder.status,
+        payment_method: this.editingOrder.payment_method,
+        delivery_method: this.editingOrder.delivery_method,
+        address: this.editingOrder.address,
+        items: this.editingOrder.order_items.map((item) => ({
+          id: item.id,
+          product_id: item.product_id,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+      };
+
+      api
+        .put(`api/admin/orders/${this.editingOrder.id}`, updateData)
+        .then((response) => {
+          // Update the selectedOrder and orders list
+          const updatedOrder = response.data.order;
+          const index = this.orders.findIndex((o) => o.id === updatedOrder.id);
+          if (index !== -1) {
+            this.orders[index] = updatedOrder;
+          }
+          this.selectedOrder = updatedOrder;
+          this.editingOrder = null;
+          alert("Objednávka bola aktualizovaná!");
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          this.orderError =
+            error.response?.data?.message || "Chyba pri ukladaní objednávky";
+        })
+        .finally(() => {
+          this.orderSaving = false;
+        });
+    },
     async deleteOrder(id) {
       if (await window.appConfirm("Naozaj chcete vymazať túto objednávku?")) {
-        this.orders = this.orders.filter((order) => order.id !== id);
-        alert("Objednávka vymazaná!");
+        api
+          .delete(`api/admin/orders/${id}`)
+          .then(() => {
+            this.orders = this.orders.filter((order) => order.id !== id);
+            alert("Objednávka vymazaná!");
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            alert("Chyba pri vymazávaní objednávky");
+          });
       }
     },
     async deleteUser(id) {
@@ -1536,6 +1982,18 @@ export default {
           this.usersLoading = false;
         });
     },
+    fetchOrders() {
+      api
+        .get("api/admin/orders")
+        .then((response) => {
+          console.log("Orders fetched:", response.data);
+          this.orders = response.data;
+        })
+        .catch((error) => {
+          console.error("Error fetching orders:", error);
+          alert("Chyba pri načítavaní objednávok");
+        });
+    },
     async loadProducts() {
       try {
         const response = await api.get("api/admin/products");
@@ -1759,6 +2217,39 @@ export default {
       // Clear discount fields only
       this.currentProduct.discount_type = "percent";
       this.currentProduct.discount_value = 0;
+    },
+  },
+  watch: {
+    editingOrder(newVal) {
+      if (!newVal) return;
+      // Ensure address exists
+      if (!newVal.address) newVal.address = {};
+
+      // Format phone for display
+      if (newVal.address.phone) {
+        newVal.address.phone = this.formatPhone(newVal.address.phone);
+      }
+
+      // Ensure delivery method is present in options
+      if (
+        newVal.delivery_method &&
+        !this.deliveryOptions.includes(newVal.delivery_method)
+      ) {
+        this.deliveryOptions.unshift(newVal.delivery_method);
+      }
+
+      // Ensure payment method present
+      if (newVal.payment_method && !this.paymentOptions.includes(newVal.payment_method)) {
+        this.paymentOptions.unshift(newVal.payment_method);
+      }
+
+      // Ensure country present in options
+      const country = newVal.address.country;
+      if (!country) {
+        newVal.address.country = this.countryOptions[0]?.name || "";
+      } else if (!this.countryOptions.find((c) => c.name === country)) {
+        this.countryOptions.unshift({ code: "", name: country });
+      }
     },
   },
 };

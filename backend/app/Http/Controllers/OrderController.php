@@ -31,7 +31,23 @@ class OrderController extends Controller
         try {
             return DB::transaction(function () use ($validated, $request) {
                 // Get authenticated user (if any)
-                $userId = auth()->id();
+                $userId = null;
+
+                // If a Sanctum personal access token was provided in Authorization header, resolve it
+                try {
+                    if ($request->bearerToken()) {
+                        $tokenModel = \Laravel\Sanctum\PersonalAccessToken::findToken($request->bearerToken());
+                        if ($tokenModel && $tokenModel->tokenable) {
+                            $userId = $tokenModel->tokenable->id;
+                        }
+                    }
+                } catch (\Exception $e) {
+                    // ignore and fallback to auth()->id()
+                }
+
+                if (!$userId) {
+                    $userId = auth()->id();
+                }
 
                 // Parse address if it's a string
                 $address = is_string($validated['address'])
@@ -141,4 +157,64 @@ class OrderController extends Controller
             'order' => $order
         ]);
     }
-}
+
+    /**
+     * Send confirmation email for order
+     */
+    public function sendConfirmationEmail(Request $request, Order $order)
+    {
+        // Only allow if user owns the order or is admin
+        if ($order->user_id && !auth()->check()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        if ($order->user_id && auth()->id() !== $order->user_id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            // Get email from order delivery address
+            $address = $order->address;
+            $email = $address['email'] ?? null;
+
+            if (!$email) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No email address found in order'
+                ], 400);
+            }
+
+            // Send email
+            \Mail::send('emails.order-confirmation', [
+                'order' => $order,
+                'address' => $address,
+                'phone' => $order->phone ?? 'N/A',
+                'items' => $order->items->map(function ($item) {
+                    return [
+                        'product_id' => $item->product_id,
+                        'product_title' => $item->product->title ?? 'Product',
+                        'quantity' => $item->quantity,
+                        'price' => $item->price,
+                    ];
+                })->toArray(),
+                'paymentMethod' => [
+                    'card' => 'Platobná karta',
+                    'googlepay' => 'Google Pay',
+                    'paypal' => 'PayPal',
+                ][$order->payment_method] ?? $order->payment_method,
+            ], function ($message) use ($email, $order) {
+                $message->to($email)
+                    ->subject("Potvrdenie objednávky - {$order->reference}");
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Confirmation email sent successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send email: ' . $e->getMessage()
+            ], 500);
+        }
+    }}

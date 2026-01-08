@@ -8,14 +8,14 @@
     <!-- Results -->
     <section class="flex-1 px-6 py-10">
       <div class="max-w-6xl mx-auto">
-        <h1 class="text-2xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Výsledky vyhľadávania</h1>
-        <p v-if="!query" class="text-gray-700 dark:text-gray-300 mb-4">Zadajte hľadaný výraz do vyhľadávacieho poľa.</p>
-        <p v-else class="text-gray-700 dark:text-gray-300 mb-4">Hľadám: <strong class="text-gray-900 dark:text-gray-100">{{ query }}</strong></p>
+        <h1 class="text-2xl font-semibold mb-4 text-gray-900 dark:text-gray-100">{{ $t("search.results_title") }}</h1>
+        <p v-if="!query" class="text-gray-700 dark:text-gray-300 mb-4">{{ $t("search.enter_query") }}</p>
+        <p v-else class="text-gray-700 dark:text-gray-300 mb-4">{{ $t("search.searching") }}: <strong class="text-gray-900 dark:text-gray-100">{{ query }}</strong></p>
 
-        <div v-if="loading" class="text-center py-10 text-gray-600 dark:text-gray-300">Načítavam...</div>
+        <div v-if="loading" class="text-center py-10 text-gray-600 dark:text-gray-300">{{ $t("search.loading") }}</div>
 
         <div v-if="!loading && products.length === 0" class="text-center py-10 text-gray-600 dark:text-gray-300">
-          Žiadne výsledky.
+          {{ $t("search.no_results") }}
         </div>
 
         <div v-if="products.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -79,7 +79,7 @@ export default {
           description: product.description || '',
           quantity: 1,
         });
-        alert(`${product.title || product.name} pridané do košíka!`);
+        alert(this.$t('products.added_to_cart', { name: product.title || product.name }));
       } catch (e) {
         console.error('Failed add to cart', e);
       }

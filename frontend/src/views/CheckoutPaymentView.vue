@@ -1,7 +1,44 @@
 <template>
   <div class="page-checkout-payment-bg">
-    <div class="max-w-4xl mx-auto px-6 py-12">
-      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">Platba</h1>
+    <div class="max-w-7xl mx-auto px-6 py-12">
+      <!-- Progress Steps -->
+      <div class="mb-12">
+        <div class="flex items-center justify-center">
+          <div v-for="(step, index) in steps" :key="index" class="flex items-center">
+            <div class="flex flex-col items-center">
+              <div
+                class="w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-colors"
+                :class="
+                  step.active
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-400'
+                "
+              >
+                {{ index + 1 }}
+              </div>
+              <span
+                class="mt-2 text-sm font-medium"
+                :class="
+                  step.active
+                    ? 'text-blue-600 dark:text-blue-400'
+                    : 'text-gray-500 dark:text-gray-400'
+                "
+              >
+                {{ step.label }}
+              </span>
+            </div>
+            <div
+              v-if="index < steps.length - 1"
+              class="w-24 h-1 mx-4 mb-6"
+              :class="
+                steps[index + 1].active ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
+              "
+            ></div>
+          </div>
+        </div>
+      </div>
+
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">Platba</h1>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Payment + Delivery Summary -->
@@ -159,10 +196,10 @@
                   <input
                     v-model="card.expiry"
                     type="text"
-                    maxlength="5"
+                    maxlength="7"
                     @input="formatExpiry"
                     class="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    placeholder="08/26"
+                    placeholder="08/2026"
                   />
                 </div>
                 <div>
@@ -275,6 +312,12 @@ export default {
   },
   data() {
     return {
+      steps: [
+        { label: "Košík", active: false },
+        { label: "Doručenie", active: false },
+        { label: "Platba", active: true },
+        { label: "Potvrdenie", active: false },
+      ],
       delivery: null,
       selectedPayment: "card",
       card: {
@@ -324,14 +367,36 @@ export default {
         .trim();
     },
     formatExpiry() {
-      let v = this.card.expiry.replace(/\D/g, "").substring(0, 4);
-      if (v.length > 2) v = v.substring(0, 2) + "/" + v.substring(2);
-      this.card.expiry = v;
+      let digits = this.card.expiry.replace(/\D/g, "").substring(0, 6); // MMYYYY max
+
+      if (digits.length <= 2) {
+        this.card.expiry = digits;
+        return;
+      }
+
+      // split into month and year parts
+      let monthPart = digits.substring(0, 2);
+      let yearPart = digits.substring(2);
+
+      // normalize month (1-12)
+      let monthNum = parseInt(monthPart, 10);
+      if (isNaN(monthNum) || monthNum < 1) monthNum = 1;
+      if (monthNum > 12) monthNum = 12;
+      monthPart = String(monthNum).padStart(2, "0");
+
+      // limit year to 4 digits and max 9999
+      if (yearPart.length > 4) yearPart = yearPart.substring(0, 4);
+      if (yearPart.length > 0) {
+        let yearNum = parseInt(yearPart, 10);
+        if (!isNaN(yearNum) && yearNum > 9999) yearPart = "9999";
+      }
+
+      this.card.expiry = yearPart.length > 0 ? monthPart + "/" + yearPart : monthPart;
     },
     validateCard() {
       const digits = this.card.number.replace(/\D/g, "");
       if (digits.length !== 16) return false;
-      if (!/^\d{2}\/\d{2}$/.test(this.card.expiry)) return false;
+      if (!/^\d{2}\/\d{4}$/.test(this.card.expiry)) return false;
       if (!/^[0-9]{3,4}$/.test(this.card.cvc)) return false;
       if (!this.card.name) return false;
       return true;
@@ -533,10 +598,16 @@ export default {
     // Create order and process payment
     async createOrder(paymentData) {
       try {
+        // Validate delivery
+        if (!this.delivery) {
+          alert("Chýba informácia o doručení");
+          return;
+        }
+
         // Create order object
         const order = {
           id: "TMP-" + Date.now(),
-          reference: this.orderReference,
+          reference: "ORD-" + Math.floor(Math.random() * 1000000) + "-" + Date.now(),
           delivery: this.delivery,
           payment: {
             method: paymentData.method,
@@ -552,17 +623,26 @@ export default {
           },
           items: this.cartStore.cartItems,
           total: (this.cartSubtotal + this.deliveryFee).toFixed(2),
+          created_at: new Date().toISOString(),
+          status: "pending",
         };
 
-        // Save to session
-        sessionStorage.setItem("checkoutOrder", JSON.stringify(order));
+        // Save to localStorage (persists through navigation)
+        localStorage.setItem("checkoutOrder", JSON.stringify(order));
 
-        // Call backend to create order
+        // Prepare items for API
+        const items = order.items.map((item) => ({
+          product_id: item.product_id || item.id,
+          quantity: item.quantity,
+          price: parseFloat(String(item.price)),
+        }));
+
+        // Call backend API to create order
         const response = await fetch("/api/orders", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("auth_token") || ""}`,
+            Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
           },
           body: JSON.stringify({
             reference: order.reference,
@@ -572,26 +652,38 @@ export default {
             payment_method: order.payment.method,
             payment_token: order.payment.token,
             total: parseFloat(order.total),
-            items: order.items.map((item) => ({
-              product_id: item.product_id,
-              quantity: item.quantity,
-              price: parseFloat(String(item.price)),
-            })),
+            items: items,
           }),
         });
 
         if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.message || "Failed to create order");
+          let errorMsg = "Failed to create order";
+          try {
+            const error = await response.json();
+            errorMsg = error.message || error.error || errorMsg;
+          } catch (e) {
+            // Response is not JSON (e.g., 404 HTML page)
+            errorMsg = `Server error (${response.status}): ${response.statusText}`;
+          }
+          throw new Error(errorMsg);
         }
 
         const result = await response.json();
         console.log("Order created successfully:", result);
 
+        // Update order with real ID from backend
+        if (result.order && result.order.id) {
+          order.id = result.order.id;
+          localStorage.setItem("checkoutOrder", JSON.stringify(order));
+        }
+
         // Clear cart
         await this.cartStore.clearCart();
 
-        // Navigate to confirmation
+        // Verify localStorage has data
+        console.log("✅ Order saved to localStorage:", localStorage.getItem("checkoutOrder") ? "YES" : "NO");
+
+        // Navigate to confirmation (don't clear yet - let view do it)
         this.router.push("/checkout/confirmation");
       } catch (error) {
         console.error("Order creation failed:", error);
@@ -612,7 +704,7 @@ export default {
           return;
         }
 
-        // Mock card payment (in production, use Stripe or similar)
+        // Create order with card payment
         await this.createOrder({
           method: "card",
           token: "mock_card_token_" + Date.now(),
