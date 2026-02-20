@@ -114,12 +114,27 @@ class OrderController extends Controller
         $orders = auth()->user()->orders()
             ->with('items.product')
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->get()
+            ->map(function ($order) {
+                return [
+                    'id' => $order->id,
+                    'reference' => $order->reference,
+                    'status' => $order->status,
+                    'total' => (float)$order->total,
+                    'created_at' => $order->created_at,
+                    'items' => $order->items->map(function ($item) {
+                        return [
+                            'id' => $item->id,
+                            'product_id' => $item->product_id,
+                            'product_name' => $item->product?->title ?? 'Deleted Product',
+                            'quantity' => $item->quantity,
+                            'price' => (float)$item->price,
+                        ];
+                    }),
+                ];
+            });
 
-        return response()->json([
-            'success' => true,
-            'orders' => $orders
-        ]);
+        return response()->json($orders);
     }
 
     /**
@@ -131,11 +146,31 @@ class OrderController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $order->load('items.product');
+        $order->load('items.product', 'user');
+
+        $address = is_string($order->address) ? json_decode($order->address, true) : $order->address;
 
         return response()->json([
             'success' => true,
-            'order' => $order
+            'order' => [
+                'id' => $order->id,
+                'reference' => $order->reference,
+                'status' => $order->status,
+                'total' => (float)$order->total,
+                'created_at' => $order->created_at,
+                'delivery_method' => $order->delivery_method,
+                'payment_method' => $order->payment_method,
+                'address' => $address,
+                'items' => $order->items->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'product_id' => $item->product_id,
+                        'product_name' => $item->product?->title ?? 'Deleted Product',
+                        'quantity' => $item->quantity,
+                        'price' => (float)$item->price,
+                    ];
+                }),
+            ],
         ]);
     }
 

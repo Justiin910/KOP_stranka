@@ -61,21 +61,36 @@ export default {
             : "sk");
         // Request categories with lang param so backend can return localized labels when supported
         const response = await api.get("api/categories", { params: { lang } });
-        this.items = response.data.map((cat) => ({
-          key: cat.key_name,
-          // Prefer localized object keys if backend supplies translations (e.g. cat.labels = { sk: '..', en: '...' })
-          // Otherwise prefer frontend locale translations under `categories.<key>` if available
-          label:
-            (cat.labels && cat.labels[lang]) ||
-            (this.$te && this.$te("categories." + cat.key_name)
-              ? this.$t("categories." + cat.key_name)
-              : cat.label) ||
-            (cat.labels && cat.labels["sk"]) ||
-            cat.name ||
-            cat.key_name,
-          icon: cat.icon,
-          raw: cat,
-        }));
+        this.items = response.data.map((cat) => {
+          const key = cat.key_name;
+          let label = cat.label || cat.name || key;
+
+          // Prefer localized object keys from DB when available
+          if (cat.labels && cat.labels[lang]) {
+            label = cat.labels[lang];
+          } else {
+            // Otherwise prefer frontend i18n translation for the category key when present
+            const hasI18n =
+              this.$i18n &&
+              this.$i18n.global &&
+              typeof this.$i18n.global.te === "function"
+                ? this.$i18n.global.te(`categories.${key}`)
+                : this.$te && this.$te(`categories.${key}`);
+            if (hasI18n) {
+              label = this.$t(`categories.${key}`);
+            } else if (cat.labels && cat.labels["sk"]) {
+              // fallback to Slovak DB label if present
+              label = cat.labels["sk"];
+            }
+          }
+
+          return {
+            key,
+            label,
+            icon: cat.icon,
+            raw: cat,
+          };
+        });
       } catch (error) {
         console.error("Error loading categories:", error);
         this.items = [];

@@ -11,6 +11,7 @@ import RegisterView from '@/views/RegisterView.vue'
 import PasswordresetView from '@/views/PasswordresetView.vue'
 import OrderStatus from '@/views/OrderStatus.vue'
 import OrdersView from '@/views/OrdersView.vue'
+import OrderDetailView from '@/views/OrderDetailView.vue'
 import RefundView from '@/views/Footer/RefundView.vue'
 import AboutusView from '@/views/Footer/AboutusView.vue'
 import DeliveryView from '@/views/Footer/DeliveryView.vue'
@@ -85,6 +86,13 @@ const router = createRouter({
       path: '/orders/status',
       name: 'orders/status',
       component: OrderStatus
+    },
+    {
+      path: '/orders/:id',
+      name: 'order-detail',
+      component: OrderDetailView,
+      props: true,
+      meta: { requiresAuth: true },
     },
     {
       path: '/orders',

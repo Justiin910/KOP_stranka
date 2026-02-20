@@ -89,6 +89,9 @@
     "in_stock": "✓ Skladom ({count})",
     "out_of_stock": "✗ Vypredané",
     "add_to_cart": "Do košíka"
+    ,
+    "confirm_delete_title": "Potvrdiť zmazanie",
+    "review_delete_confirm": "Naozaj chcete vymazať svoju recenziu?"
   }
   ,
   "products": {
@@ -113,6 +116,9 @@
     "monitors": "Monitory",
     "peripherals": "Periférie",
     "mobily": "Mobily"
+    ,"powerbanks": "Powerbanky a nabíjačky",
+    "headphones": "Slúchadlá a audio",
+    "sluchadla": "Slúchadlá a audio"
   }
   ,
   "footer": {
@@ -139,6 +145,31 @@
   },
   "sidebar": {
     "heading": "Kategórie"
+  }
+  ,
+  "common": {
+    "cancel": "Zrušiť",
+    "delete": "Vymazať",
+    "deleting": "Maže sa..."
+  }
+  ,
+  "favorites": {
+    "title": "Obľúbené",
+    "count": "{count} produktov",
+    "count_one": "{count} produkt",
+    "count_few": "{count} produkty",
+    "count_many": "{count} produktov",
+    "total_ex_vat": "Celkovo bez DPH",
+    "total_inc_vat": "Celkovo s DPH",
+    "add_all_to_cart": "Pridať všetko do košíka",
+    "empty_title": "Žiadne obľúbené produkty",
+    "empty_desc": "Pridajte si produkty do obľúbených pre rýchly prístup",
+    "shop_cta": "Prejsť na nákup",
+    "product_fallback": "Produkt",
+    "added_to_cart": "{name} pridaný do košíka!",
+    "add_all_success": "Pridaných {count} produktov do košíka!",
+    "add_failed": "Nepodarilo sa pridať do košíka",
+    "add_all_failed": "Nepodarilo sa pridať všetky produkty do košíka"
   }
   ,
   "profile": {

@@ -118,39 +118,35 @@ export default {
     try {
       const loggedIn = !!(localStorage.getItem('token'));
 
-      // If logged in, try to use a cached server favorites list on the window to avoid
-      // firing many API requests (many ProductCard instances). If not available, fetch
-      // once and store it on the window.
       if (loggedIn) {
-        if (window.__favorites_cache && Array.isArray(window.__favorites_cache)) {
-          this.isFavorited = window.__favorites_cache.includes(this.product.id) || window.__favorites_cache.some(p => p === this.product.id || (p && p.id === this.product.id));
-        } else {
-          // mark temporarily from localStorage while we fetch server list
-          const raw = localStorage.getItem('favorites');
-          const stored = raw ? JSON.parse(raw) : [];
-          if (Array.isArray(stored) && stored.length > 0 && typeof stored[0] === 'object') {
-            this.isFavorited = stored.some((p) => p.id === this.product.id);
-          } else {
-            this.isFavorited = Array.isArray(stored) && stored.includes(this.product.id);
-          }
-
-          // fetch server favorites once and cache on window
-          import('@/api').then(({ default: api }) => {
-            api.get('/api/favorites').then(resp => {
-              const favs = resp.data || [];
-              // normalize to array of ids for quick lookup
-              const ids = favs.map(f => (typeof f === 'object' ? f.id : f));
-              window.__favorites_cache = ids;
-              this.isFavorited = ids.includes(this.product.id);
-              // also persist locally so anonymous views still work
-              try { localStorage.setItem('favorites', JSON.stringify(favs)); } catch(e) {}
-              window.dispatchEvent(new CustomEvent('favorites-remote-updated', { detail: ids }));
+        // Logged in: check window cache first; if empty, it will be populated by main.ts on app init
+        // OR fetch it once to bootstrap (if app hasn't fetched yet)
+        if (!window.__favorites_cache) {
+          // Cache not yet populated by main.ts — trigger a fetch
+          // but only do this once globally by setting a flag
+          if (!window.__favorites_fetch_started) {
+            window.__favorites_fetch_started = true;
+            import('@/api').then(({ default: api }) => {
+              api.get('/api/favorites').then(resp => {
+                const favs = resp.data || [];
+                const ids = favs.map(f => (typeof f === 'object' ? f.id : f));
+                window.__favorites_cache = ids;
+                try { localStorage.setItem('favorites', JSON.stringify(favs)); } catch(e) {}
+                window.dispatchEvent(new CustomEvent('favorites-remote-updated', { detail: ids }));
+              }).catch(() => {
+                window.__favorites_cache = [];
+              });
             }).catch(() => {
-              // ignore fetch errors — keep localStorage-derived state
+              window.__favorites_cache = [];
             });
-          }).catch(() => {});
+          }
         }
-        return;
+
+        // Use cache if available (populated by main.ts or fallback fetch above)
+        if (window.__favorites_cache && Array.isArray(window.__favorites_cache)) {
+          this.isFavorited = window.__favorites_cache.includes(this.product.id);
+          return;
+        }
       }
 
       // Not logged in: use localStorage favorites (ids or objects)

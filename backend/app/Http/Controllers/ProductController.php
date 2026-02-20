@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use App\Models\ProductReview;
+use App\Models\User;
 
 class ProductController extends Controller
 {
@@ -20,7 +23,252 @@ class ProductController extends Controller
             return response()->json(['error' => 'Product not found'], 404);
         }
         
+        // Attach aggregated reviews data if reviews table exists
+        if (Schema::hasTable('product_reviews')) {
+            $agg = DB::table('product_reviews')
+                ->where('product_id', $id)
+                ->selectRaw('COUNT(*) as reviews_count, COALESCE(ROUND(AVG(rating),2),0) as avg_rating')
+                ->first();
+
+            $reviews = DB::table('product_reviews')
+                ->where('product_id', $id)
+                ->leftJoin('users', 'product_reviews.user_id', '=', 'users.id')
+                ->select('product_reviews.id', 'product_reviews.rating', 'product_reviews.comment', 'product_reviews.created_at', 'users.id as user_id', 'users.name as user_name')
+                ->orderByDesc('product_reviews.created_at')
+                ->limit(20)
+                ->get();
+
+            // If products table has rating/reviews fields, update them for convenience
+            try {
+                if (Schema::hasColumn('products', 'rating') && Schema::hasColumn('products', 'reviews')) {
+                    DB::table('products')->where('id', $id)->update([
+                        'rating' => $agg->avg_rating,
+                        'reviews' => $agg->reviews_count,
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::warning('Failed to update product rating fields: ' . $e->getMessage());
+            }
+
+            return response()->json(array_merge((array)$product, [
+                'rating' => (float)($agg->avg_rating ?? 0),
+                'reviews' => (int)($agg->reviews_count ?? 0),
+                'latest_reviews' => $reviews,
+            ]));
+        }
+
         return response()->json($product);
+    }
+
+    /**
+     * Get or create/update a product review (authenticated users only)
+     * One review per user per product - updates if already exists
+     */
+    public function storeReview(Request $request, $id)
+    {
+        if (!auth()->check()) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $validated = $request->validate([
+            'rating' => 'required|numeric|min:0.5|max:5',
+            'comment' => 'nullable|string|max:2000',
+        ]);
+
+        // Ensure product exists
+        $product = DB::table('products')->where('id', $id)->first();
+        if (!$product) {
+            return response()->json(['message' => 'Product not found'], 404);
+        }
+
+        // Check if user already has a review for this product
+        $existingReview = DB::table('product_reviews')
+            ->where('product_id', $id)
+            ->where('user_id', auth()->id())
+            ->first();
+
+        if ($existingReview) {
+            // Update existing review
+            DB::table('product_reviews')
+                ->where('id', $existingReview->id)
+                ->update([
+                    'rating' => $validated['rating'],
+                    'comment' => $validated['comment'] ?? null,
+                    'updated_at' => now(),
+                ]);
+            $reviewId = $existingReview->id;
+        } else {
+            // Create new review
+            $reviewId = DB::table('product_reviews')->insertGetId([
+                'product_id' => $id,
+                'user_id' => auth()->id(),
+                'rating' => $validated['rating'],
+                'comment' => $validated['comment'] ?? null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        // Recalculate aggregates
+        $agg = DB::table('product_reviews')
+            ->where('product_id', $id)
+            ->selectRaw('COUNT(*) as reviews_count, COALESCE(ROUND(AVG(rating),2),0) as avg_rating')
+            ->first();
+
+        // Update products table if fields exist
+        try {
+            if (Schema::hasColumn('products', 'rating') && Schema::hasColumn('products', 'reviews')) {
+                DB::table('products')->where('id', $id)->update([
+                    'rating' => $agg->avg_rating,
+                    'reviews' => $agg->reviews_count,
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::warning('Failed to update product rating fields after review: ' . $e->getMessage());
+        }
+
+        $review = DB::table('product_reviews')
+            ->leftJoin('users', 'product_reviews.user_id', '=', 'users.id')
+            ->where('product_reviews.id', $reviewId)
+            ->select('product_reviews.id', 'product_reviews.rating', 'product_reviews.comment', 'product_reviews.created_at', 'product_reviews.updated_at', 'users.id as user_id', 'users.name as user_name')
+            ->first();
+
+        return response()->json([
+            'success' => true,
+            'review' => $review,
+            'rating' => (float)$agg->avg_rating,
+            'reviews' => (int)$agg->reviews_count,
+        ]);
+    }
+
+    /**
+     * Get current user's review for a product (if authenticated)
+     */
+    public function getUserReview($id)
+    {
+        if (!auth()->check()) {
+            return response()->json(['review' => null]);
+        }
+
+        $review = DB::table('product_reviews')
+            ->leftJoin('users', 'product_reviews.user_id', '=', 'users.id')
+            ->where('product_reviews.product_id', $id)
+            ->where('product_reviews.user_id', auth()->id())
+            ->select('product_reviews.id', 'product_reviews.rating', 'product_reviews.comment', 'product_reviews.created_at', 'product_reviews.updated_at', 'users.id as user_id', 'users.name as user_name')
+            ->first();
+
+        return response()->json(['review' => $review]);
+    }
+
+    /**
+     * Update user's own review for a product
+     */
+    public function updateReview(Request $request, $id, $reviewId)
+    {
+        if (!auth()->check()) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $review = DB::table('product_reviews')
+            ->where('id', $reviewId)
+            ->where('product_id', $id)
+            ->where('user_id', auth()->id())
+            ->first();
+
+        if (!$review) {
+            return response()->json(['message' => 'Review not found or unauthorized'], 404);
+        }
+
+        $validated = $request->validate([
+            'rating' => 'required|numeric|min:0.5|max:5',
+            'comment' => 'nullable|string|max:2000',
+        ]);
+
+        // Update the review
+        DB::table('product_reviews')->where('id', $reviewId)->update([
+            'rating' => $validated['rating'],
+            'comment' => $validated['comment'] ?? null,
+            'updated_at' => now(),
+        ]);
+
+        // Recalculate aggregates
+        $agg = DB::table('product_reviews')
+            ->where('product_id', $id)
+            ->selectRaw('COUNT(*) as reviews_count, COALESCE(ROUND(AVG(rating),2),0) as avg_rating')
+            ->first();
+
+        // Update products table if fields exist
+        try {
+            if (Schema::hasColumn('products', 'rating') && Schema::hasColumn('products', 'reviews')) {
+                DB::table('products')->where('id', $id)->update([
+                    'rating' => $agg->avg_rating,
+                    'reviews' => $agg->reviews_count,
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::warning('Failed to update product rating fields after review update: ' . $e->getMessage());
+        }
+
+        $updatedReview = DB::table('product_reviews')
+            ->leftJoin('users', 'product_reviews.user_id', '=', 'users.id')
+            ->where('product_reviews.id', $reviewId)
+            ->select('product_reviews.id', 'product_reviews.rating', 'product_reviews.comment', 'product_reviews.created_at', 'product_reviews.updated_at', 'users.id as user_id', 'users.name as user_name')
+            ->first();
+
+        return response()->json([
+            'success' => true,
+            'review' => $updatedReview,
+            'rating' => (float)$agg->avg_rating,
+            'reviews' => (int)$agg->reviews_count,
+        ]);
+    }
+
+    /**
+     * Delete user's own review
+     */
+    public function deleteReview($id, $reviewId)
+    {
+        if (!auth()->check()) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $review = DB::table('product_reviews')
+            ->where('id', $reviewId)
+            ->where('product_id', $id)
+            ->where('user_id', auth()->id())
+            ->first();
+
+        if (!$review) {
+            return response()->json(['message' => 'Review not found or unauthorized'], 404);
+        }
+
+        // Delete the review
+        DB::table('product_reviews')->where('id', $reviewId)->delete();
+
+        // Recalculate aggregates
+        $agg = DB::table('product_reviews')
+            ->where('product_id', $id)
+            ->selectRaw('COUNT(*) as reviews_count, COALESCE(ROUND(AVG(rating),2),0) as avg_rating')
+            ->first();
+
+        // Update products table if fields exist
+        try {
+            if (Schema::hasColumn('products', 'rating') && Schema::hasColumn('products', 'reviews')) {
+                DB::table('products')->where('id', $id)->update([
+                    'rating' => $agg->avg_rating,
+                    'reviews' => $agg->reviews_count,
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::warning('Failed to update product rating fields after review deletion: ' . $e->getMessage());
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Review deleted successfully',
+            'rating' => (float)$agg->avg_rating,
+            'reviews' => (int)$agg->reviews_count,
+        ]);
     }
 
     public function byCategory($category)

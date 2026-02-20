@@ -141,6 +141,8 @@
 </template>
 
 <script>
+import api from '@/api.ts'
+
 export default {
 	data() {
 		return {
@@ -151,85 +153,7 @@ export default {
 				{ label: 'Doručené', value: 'delivered' },
 				{ label: 'Zrušené', value: 'cancelled' }
 			],
-			orders: [
-				{
-					id: '10234',
-					date: '15. november 2024',
-					status: 'V preprave',
-					total: 1582.99,
-					itemsCount: 2,
-					items: [
-						{
-							name: 'iPhone 15 Pro Max',
-							image: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=200&h=200&fit=crop'
-						},
-						{
-							name: 'AirPods Pro',
-							image: 'https://images.unsplash.com/photo-1606841837239-c5a1a4a07af7?w=200&h=200&fit=crop'
-						}
-					]
-				},
-				{
-					id: '10198',
-					date: '02. november 2024',
-					status: 'Spracováva sa',
-					total: 89.90,
-					itemsCount: 1,
-					items: [
-						{
-							name: 'iPhone Case',
-							image: 'https://images.unsplash.com/photo-1591337676887-a217a6970a8a?w=200&h=200&fit=crop'
-						}
-					]
-				},
-				{
-					id: '10156',
-					date: '28. október 2024',
-					status: 'Doručené',
-					total: 456.50,
-					itemsCount: 3,
-					items: [
-						{
-							name: 'Wireless Keyboard',
-							image: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=200&h=200&fit=crop'
-						},
-						{
-							name: 'Mouse',
-							image: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=200&h=200&fit=crop'
-						},
-						{
-							name: 'USB-C Cable',
-							image: 'https://images.unsplash.com/photo-1625948515291-69613efd103f?w=200&h=200&fit=crop'
-						}
-					]
-				},
-				{
-					id: '10089',
-					date: '15. október 2024',
-					status: 'Doručené',
-					total: 2299.00,
-					itemsCount: 1,
-					items: [
-						{
-							name: 'MacBook Pro 14"',
-							image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=200&h=200&fit=crop'
-						}
-					]
-				},
-				{
-					id: '10034',
-					date: '28. september 2024',
-					status: 'Zrušené',
-					total: 349.00,
-					itemsCount: 1,
-					items: [
-						{
-							name: 'Headphones',
-							image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&h=200&fit=crop'
-						}
-					]
-				}
-			]
+			orders: []
 		}
 	},
 	computed: {
@@ -251,10 +175,43 @@ export default {
 	},
 	mounted() {
 		window.scrollTo({ top: 0, behavior: 'smooth' })
+		this.fetchOrders()
 	},
 	methods: {
+		async fetchOrders() {
+			try {
+				const resp = await api.get('/api/orders')
+				let data = resp.data
+				// API may return array or wrapped object
+				if (data && data.success && data.order) {
+					data = [data.order]
+				}
+				if (!Array.isArray(data)) return
+
+				const placeholder = 'https://via.placeholder.com/200?text=Produkt'
+
+				this.orders = data.map(o => ({
+					id: o.id,
+					date: this.formatDate(o.created_at),
+					status: o.status,
+					total: Number(o.total) || 0,
+					itemsCount: (o.items || []).length,
+					items: (o.items || []).map(i => ({
+						name: i.product_name || i.product?.title || 'Produkt',
+						image: i.image || i.product?.image || placeholder
+					}))
+				}))
+			} catch (e) {
+				console.error('Failed to load orders', e)
+			}
+		},
+		formatDate(date) {
+			if (!date) return ''
+			const d = new Date(date)
+			return d.toLocaleDateString('sk-SK', { year: 'numeric', month: 'long', day: 'numeric' })
+		},
 		formatPrice(price) {
-			return price.toFixed(2)
+			return Number(price).toFixed(2)
 		},
 		getStatusClass(status) {
 			const classes = {
@@ -271,11 +228,17 @@ export default {
 		},
 		async cancelOrder(orderId) {
 			if (await window.appConfirm('Naozaj chcete zrušiť túto objednávku?')) {
-					const order = this.orders.find(o => o.id === orderId)
-					if (order) {
-						order.status = 'Zrušené'
-					}
+				const order = this.orders.find(o => o.id === orderId)
+				if (order) {
+					order.status = 'Zrušené'
 				}
+			}
+		},
+		async refundOrder(orderId) {
+			if (!(await window.appConfirm('Chcete vytvoriť reklamáciu pre túto objednávku?'))) return
+			// Placeholder: update UI locally. Hook API when available.
+			const order = this.orders.find(o => o.id === orderId)
+			if (order) order.status = 'Reklamácia'
 		}
 	}
 }

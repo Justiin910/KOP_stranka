@@ -133,31 +133,6 @@
                   </div>
                 </div>
               </label>
-
-              <label
-                class="flex items-start p-4 border rounded-lg cursor-pointer"
-                :class="
-                  selectedPayment === 'paypal'
-                    ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
-                    : 'border-gray-200 dark:border-gray-700'
-                "
-              >
-                <input
-                  type="radio"
-                  v-model="selectedPayment"
-                  value="paypal"
-                  class="mt-1"
-                />
-                <div class="ml-4">
-                  <div class="flex items-center gap-2">
-                    <i class="fab fa-paypal text-blue-600"></i>
-                    <div class="font-medium text-gray-900 dark:text-white">PayPal</div>
-                  </div>
-                  <div class="text-sm text-gray-500 dark:text-gray-400">
-                    Platba cez PayPal účet
-                  </div>
-                </div>
-              </label>
             </div>
 
             <!-- Card form -->
@@ -286,10 +261,7 @@
               </div>
             </div>
 
-            <button
-              @click="confirmPayment"
-              class="w-full btn-primary-lg"
-            >
+            <button @click="confirmPayment" class="w-full btn-primary-lg">
               Potvrdiť objednávku
             </button>
           </div>
@@ -514,8 +486,8 @@ export default {
     async initPayPal() {
       try {
         const script = document.createElement("script");
-        const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID || 'sb';
-        const envMode = import.meta.env.VITE_PAYPAL_ENVIRONMENT || 'sandbox';
+        const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID || "sb";
+        const envMode = import.meta.env.VITE_PAYPAL_ENVIRONMENT || "sandbox";
         // Use provided client id; Vite exposes VITE_ prefixed vars to the frontend
         script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=EUR&intent=capture`;
         script.async = true;
@@ -681,7 +653,10 @@ export default {
         await this.cartStore.clearCart();
 
         // Verify localStorage has data
-        console.log("✅ Order saved to localStorage:", localStorage.getItem("checkoutOrder") ? "YES" : "NO");
+        console.log(
+          "✅ Order saved to localStorage:",
+          localStorage.getItem("checkoutOrder") ? "YES" : "NO"
+        );
 
         // Navigate to confirmation (don't clear yet - let view do it)
         this.router.push("/checkout/confirmation");

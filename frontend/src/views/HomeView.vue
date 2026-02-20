@@ -195,65 +195,6 @@
         </div>
       </section>
 
-      <!-- Information Banners -->
-      <section class="mb-12">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Info Banner 1 -->
-          <div
-            class="relative rounded-xl overflow-hidden shadow-lg border border-white/10 hover:shadow-xl transition-shadow"
-          >
-            <div
-              class="absolute inset-0 bg-gradient-to-r from-green-800/70 to-green-700/40"
-            ></div>
-
-            <div
-              class="absolute inset-0 bg-[url('https://picsum.photos/1500/900?random=3')] bg-cover bg-right opacity-40"
-            ></div>
-
-            <div class="relative p-8 text-white">
-              <h3 class="text-3xl font-bold mb-3">
-                {{ $t("home.banners.free_shipping.title") }}
-              </h3>
-              <p class="text-white/80 mb-6 text-base leading-relaxed">
-                {{ $t("home.banners.free_shipping.desc") }}
-              </p>
-              <button
-                class="bg-white/20 hover:bg-white/30 text-white px-7 py-2.5 rounded-full font-semibold text-sm border border-white/40 transition-all duration-200"
-              >
-                {{ $t("home.banners.free_shipping.cta") }}
-              </button>
-            </div>
-          </div>
-
-          <!-- Info Banner 2 -->
-          <div
-            class="relative rounded-xl overflow-hidden shadow-lg border border-white/10 hover:shadow-xl transition-shadow"
-          >
-            <div
-              class="absolute inset-0 bg-gradient-to-r from-yellow-800/70 to-orange-800/40"
-            ></div>
-
-            <div
-              class="absolute inset-0 bg-[url('https://picsum.photos/id/1025/800/600')] bg-cover bg-right opacity-40"
-            ></div>
-
-            <div class="relative p-8 text-white">
-              <h3 class="text-3xl font-bold mb-3">
-                {{ $t("home.banners.warranty.title") }}
-              </h3>
-              <p class="text-white/80 mb-6 text-base leading-relaxed">
-                {{ $t("home.banners.warranty.desc") }}
-              </p>
-              <button
-                class="bg-white/20 hover:bg-white/30 text-white px-7 py-2.5 rounded-full font-semibold text-sm border border-white/40 transition-all duration-200"
-              >
-                {{ $t("home.banners.warranty.cta") }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <!-- Bottom Info Section -->
       <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="bg-white dark:bg-gray-800 rounded-xl p-6 text-center">

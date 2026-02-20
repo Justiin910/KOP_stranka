@@ -229,6 +229,7 @@ export default {
         name: "Ján Novák",
         email: "jan.novak@email.sk",
       },
+      updateFavoritesCountDebounceTimer: null,
     };
   },
   mounted() {
@@ -239,9 +240,9 @@ export default {
     // initialize favorites count from localStorage (or server if logged)
     this.updateFavoritesCount();
 
-    // react to favorites changes and auth events
-    window.addEventListener("favorites-updated", this.updateFavoritesCount);
-    window.addEventListener("favorites-remote-updated", this.updateFavoritesCount);
+    // react to favorites changes and auth events (debounced)
+    window.addEventListener("favorites-updated", this.updateFavoritesCountDebounced);
+    window.addEventListener("favorites-remote-updated", this.updateFavoritesCountDebounced);
     window.addEventListener("user-logged-in", this.onUserLoggedIn);
     window.addEventListener("user-logged-out", this.onUserLoggedOut);
 
@@ -277,11 +278,15 @@ export default {
   },
   beforeUnmount() {
     document.removeEventListener("click", this.handleClickOutside);
-    window.removeEventListener("favorites-updated", this.updateFavoritesCount);
-    window.removeEventListener("favorites-remote-updated", this.updateFavoritesCount);
+    window.removeEventListener("favorites-updated", this.updateFavoritesCountDebounced);
+    window.removeEventListener("favorites-remote-updated", this.updateFavoritesCountDebounced);
     window.removeEventListener("user-logged-in", this.onUserLoggedIn);
     window.removeEventListener("user-logged-out", this.onUserLoggedOut);
     window.removeEventListener("storage", this.onStorageEvent);
+    // Clear debounce timer
+    if (this.updateFavoritesCountDebounceTimer) {
+      clearTimeout(this.updateFavoritesCountDebounceTimer);
+    }
   },
   methods: {
     onSearch() {
@@ -353,6 +358,15 @@ export default {
 
       // fallback: compute from localStorage 'favorites' key
       this.favoritesCount = this.getLocalFavoritesCount();
+    },
+    // Debounced version to prevent rapid/duplicate requests
+    updateFavoritesCountDebounced() {
+      if (this.updateFavoritesCountDebounceTimer) {
+        clearTimeout(this.updateFavoritesCountDebounceTimer);
+      }
+      this.updateFavoritesCountDebounceTimer = setTimeout(() => {
+        this.updateFavoritesCount();
+      }, 500); // Wait 500ms before making request
     },
     getLocalFavoritesCount() {
       try {

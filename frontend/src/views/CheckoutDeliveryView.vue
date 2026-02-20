@@ -252,19 +252,6 @@
                   <option value="AT">Rakúsko</option>
                 </select>
               </div>
-
-              <div>
-                <label class="flex items-center mt-4">
-                  <input
-                    v-model="address.useAsDefault"
-                    type="checkbox"
-                    class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-600"
-                  />
-                  <span class="ml-2 text-sm text-gray-700 dark:text-gray-300"
-                    >Uložiť ako predvolenú adresu</span
-                  >
-                </label>
-              </div>
             </div>
           </div>
         </div>
@@ -311,10 +298,7 @@
               </div>
             </div>
 
-            <button
-              @click="proceedToPayment"
-              class="w-full btn-primary-lg"
-            >
+            <button @click="proceedToPayment" class="w-full btn-primary-lg">
               Pokračovať na platbu
             </button>
 

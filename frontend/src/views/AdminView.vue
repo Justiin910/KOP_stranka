@@ -338,74 +338,121 @@
 
       <!-- Statistics -->
       <div v-if="activeTab === 'stats'" class="space-y-6">
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div
-            v-for="stat in stats"
-            :key="stat.label"
-            class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6"
-          >
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                  {{ stat.label }}
-                </p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white">
-                  {{ stat.value }}
-                </p>
-                <p
-                  class="text-sm mt-2"
-                  :class="stat.trend > 0 ? 'text-green-500' : 'text-red-500'"
-                >
-                  {{ stat.trend > 0 ? "+" : "" }}{{ stat.trend }}% vs minulý mesiac
-                </p>
+        <!-- Loading Skeleton -->
+        <div v-if="statsLoading" class="space-y-6">
+          <!-- Stats Cards Skeleton -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div
+              v-for="i in 4"
+              :key="`stat-skeleton-${i}`"
+              class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 animate-pulse"
+            >
+              <div class="flex items-center justify-between">
+                <div class="flex-1">
+                  <div class="h-4 bg-gray-300 dark:bg-gray-700 rounded w-24 mb-3"></div>
+                  <div class="h-8 bg-gray-300 dark:bg-gray-700 rounded w-32 mb-3"></div>
+                  <div class="h-4 bg-gray-300 dark:bg-gray-700 rounded w-40"></div>
+                </div>
+                <div class="w-12 h-12 rounded-full bg-gray-300 dark:bg-gray-700"></div>
               </div>
+            </div>
+          </div>
+
+          <!-- Recent Activity Skeleton -->
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 animate-pulse">
+            <div class="h-6 bg-gray-300 dark:bg-gray-700 rounded w-32 mb-4"></div>
+            <div class="space-y-4">
               <div
-                class="w-12 h-12 rounded-full flex items-center justify-center"
-                :style="{ background: stat.color }"
+                v-for="i in 5"
+                :key="`activity-skeleton-${i}`"
+                class="flex items-center justify-between py-3"
               >
-                <span class="text-white text-2xl">{{ stat.icon }}</span>
+                <div class="flex items-center flex-1">
+                  <div
+                    class="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-700 mr-4"
+                  ></div>
+                  <div class="flex-1">
+                    <div class="h-4 bg-gray-300 dark:bg-gray-700 rounded w-48 mb-2"></div>
+                    <div class="h-3 bg-gray-300 dark:bg-gray-700 rounded w-24"></div>
+                  </div>
+                </div>
+                <div class="h-4 bg-gray-300 dark:bg-gray-700 rounded w-20"></div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Recent Activity -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
-            Posledná aktivita
-          </h3>
-          <div class="space-y-4">
+        <!-- Stats Content -->
+        <div v-else class="space-y-6">
+          <!-- Stats Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div
-              v-for="activity in recentActivity"
-              :key="activity.id"
-              class="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700 last:border-0"
+              v-for="stat in stats"
+              :key="stat.label"
+              class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6"
             >
-              <div class="flex items-center">
-                <div
-                  class="w-10 h-10 rounded-full flex items-center justify-center mr-4"
-                  :class="
-                    activity.type === 'order'
-                      ? 'bg-green-100 dark:bg-green-900'
-                      : 'bg-blue-100 dark:bg-blue-900'
-                  "
-                >
-                  <span class="text-lg">{{
-                    activity.type === "order" ? "🛒" : "👤"
-                  }}</span>
-                </div>
+              <div class="flex items-center justify-between">
                 <div>
-                  <p class="text-sm font-medium text-gray-900 dark:text-white">
-                    {{ activity.title }}
+                  <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                    {{ stat.label }}
                   </p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">
-                    {{ activity.time }}
+                  <p class="text-3xl font-bold text-gray-900 dark:text-white">
+                    {{ stat.value }}
                   </p>
+                  <p
+                    class="text-sm mt-2"
+                    :class="stat.trend > 0 ? 'text-green-500' : 'text-red-500'"
+                  >
+                    {{ stat.trend > 0 ? "+" : "" }}{{ stat.trend }}% vs minulý mesiac
+                  </p>
+                </div>
+                <div
+                  class="w-12 h-12 rounded-full flex items-center justify-center"
+                  :style="{ background: stat.color }"
+                >
+                  <span class="text-white text-2xl">{{ stat.icon }}</span>
                 </div>
               </div>
-              <span class="text-sm font-medium text-gray-900 dark:text-white">{{
-                activity.value
-              }}</span>
+            </div>
+          </div>
+
+          <!-- Recent Activity -->
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
+              Posledná aktivita
+            </h3>
+            <div class="space-y-4">
+              <div
+                v-for="activity in recentActivity"
+                :key="activity.id"
+                class="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700 last:border-0"
+              >
+                <div class="flex items-center">
+                  <div
+                    class="w-10 h-10 rounded-full flex items-center justify-center mr-4"
+                    :class="
+                      activity.type === 'order'
+                        ? 'bg-green-100 dark:bg-green-900'
+                        : 'bg-blue-100 dark:bg-blue-900'
+                    "
+                  >
+                    <span class="text-lg">{{
+                      activity.type === "order" ? "🛒" : "👤"
+                    }}</span>
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-gray-900 dark:text-white">
+                      {{ activity.title }}
+                    </p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                      {{ formatActivityTime(activity.created_at) }}
+                    </p>
+                  </div>
+                </div>
+                <span class="text-sm font-medium text-gray-900 dark:text-white">{{
+                  activity.value
+                }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -418,7 +465,7 @@
       class="fixed inset-0 bg-white/30 backdrop-blur-md flex items-center justify-center z-50 overflow-y-auto"
     >
       <div
-        class="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-4xl w-full mx-4 my-8"
+        class="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-4xl w-full mx-4 my-8 max-h-[90vh] overflow-y-auto custom-scrollbar"
         @click.stop
       >
         <div class="flex justify-between items-center mb-6">
@@ -724,9 +771,149 @@
           </div>
 
           <div class="border-t pt-4">
-            <p class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-3">
-              Položky objednávky
-            </p>
+            <div class="flex justify-between items-center mb-4">
+              <p class="text-sm font-semibold text-gray-600 dark:text-gray-400">
+                Položky objednávky
+              </p>
+              <button
+                @click="showAddItemForm = !showAddItemForm"
+                class="px-3 py-1 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              >
+                {{ showAddItemForm ? "Skryť" : "+ Pridať položku" }}
+              </button>
+            </div>
+
+            <!-- Add Item Popup Modal -->
+            <transition name="popup" v-if="showAddItemForm">
+              <div
+                class="mb-4 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700"
+              >
+                <div class="flex justify-between items-center mb-4">
+                  <h3 class="text-lg font-bold text-gray-900 dark:text-white">
+                    Pridať novú položku
+                  </h3>
+                  <button
+                    @click="
+                      showAddItemForm = false;
+                      productSearchQuery = '';
+                    "
+                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-xl"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div class="space-y-4">
+                  <div>
+                    <label
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >
+                      Produkt
+                    </label>
+                    <input
+                      v-model="productSearchQuery"
+                      type="text"
+                      placeholder="Hľadať produkt..."
+                      class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                    />
+                    <div
+                      class="mt-3 max-h-64 overflow-y-auto custom-scrollbar border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 divide-y"
+                      v-if="productSearchQuery || newOrderItem.product_id"
+                    >
+                      <div
+                        v-for="product in filteredProductsForModal"
+                        :key="product.id"
+                        @click="selectProduct(product)"
+                        :class="[
+                          'px-4 py-3 cursor-pointer transition-colors bg-white dark:bg-gray-700 flex gap-3 items-center',
+                          newOrderItem.product_id == product.id
+                            ? 'bg-blue-100 dark:bg-blue-900 border-l-4 border-blue-600'
+                            : 'hover:bg-gray-100 dark:hover:bg-gray-600',
+                        ]"
+                      >
+                        <img
+                          v-if="product.image"
+                          :src="product.image"
+                          :alt="product.name || product.title"
+                          class="w-12 h-12 object-cover rounded border border-gray-200 dark:border-gray-600"
+                        />
+                        <div
+                          v-else
+                          class="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded flex items-center justify-center"
+                        >
+                          <span class="text-xs text-gray-500 dark:text-gray-400"
+                            >No img</span
+                          >
+                        </div>
+                        <div class="flex-1 min-w-0">
+                          <div class="font-medium text-gray-900 dark:text-white truncate">
+                            {{ product.name || product.title }}
+                          </div>
+                          <div class="text-sm text-gray-600 dark:text-gray-400">
+                            {{ parseFloat(product.price || 0).toFixed(2) }} €
+                          </div>
+                        </div>
+                      </div>
+                      <div
+                        v-if="filteredProductsForModal.length === 0"
+                        class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400"
+                      >
+                        Žiadne produkty nenájdené
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                      >
+                        Množstvo
+                      </label>
+                      <input
+                        v-model.number="newOrderItem.quantity"
+                        type="number"
+                        min="1"
+                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                      >
+                        Cena €
+                      </label>
+                      <input
+                        v-model.number="newOrderItem.price"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="flex gap-2 pt-2">
+                    <button
+                      @click="addItemToOrder"
+                      class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                    >
+                      Pridať
+                    </button>
+                    <button
+                      @click="
+                        showAddItemForm = false;
+                        productSearchQuery = '';
+                      "
+                      class="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg font-medium transition-colors"
+                    >
+                      Zrušiť
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </transition>
+
             <div class="overflow-x-auto">
               <table class="w-full text-sm">
                 <thead class="bg-gray-50 dark:bg-gray-700">
@@ -775,7 +962,7 @@
                             (i) => i.id !== item.id
                           )
                         "
-                        class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 text-sm"
+                        class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 text-sm hover:underline"
                       >
                         Odstrániť
                       </button>
@@ -830,10 +1017,10 @@
     <!-- Modal for Edit User -->
     <div
       v-if="editingUser"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto"
     >
       <div
-        class="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-2xl w-full mx-4"
+        class="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-2xl w-full mx-4 my-8 max-h-[90vh] overflow-y-auto custom-scrollbar"
         @click.stop
       >
         <div class="flex justify-between items-center mb-6">
@@ -1372,6 +1559,13 @@ export default {
       productSearch: "",
       selectedOrder: null,
       editingOrder: null,
+      showAddItemForm: false,
+      productSearchQuery: "",
+      newOrderItem: {
+        product_id: "",
+        quantity: 1,
+        price: 0,
+      },
       orderSaving: false,
       orderError: "",
       showAddProduct: false,
@@ -1433,74 +1627,10 @@ export default {
         },
       ],
 
-      stats: [
-        {
-          label: "Celkový predaj",
-          value: "45,231 €",
-          trend: 12,
-          icon: "💰",
-          color: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        },
-        {
-          label: "Objednávky",
-          value: "342",
-          trend: 8,
-          icon: "📦",
-          color: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-        },
-        {
-          label: "Zákazníci",
-          value: "1,234",
-          trend: 15,
-          icon: "👥",
-          color: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-        },
-        {
-          label: "Priem. objednávka",
-          value: "132 €",
-          trend: -3,
-          icon: "📊",
-          color: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
-        },
-      ],
-
-      recentActivity: [
-        {
-          id: 1,
-          type: "order",
-          title: "Nová objednávka od Ján Novák",
-          value: "234 €",
-          time: "pred 5 min",
-        },
-        {
-          id: 2,
-          type: "user",
-          title: "Nová registrácia: Peter Malý",
-          value: "",
-          time: "pred 15 min",
-        },
-        {
-          id: 3,
-          type: "order",
-          title: "Objednávka #3421 bola doručená",
-          value: "156 €",
-          time: "pred 1 hod",
-        },
-        {
-          id: 4,
-          type: "order",
-          title: "Nová objednávka od Mária Veselá",
-          value: "892 €",
-          time: "pred 2 hod",
-        },
-        {
-          id: 5,
-          type: "user",
-          title: "Nová registrácia: Tomáš Horný",
-          value: "",
-          time: "pred 3 hod",
-        },
-      ],
+      stats: [],
+      recentActivity: [],
+      activityRefreshTimer: null,
+      statsLoading: true,
 
       orders: [],
 
@@ -1517,6 +1647,7 @@ export default {
         this.activeTab = "orders";
       }
     });
+    this.fetchStats();
     this.fetchUsers();
     this.fetchOrders();
     this.loadProducts();
@@ -1566,6 +1697,16 @@ export default {
       const categories = new Set(this.products.map((p) => p.category).filter(Boolean));
       return Array.from(categories).sort();
     },
+    filteredProductsForModal() {
+      if (!this.productSearchQuery) return this.products;
+      const search = this.productSearchQuery.toLowerCase();
+      return this.products.filter(
+        (product) =>
+          (product.name || product.title || "").toLowerCase().includes(search) ||
+          (product.brand || "").toLowerCase().includes(search) ||
+          (product.category || "").toLowerCase().includes(search)
+      );
+    },
   },
 
   watch: {
@@ -1586,6 +1727,10 @@ export default {
   beforeUnmount() {
     // cleanup any scroll locks/listeners when component unmounts
     this._removePreventScrollListeners();
+    // cleanup activity refresh timer
+    if (this.activityRefreshTimer) {
+      clearInterval(this.activityRefreshTimer);
+    }
   },
 
   methods: {
@@ -1640,6 +1785,28 @@ export default {
       window.removeEventListener("touchmove", this._onTouchMove, { passive: false });
       window.removeEventListener("keydown", this._onKeyDown, { passive: false });
       this._preventListenersAdded = false;
+    },
+    formatActivityTime(dateString) {
+      if (!dateString) return "pred chvíľou";
+
+      const activityDate = new Date(dateString);
+      const now = new Date();
+      const diffSeconds = Math.floor((now - activityDate) / 1000);
+
+      if (diffSeconds < 60) {
+        return "pred chvíľou";
+      } else if (diffSeconds < 3600) {
+        const minutes = Math.floor(diffSeconds / 60);
+        return `pred ${minutes} ${minutes === 1 ? "min" : "min"}`;
+      } else if (diffSeconds < 86400) {
+        const hours = Math.floor(diffSeconds / 3600);
+        return `pred ${hours} ${hours === 1 ? "hod" : "hod"}`;
+      } else if (diffSeconds < 604800) {
+        const days = Math.floor(diffSeconds / 86400);
+        return `pred ${days} ${days === 1 ? "deňom" : "dňami"}`;
+      } else {
+        return activityDate.toLocaleDateString("sk-SK");
+      }
     },
     getStatusClass(status) {
       const classes = {
@@ -1707,12 +1874,18 @@ export default {
         payment_method: this.editingOrder.payment_method,
         delivery_method: this.editingOrder.delivery_method,
         address: this.editingOrder.address,
-        items: this.editingOrder.order_items.map((item) => ({
-          id: item.id,
-          product_id: item.product_id,
-          quantity: item.quantity,
-          price: item.price,
-        })),
+        items: this.editingOrder.order_items.map((item) => {
+          const itemData = {
+            product_id: item.product_id,
+            quantity: item.quantity,
+            price: item.price,
+          };
+          // Only include id if it's an existing item (not a temporary one)
+          if (item.id && typeof item.id === "number" && item.id < 1000000000) {
+            itemData.id = item.id;
+          }
+          return itemData;
+        }),
       };
 
       api
@@ -1736,6 +1909,52 @@ export default {
         .finally(() => {
           this.orderSaving = false;
         });
+    },
+    selectProduct(product) {
+      this.newOrderItem.product_id = product.id;
+      this.newOrderItem.price = parseFloat(product.price || 0);
+    },
+    addItemToOrder() {
+      // Validate
+      if (!this.newOrderItem.product_id) {
+        alert("Prosím vyberte produkt");
+        return;
+      }
+      if (this.newOrderItem.quantity < 1) {
+        alert("Množstvo musí byť aspoň 1");
+        return;
+      }
+
+      // Find product name
+      const product = this.products.find((p) => p.id === this.newOrderItem.product_id);
+      const productName = product?.name || product?.title || "Unknown";
+
+      // Check if product already exists in order
+      const existingItem = this.editingOrder.order_items.find(
+        (item) => item.product_id === this.newOrderItem.product_id
+      );
+
+      if (existingItem) {
+        // Increase quantity of existing item
+        existingItem.quantity += this.newOrderItem.quantity;
+      } else {
+        // Create new item object
+        const newItem = {
+          id: Date.now(), // Temporary ID for new items
+          product_id: this.newOrderItem.product_id,
+          product_name: productName,
+          quantity: this.newOrderItem.quantity,
+          price: this.newOrderItem.price || parseFloat(product?.price || 0),
+        };
+
+        // Add to order items
+        this.editingOrder.order_items.push(newItem);
+      }
+
+      // Reset form and close modal
+      this.newOrderItem = { product_id: "", quantity: 1, price: 0 };
+      this.productSearchQuery = "";
+      this.showAddItemForm = false;
     },
     async deleteOrder(id) {
       if (await window.appConfirm("Naozaj chcete vymazať túto objednávku?")) {
@@ -1954,6 +2173,66 @@ export default {
         })
         .finally(() => {
           this.editingSaving = false;
+        });
+    },
+    fetchStats() {
+      this.statsLoading = true;
+      api
+        .get("api/admin/stats")
+        .then((response) => {
+          console.log("Stats fetched:", response.data);
+          const data = response.data;
+
+          // Build stats array with real data
+          this.stats = [
+            {
+              label: "Celkový predaj",
+              value: data.totalRevenue.toLocaleString("sk-SK") + " €",
+              trend: data.revenueTrend,
+              icon: "💰",
+              color: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            },
+            {
+              label: "Objednávky",
+              value: data.totalOrders.toString(),
+              trend: data.ordersTrend,
+              icon: "📦",
+              color: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+            },
+            {
+              label: "Zákazníci",
+              value: data.totalUsers.toString(),
+              trend: data.usersTrend,
+              icon: "👥",
+              color: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+            },
+            {
+              label: "Priem. objednávka",
+              value: data.avgOrderValue.toLocaleString("sk-SK") + " €",
+              trend: data.avgOrderTrend,
+              icon: "📊",
+              color: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
+            },
+          ];
+
+          // Update recent activity
+          if (data.recentActivity && Array.isArray(data.recentActivity)) {
+            this.recentActivity = data.recentActivity;
+
+            // Set up a timer to refresh activity times every minute
+            if (!this.activityRefreshTimer) {
+              this.activityRefreshTimer = setInterval(() => {
+                // Force Vue to re-render by triggering reactivity
+                this.$forceUpdate();
+              }, 60000); // Refresh every 60 seconds
+            }
+          }
+
+          this.statsLoading = false;
+        })
+        .catch((error) => {
+          console.error("Error fetching stats:", error);
+          this.statsLoading = false;
         });
     },
     fetchUsers() {
@@ -2300,5 +2579,67 @@ export default {
 .modal-leave-to .modal-content {
   transform: translateY(12px) scale(0.98);
   opacity: 0;
+}
+
+/* Popup modal animation */
+.popup-enter-active,
+.popup-leave-active {
+  transition: opacity 200ms ease;
+}
+.popup-enter-from,
+.popup-leave-to {
+  opacity: 0;
+}
+.popup-enter-to,
+.popup-leave-from {
+  opacity: 1;
+}
+
+.popup-enter-active > div,
+.popup-leave-active > div {
+  transition: transform 220ms cubic-bezier(0.2, 0.9, 0.2, 1), opacity 220ms ease;
+}
+.popup-enter-from > div {
+  transform: translateY(-16px) scale(0.96);
+  opacity: 0;
+}
+.popup-enter-to > div {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+.popup-leave-from > div {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+.popup-leave-to > div {
+  transform: translateY(-16px) scale(0.96);
+  opacity: 0;
+}
+
+/* Custom scrollbar styling */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+  transition: background-color 200ms ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #4b5563;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
 }
 </style>

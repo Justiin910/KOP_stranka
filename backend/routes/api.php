@@ -44,6 +44,13 @@ Route::post('/contact', [ContactController::class, 'send']);
 // Orders - create (public, for guests and users)
 Route::post('/orders', [OrderController::class, 'store']);
 
+// Product reviews (authenticated)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/products/{id}/reviews', [ProductController::class, 'storeReview']);
+    Route::put('/products/{id}/reviews/{reviewId}', [ProductController::class, 'updateReview']);
+    Route::delete('/products/{id}/reviews/{reviewId}', [ProductController::class, 'deleteReview']);
+});
+
 // User profile management
 Route::middleware('auth:sanctum')->group(function () {
     Route::put('/user/profile', [ProfileController::class, 'updateProfile']);

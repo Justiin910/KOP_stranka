@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Order;
+use App\Models\Product;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -255,21 +257,114 @@ class AdminController extends Controller
     }
 
     /**
-     * Get admin statistics
+     * Get admin statistics and recent activity
      */
     public function getStats()
     {
+        $now = \Carbon\Carbon::now();
+        
+        // Current month range
+        $currentMonthStart = $now->copy()->startOfMonth();
+        $currentMonthEnd = $now->copy()->endOfMonth();
+        
+        // Last month range
+        $lastMonthStart = $now->copy()->subMonth()->startOfMonth();
+        $lastMonthEnd = $now->copy()->subMonth()->endOfMonth();
+        
+        // Current month statistics
+        $currentMonthRevenue = Order::whereBetween('created_at', [$currentMonthStart, $currentMonthEnd])->sum('total');
+        $currentMonthOrders = Order::whereBetween('created_at', [$currentMonthStart, $currentMonthEnd])->count();
+        $currentMonthUsers = User::whereBetween('created_at', [$currentMonthStart, $currentMonthEnd])->count();
+        $currentMonthAvgOrderValue = $currentMonthOrders > 0 ? $currentMonthRevenue / $currentMonthOrders : 0;
+        
+        // Last month statistics
+        $lastMonthRevenue = Order::whereBetween('created_at', [$lastMonthStart, $lastMonthEnd])->sum('total');
+        $lastMonthOrders = Order::whereBetween('created_at', [$lastMonthStart, $lastMonthEnd])->count();
+        $lastMonthUsers = User::whereBetween('created_at', [$lastMonthStart, $lastMonthEnd])->count();
+        $lastMonthAvgOrderValue = $lastMonthOrders > 0 ? $lastMonthRevenue / $lastMonthOrders : 0;
+        
+        // Calculate trend percentages
+        $revenueTrend = $lastMonthRevenue > 0 ? round((($currentMonthRevenue - $lastMonthRevenue) / $lastMonthRevenue) * 100) : 0;
+        $ordersTrend = $lastMonthOrders > 0 ? round((($currentMonthOrders - $lastMonthOrders) / $lastMonthOrders) * 100) : 0;
+        $usersTrend = $lastMonthUsers > 0 ? round((($currentMonthUsers - $lastMonthUsers) / $lastMonthUsers) * 100) : 0;
+        $avgOrderTrend = $lastMonthAvgOrderValue > 0 ? round((($currentMonthAvgOrderValue - $lastMonthAvgOrderValue) / $lastMonthAvgOrderValue) * 100) : 0;
+        
+        // Get all-time totals
         $totalRevenue = Order::sum('total');
         $totalOrders = Order::count();
         $totalUsers = User::count();
         $avgOrderValue = $totalOrders > 0 ? $totalRevenue / $totalOrders : 0;
+
+        // Get recent orders with user details
+        $recentOrders = Order::with('user')
+            ->latest('created_at')
+            ->limit(5)
+            ->get()
+            ->map(function ($order) {
+                return [
+                    'id' => 'order-' . $order->id,
+                    'type' => 'order',
+                    'title' => 'Nová objednávka od ' . ($order->user?->name ?? 'Hosť'),
+                    'value' => number_format($order->total, 2, ',', ' ') . ' €',
+                    'created_at' => $order->created_at->toIso8601String(),
+                ];
+            });
+
+        // Get recent user registrations
+        $recentUsers = User::latest('created_at')
+            ->limit(5)
+            ->get()
+            ->map(function ($user) {
+                return [
+                    'id' => 'user-' . $user->id,
+                    'type' => 'user',
+                    'title' => 'Nová registrácia: ' . $user->name,
+                    'value' => '',
+                    'created_at' => $user->created_at->toIso8601String(),
+                ];
+            });
+
+        // Merge and sort recent activity by time (most recent first)
+        $recentActivity = collect([...$recentOrders, ...$recentUsers])
+            ->sortByDesc('created_at')
+            ->values()
+            ->take(5);
 
         return response()->json([
             'totalRevenue' => round($totalRevenue, 2),
             'totalOrders' => $totalOrders,
             'totalUsers' => $totalUsers,
             'avgOrderValue' => round($avgOrderValue, 2),
+            'revenueTrend' => $revenueTrend,
+            'ordersTrend' => $ordersTrend,
+            'usersTrend' => $usersTrend,
+            'avgOrderTrend' => $avgOrderTrend,
+            'recentActivity' => $recentActivity,
         ]);
+    }
+
+    /**
+     * Format time difference in Slovak language
+     */
+    private function formatTimeDifference($dateTime)
+    {
+        $now = \Carbon\Carbon::now();
+        $diff = $now->diffInSeconds($dateTime);
+
+        if ($diff < 60) {
+            return 'pred chvíľou';
+        } elseif ($diff < 3600) {
+            $minutes = floor($diff / 60);
+            return "pred $minutes " . ($minutes === 1 ? 'min' : 'min');
+        } elseif ($diff < 86400) {
+            $hours = floor($diff / 3600);
+            return "pred $hours " . ($hours === 1 ? 'hod' : 'hod');
+        } elseif ($diff < 604800) {
+            $days = floor($diff / 86400);
+            return "pred $days " . ($days === 1 ? 'deňom' : 'dňami');
+        } else {
+            return $dateTime->format('d.m.Y');
+        }
     }
 
     /**
@@ -555,6 +650,17 @@ class AdminController extends Controller
                         $itemIds[] = $item->id;
                         $newTotal += $item->quantity * $item->price;
                     }
+                } else {
+                    // Create new item
+                    if (isset($itemData['product_id']) && isset($itemData['quantity']) && isset($itemData['price'])) {
+                        $newItem = $order->items()->create([
+                            'product_id' => $itemData['product_id'],
+                            'quantity' => $itemData['quantity'],
+                            'price' => $itemData['price'],
+                        ]);
+                        $itemIds[] = $newItem->id;
+                        $newTotal += $newItem->quantity * $newItem->price;
+                    }
                 }
             }
 
@@ -567,8 +673,10 @@ class AdminController extends Controller
 
         $order->save();
 
+        // Refetch the entire order with fresh relationships from database
+        $order = Order::with('items.product', 'user')->find($order->id);
+        
         // Return updated order
-        $order = $order->refresh();
         $address = is_string($order->address) ? json_decode($order->address, true) : $order->address;
         $customerName = $order->user ? $order->user->name : ($address['fullName'] ?? 'Guest');
 
@@ -587,10 +695,12 @@ class AdminController extends Controller
                 'created_at' => $order->created_at->format('d.m.Y H:i'),
                 'address' => $address,
                 'order_items' => $order->items->map(function ($item) {
+                    // Fetch product fresh from database for each item
+                    $product = Product::find($item->product_id);
                     return [
                         'id' => $item->id,
                         'product_id' => $item->product_id,
-                        'product_name' => $item->product->name ?? 'Deleted Product',
+                        'product_name' => $product ? $product->title : 'Deleted Product',
                         'quantity' => $item->quantity,
                         'price' => (float)$item->price,
                     ];

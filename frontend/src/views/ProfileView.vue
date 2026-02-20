@@ -738,8 +738,8 @@ export default {
         this.parsePhoneNumber(this.formData.phone);
 
         try {
-          const ordersResponse = await api.get("/api/user/orders");
-          this.orders = ordersResponse.data;
+          const ordersResponse = await api.get("/api/orders");
+          this.orders = Array.isArray(ordersResponse.data) ? ordersResponse.data : [];
         } catch (err) {
           console.log("Orders endpoint not available");
           this.orders = [];

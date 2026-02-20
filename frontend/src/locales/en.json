@@ -89,6 +89,9 @@
     "in_stock": "✓ In stock ({count})",
     "out_of_stock": "✗ Out of stock",
     "add_to_cart": "Add to cart"
+    ,
+    "confirm_delete_title": "Confirm deletion",
+    "review_delete_confirm": "Are you sure you want to delete your review?"
   }
   ,
   "products": {
@@ -113,6 +116,9 @@
     "monitors": "Monitors",
     "peripherals": "Peripherals",
     "mobily": "Mobiles"
+    ,"powerbanks": "Powerbanks & Chargers",
+    "headphones": "Headphones & Audio",
+    "sluchadla": "Headphones & Audio"
   }
   ,
   "footer": {
@@ -139,6 +145,30 @@
   },
   "sidebar": {
     "heading": "Categories"
+  }
+  ,
+  "common": {
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleting": "Deleting..."
+  }
+  ,
+  "favorites": {
+    "title": "Favorites",
+    "count": "{count} products",
+    "count_one": "{count} product",
+    "count_many": "{count} products",
+    "total_ex_vat": "Total excl. VAT",
+    "total_inc_vat": "Total incl. VAT",
+    "add_all_to_cart": "Add all to cart",
+    "empty_title": "No favorite products",
+    "empty_desc": "Add products to favorites for quick access",
+    "shop_cta": "Go shopping",
+    "product_fallback": "Product",
+    "added_to_cart": "{name} added to cart!",
+    "add_all_success": "Added {count} products to cart!",
+    "add_failed": "Failed to add to cart",
+    "add_all_failed": "Failed to add all products to cart"
   }
   ,
   "profile": {

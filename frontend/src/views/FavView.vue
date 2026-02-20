@@ -4,9 +4,11 @@
       <div class="mb-8">
         <div class="flex items-center justify-between mb-6">
           <div>
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Obľúbené</h1>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+              {{ $t("favorites.title") }}
+            </h1>
             <p class="text-gray-600 dark:text-gray-400 mt-2">
-              {{ favorites.length }} produktov
+              {{ productCountLabel(favorites.length) }}
             </p>
           </div>
 
@@ -57,13 +59,17 @@
         >
           <div class="flex items-center gap-6">
             <div>
-              <p class="text-sm text-gray-600 dark:text-gray-400">Celkovo bez DPH</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {{ $t("favorites.total_ex_vat") }}
+              </p>
               <p class="text-xl font-bold text-gray-900 dark:text-white">
                 {{ formatPrice(totalPriceWithoutVAT) }} €
               </p>
             </div>
             <div>
-              <p class="text-sm text-gray-600 dark:text-gray-400">Celkovo s DPH</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {{ $t("favorites.total_inc_vat") }}
+              </p>
               <p class="text-2xl font-bold text-green-700 dark:text-green-400">
                 {{ formatPrice(totalPriceWithVAT) }} €
               </p>
@@ -81,7 +87,7 @@
                 d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
               />
             </svg>
-            Pridať všetko do košíka
+            {{ $t("favorites.add_all_to_cart") }}
           </button>
         </div>
       </div>
@@ -105,19 +111,17 @@
           />
         </svg>
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-          Žiadne obľúbené produkty
+          {{ $t("favorites.empty_title") }}
         </h3>
         <p class="text-gray-600 dark:text-gray-400 mb-6">
-          Pridajte si produkty do obľúbených pre rýchly prístup
+          {{ $t("favorites.empty_desc") }}
         </p>
-        <button
-          class="px-6 py-2 btn-primary rounded-lg font-medium"
-        >
+        <button class="px-6 py-2 btn-primary rounded-lg font-medium">
           <router-link
             to="/"
             class="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 font-semibold"
           >
-            Prejsť na nákup
+            {{ $t("favorites.shop_cta") }}
           </router-link>
         </button>
       </div>
@@ -273,7 +277,7 @@
                       d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
                     />
                   </svg>
-                  Pridať do košíka
+                  {{ $t('product.add_to_cart') }}
                 </button>
               </div>
             </div>
@@ -286,7 +290,7 @@
 
 <script>
 import api, { getSessionToken } from "@/api";
-import { useCartStore } from '@/stores/cartStore';
+import { useCartStore } from "@/stores/cartStore";
 
 export default {
   data() {
@@ -308,22 +312,44 @@ export default {
   },
   methods: {
     formatPrice(price) {
-      return price.toFixed(2);
+      return Number(price).toFixed(2);
     },
+
+    productCountLabel(count) {
+      const n = Number(count) || 0;
+      const locale = (this.$i18n && this.$i18n.locale) ? String(this.$i18n.locale) : "en";
+      // Slovak plural rules: 1 -> one, 2-4 -> few, 5+ -> many
+      if (locale.startsWith("sk")) {
+        if (n === 1) return this.$t("favorites.count_one", { count: n });
+        if (n >= 2 && n <= 4) return this.$t("favorites.count_few", { count: n });
+        return this.$t("favorites.count_many", { count: n });
+      }
+
+      // Default: English-like singular/plural
+      if (n === 1) return this.$t("favorites.count_one", { count: n });
+      return this.$t("favorites.count_many", { count: n });
+    },
+
     async removeFromFavorites(itemId) {
       const loggedIn = !!(localStorage.getItem("token") || getSessionToken());
 
       if (loggedIn) {
         try {
-          await api.delete(`/api/favorites/${itemId}`).catch(async () => {
-            await api.delete("/api/favorites", { data: { product_id: itemId } });
-          });
-          // refresh from server
+          await api.delete(`/api/favorites/${itemId}`);
           await this.loadFavorites();
           return;
         } catch (e) {
-          console.warn("Failed to remove favorite on server, falling back to local", e);
-          // continue to fallback to local
+          // Some APIs expect DELETE with body { product_id }
+          try {
+            await api.delete("/api/favorites", { data: { product_id: itemId } });
+            await this.loadFavorites();
+            return;
+          } catch (err) {
+            console.warn(
+              "Failed to remove favorite on server, falling back to local",
+              err
+            );
+          }
         }
       }
 
@@ -337,26 +363,30 @@ export default {
         console.warn("Could not persist favorites", e);
       }
     },
-    addToCart(itemId) {
+
+    async addToCart(itemId) {
       const product = this.favorites.find((p) => p.id === itemId);
       if (!product) return;
       try {
         const cartStore = useCartStore();
-        cartStore.addToCart({
+        await cartStore.addToCart({
           id: product.id,
           product_id: product.id,
           title: product.name,
           price: Number(product.price) || 0,
           image: product.image || null,
-          description: product.description || '',
+          description: product.description || "",
           quantity: 1,
         });
-        alert(`${product.name || product.title} pridaný do košíka!`);
+        alert(
+          this.$t("favorites.added_to_cart", { name: product.name || product.title })
+        );
       } catch (e) {
-        console.error('Failed to add to cart', e);
-        alert('Nepodarilo sa pridať do košíka');
+        console.error("Failed to add to cart", e);
+        alert(this.$t("favorites.add_failed"));
       }
     },
+
     addAllToCart() {
       const availableItems = this.favorites.filter((item) => item.inStock);
       if (availableItems.length === 0) return;
@@ -371,17 +401,18 @@ export default {
               title: product.name,
               price: Number(product.price) || 0,
               image: product.image || null,
-              description: product.description || '',
+              description: product.description || "",
               quantity: 1,
             });
           }
         })();
-        alert(`Pridaných ${availableItems.length} produktov do košíka!`);
+        alert(this.$t("favorites.add_all_success", { count: availableItems.length }));
       } catch (e) {
-        console.error('Failed to add all to cart', e);
-        alert('Nepodarilo sa pridať všetky produkty do košíka');
+        console.error("Failed to add all to cart", e);
+        alert(this.$t("favorites.add_all_failed"));
       }
     },
+
     async loadFavorites() {
       // Read favorite ids from localStorage. Expecting array of ids.
       let ids = [];
@@ -407,7 +438,11 @@ export default {
           ) {
             this.favorites = data.map((p) => ({
               id: p.id,
-              name: p.title || p.name || p.product_name || "Produkt",
+              name:
+                p.title ||
+                p.name ||
+                p.product_name ||
+                this.$t("favorites.product_fallback"),
               description: p.description || p.short_description || "",
               category: p.category?.name || p.category_name || "",
               price: Number(p.price) || Number(p.current_price) || 0,
@@ -435,7 +470,11 @@ export default {
           const results = await Promise.all(promises);
           this.favorites = results.filter(Boolean).map((p) => ({
             id: p.id,
-            name: p.title || p.name || p.product_name || "Produkt",
+            name:
+              p.title ||
+              p.name ||
+              p.product_name ||
+              this.$t("favorites.product_fallback"),
             description: p.description || p.short_description || "",
             category: p.category?.name || p.category_name || "",
             price: Number(p.price) || Number(p.current_price) || 0,
@@ -466,7 +505,8 @@ export default {
       if (Array.isArray(ids) && ids.length > 0 && typeof ids[0] === "object") {
         this.favorites = ids.map((p) => ({
           id: p.id,
-          name: p.title || p.name || p.product_name || "Produkt",
+          name:
+            p.title || p.name || p.product_name || this.$t("favorites.product_fallback"),
           description: p.description || p.short_description || "",
           category: p.category || p.category?.name || p.category_name || "",
           price: Number(p.price) || Number(p.current_price) || 0,
