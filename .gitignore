@@ -1,3 +1,39 @@
-# Ignore specific seeder with sensitive data
+# Environment files with credentials
+.env
+.env.local
+.env.*.local
+backend/.env
+backend/.env.local
+frontend/.env.local
+
+# Test files with sensitive data (emails, phone numbers, etc.)
+backend/test_users.php
+
+# Database dumps with test data
+*.sql
+kop.sql
+
+# Specific seeder with sensitive data
 backend/database/seeders/UserSeeder.php
+
+# IDE and local configuration
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs with potentially sensitive information
+backend/storage/logs/
+
+# Cache files
+backend/bootstrap/cache/
+
+# Compiled dependencies
+node_modules/
+backend/vendor/
+
+# OS files
+.DS_Store
+Thumbs.db
 

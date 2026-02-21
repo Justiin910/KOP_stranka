@@ -317,8 +317,8 @@
 
 <script>
 import { useRouter } from "vue-router";
-import { useCartStore } from "../stores/cartStore";
-import api from "../api";
+import { useCartStore } from '../../stores/cartStore';
+import api from "../../api";
 
 export default {
   name: "CheckoutDeliveryView",

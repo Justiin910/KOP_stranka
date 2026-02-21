@@ -54,9 +54,9 @@
 
 <script>
 import api from "@/api";
-import ProductCard from "../components/ProductCard.vue";
-import SideBarComponent from "../components/SideBarComponent.vue";
-import { useCartStore } from "../stores/cartStore";
+import ProductCard from "../../components/ProductCard.vue";
+import SideBarComponent from "../../components/SideBarComponent.vue";
+import { useCartStore } from "../../stores/cartStore";
 
 export default {
   name: "ProductList",

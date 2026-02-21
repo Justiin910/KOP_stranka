@@ -1,27 +1,27 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-import ProfileView from '../views/ProfileView.vue'
-import CartView from '../views/CartView.vue'
-import CheckoutDeliveryView from '../views/CheckoutDeliveryView.vue'
-import CheckoutPaymentView from '../views/CheckoutPaymentView.vue'
-import CheckoutConfirmationView from '../views/CheckoutConfirmationView.vue'
-import FavView from '@/views/FavView.vue'
-import LoginView from '@/views/LoginView.vue'
-import RegisterView from '@/views/RegisterView.vue'
-import PasswordresetView from '@/views/PasswordresetView.vue'
-import OrderStatus from '@/views/OrderStatus.vue'
-import OrdersView from '@/views/OrdersView.vue'
-import OrderDetailView from '@/views/OrderDetailView.vue'
+import ProfileView from '../views/Account/ProfileView.vue'
+import CartView from '../views/Shop/CartView.vue'
+import CheckoutDeliveryView from '../views/Checkout/CheckoutDeliveryView.vue'
+import CheckoutPaymentView from '../views/Checkout/CheckoutPaymentView.vue'
+import CheckoutConfirmationView from '../views/Checkout/CheckoutConfirmationView.vue'
+import FavView from '@/views/Shop/FavView.vue'
+import LoginView from '@/views/Auth/LoginView.vue'
+import RegisterView from '@/views/Auth/RegisterView.vue'
+import PasswordresetView from '@/views/Auth/PasswordResetView.vue'
+import OrderStatus from '@/views/Orders/OrderStatus.vue'
+import OrdersView from '@/views/Orders/OrdersView.vue'
+import OrderDetailView from '@/views/Orders/OrderDetailView.vue'
 import RefundView from '@/views/Footer/RefundView.vue'
 import AboutusView from '@/views/Footer/AboutusView.vue'
 import DeliveryView from '@/views/Footer/DeliveryView.vue'
 import PrivacyView from '@/views/Footer/PrivacyView.vue'
 import ContactView from '@/views/Footer/ContactView.vue'
-import ProductView from '@/views/ProductView.vue'
-import AdminView from '@/views/AdminView.vue'
-import ProductsGridView from '@/views/ProductsGridView.vue'
-import NewPasswordView from '@/views/NewPasswordView.vue'
-import MegaSalePage from '@/views/MegaSalePage.vue'
+import ProductView from '@/views/Shop/ProductView.vue'
+import AdminView from '@/views/Account/AdminView.vue'
+import ProductsGridView from '@/views/Shop/ProductsGridView.vue'
+import NewPasswordView from '@/views/Auth/NewPasswordView.vue'
+import MegaSalePage from '@/views/Shop/MegaSalePage.vue'
 
 
 const router = createRouter({
@@ -86,7 +86,7 @@ const router = createRouter({
     {
       path: '/reset-password',
       name: 'reset-password',
-      component: () => import('@/views/ResetPasswordView.vue'),
+      component: () => import('@/views/Auth/ResetPasswordView.vue'),
     },
     {
       path: '/orders/status',
@@ -152,7 +152,7 @@ const router = createRouter({
     {
       path: '/search',
       name: 'search',
-      component: () => import('@/views/SearchResultsView.vue'),
+      component: () => import('@/views/Shop/SearchResultsView.vue'),
     },
     {
     path: '/password-reset/:hash',

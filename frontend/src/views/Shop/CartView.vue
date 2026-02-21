@@ -161,7 +161,7 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import { useRouter } from "vue-router";
-import { useCartStore } from "../stores/cartStore";
+import { useCartStore } from "../../stores/cartStore";
 
 interface Step {
   label: string;

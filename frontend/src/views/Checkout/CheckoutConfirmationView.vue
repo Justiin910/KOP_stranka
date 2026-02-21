@@ -265,7 +265,7 @@
 
 <script>
 import { useRouter } from "vue-router";
-import { useCartStore } from "../stores/cartStore";
+import { useCartStore } from '../../stores/cartStore';
 
 export default {
   name: "CheckoutConfirmationView",

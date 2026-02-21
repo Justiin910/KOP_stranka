@@ -426,8 +426,8 @@
 
 <script>
 import api from "@/api";
-import SideBarComponent from "../components/SideBarComponent.vue";
-import { useCartStore } from "../stores/cartStore";
+import SideBarComponent from "../../components/SideBarComponent.vue";
+import { useCartStore } from "../../stores/cartStore";
 import { useI18n } from "vue-i18n";
 
 export default {

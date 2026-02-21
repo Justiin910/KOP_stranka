@@ -272,7 +272,7 @@
 </template>
 
 <script>
-import { useCartStore } from "../stores/cartStore";
+import { useCartStore } from "../../stores/cartStore";
 import { useRouter } from "vue-router";
 
 export default {
