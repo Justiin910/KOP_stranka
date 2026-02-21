@@ -37,7 +37,7 @@ class RegisteredUserController extends Controller
             $hasMx = function_exists('checkdnsrr') && checkdnsrr($domain, 'MX');
             if (!$hasMx) {
                 throw ValidationException::withMessages([
-                    'email' => ['E-mailová doména nemá MX záznamy alebo neexistuje.'],
+                    'email' => [__('messages.auth.invalid_domain')],
                 ]);
             }
         }

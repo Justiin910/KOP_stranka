@@ -103,7 +103,7 @@
                 <span class="text-2xl text-yellow-400">★</span>
               </div>
               <span class="text-sm text-gray-600 dark:text-gray-400">{{
-                t("product.reviews_count", { count: product.reviews })
+                t("product.reviews_count", product.reviews)
               }}</span>
             </div>
 
@@ -122,12 +122,12 @@
           <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
             {{ t("product.specs") }}
           </h2>
-          <ul
-            v-if="product.specs && product.specs.length > 0"
-            class="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300"
+          <div
+            v-if="product.specs"
+            class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg text-gray-700 dark:text-gray-300 space-y-2 whitespace-pre-line"
           >
-            <li v-for="(spec, index) in product.specs" :key="index">{{ spec }}</li>
-          </ul>
+            {{ product.specs }}
+          </div>
           <p v-else class="text-gray-500 dark:text-gray-400">
             {{ t("product.no_specs") }}
           </p>

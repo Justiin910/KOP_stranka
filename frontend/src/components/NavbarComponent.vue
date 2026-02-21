@@ -54,7 +54,7 @@
             @click="onSearch"
             class="absolute right-1 top-1/2 -translate-y-1/2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-3 py-1 rounded text-sm shadow-md transition transform hover:scale-110"
           >
-            {{ $t('search.button') }}
+            {{ $t("search.button") }}
           </button>
         </div>
       </div>
@@ -88,7 +88,7 @@
           <div
             class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-1 bg-gray-800 dark:bg-gray-700 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap"
           >
-            {{ $t('tooltip.language') }}
+            {{ $t("tooltip.language") }}
             <div
               class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800 dark:border-b-gray-700"
             ></div>
@@ -129,7 +129,7 @@
           <div
             class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-1 bg-gray-800 dark:bg-gray-700 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap"
           >
-            {{ $t('tooltip.profile') }}
+            {{ $t("tooltip.profile") }}
             <div
               class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800 dark:border-b-gray-700"
             ></div>
@@ -155,7 +155,7 @@
           <div
             class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-1 bg-gray-800 dark:bg-gray-700 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap"
           >
-            {{ $t('tooltip.wishlist') }}
+            {{ $t("tooltip.wishlist") }}
             <div
               class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800 dark:border-b-gray-700"
             ></div>
@@ -168,7 +168,7 @@
           <div
             class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-1 bg-gray-800 dark:bg-gray-700 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap"
           >
-            {{ $t('tooltip.notifications') }}
+            {{ $t("tooltip.notifications") }}
             <div
               class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800 dark:border-b-gray-700"
             ></div>
@@ -193,7 +193,7 @@
           <div
             class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-1 bg-gray-800 dark:bg-gray-700 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap"
           >
-            {{ $t('tooltip.cart') }}
+            {{ $t("tooltip.cart") }}
             <div
               class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800 dark:border-b-gray-700"
             ></div>
@@ -242,7 +242,10 @@ export default {
 
     // react to favorites changes and auth events (debounced)
     window.addEventListener("favorites-updated", this.updateFavoritesCountDebounced);
-    window.addEventListener("favorites-remote-updated", this.updateFavoritesCountDebounced);
+    window.addEventListener(
+      "favorites-remote-updated",
+      this.updateFavoritesCountDebounced
+    );
     window.addEventListener("user-logged-in", this.onUserLoggedIn);
     window.addEventListener("user-logged-out", this.onUserLoggedOut);
 
@@ -279,7 +282,10 @@ export default {
   beforeUnmount() {
     document.removeEventListener("click", this.handleClickOutside);
     window.removeEventListener("favorites-updated", this.updateFavoritesCountDebounced);
-    window.removeEventListener("favorites-remote-updated", this.updateFavoritesCountDebounced);
+    window.removeEventListener(
+      "favorites-remote-updated",
+      this.updateFavoritesCountDebounced
+    );
     window.removeEventListener("user-logged-in", this.onUserLoggedIn);
     window.removeEventListener("user-logged-out", this.onUserLoggedOut);
     window.removeEventListener("storage", this.onStorageEvent);

@@ -84,7 +84,7 @@ class OrderController extends Controller
 
                 return response()->json([
                     'success' => true,
-                    'message' => 'Order created successfully',
+                    'message' => __('messages.order.created_successfully'),
                     'order' => [
                         'id' => $order->id,
                         'reference' => $order->reference,
@@ -97,7 +97,7 @@ class OrderController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to create order: ' . $e->getMessage()
+                'message' => __('messages.order.create_failed', ['error' => $e->getMessage()])
             ], 400);
         }
     }
@@ -108,7 +108,7 @@ class OrderController extends Controller
     public function index()
     {
         if (!auth()->check()) {
-            return response()->json(['message' => 'Unauthorized'], 401);
+            return response()->json(['message' => __('messages.order.unauthorized')], 401);
         }
 
         $orders = auth()->user()->orders()
@@ -143,7 +143,7 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         if (!auth()->check() || $order->user_id !== auth()->id()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            return response()->json(['message' => __('messages.order.unauthorized')], 403);
         }
 
         $order->load('items.product', 'user');
@@ -188,7 +188,7 @@ class OrderController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Order status updated',
+            'message' => __('messages.order.updated_successfully'),
             'order' => $order
         ]);
     }
@@ -200,11 +200,11 @@ class OrderController extends Controller
     {
         // Only allow if user owns the order or is admin
         if ($order->user_id && !auth()->check()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            return response()->json(['message' => __('messages.order.unauthorized')], 403);
         }
 
         if ($order->user_id && auth()->id() !== $order->user_id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            return response()->json(['message' => __('messages.order.unauthorized')], 403);
         }
 
         try {
@@ -215,7 +215,7 @@ class OrderController extends Controller
             if (!$email) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No email address found in order'
+                    'message' => __('messages.order.no_email')
                 ], 400);
             }
 
@@ -244,12 +244,12 @@ class OrderController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Confirmation email sent successfully'
+                'message' => __('messages.order.confirmation_email_sent')
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to send email: ' . $e->getMessage()
+                'message' => __('messages.order.email_send_failed', ['error' => $e->getMessage()])
             ], 500);
         }
     }}

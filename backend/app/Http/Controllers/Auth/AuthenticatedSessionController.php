@@ -44,6 +44,6 @@ class AuthenticatedSessionController extends Controller
             $request->user()->tokens()->delete();
         }
 
-        return response()->json(['message' => 'Logged out successfully']);
+        return response()->json(['message' => __('messages.auth.logged_out')]);
     }
 }

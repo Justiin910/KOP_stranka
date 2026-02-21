@@ -29,11 +29,25 @@ app.use(router)
 
 // Setup i18n
 const savedLang = localStorage.getItem('language') || 'sk'
+
+// Plural rules for different languages
+const pluralRules = {
+	sk: (n: number) => {
+		if (n === 1) return 0 // singular: recenzia
+		if (n >= 2 && n <= 4) return 1 // 2-4: recenzie
+		return 2 // 5+: recenzií
+	},
+	en: (n: number) => {
+		return n === 1 ? 0 : 1 // singular: review, plural: reviews
+	}
+}
+
 const i18n = createI18n({
 	legacy: false,
 	locale: savedLang,
 	fallbackLocale: 'sk',
-	messages: { sk, en }
+	messages: { sk, en },
+	pluralRules: pluralRules as any
 })
 app.use(i18n)
 

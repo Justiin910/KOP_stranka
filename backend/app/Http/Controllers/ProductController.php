@@ -20,7 +20,7 @@ class ProductController extends Controller
         $product = DB::table('products')->where('id', $id)->first();
         
         if (!$product) {
-            return response()->json(['error' => 'Product not found'], 404);
+            return response()->json(['error' => __('messages.product.not_found')], 404);
         }
         
         // Attach aggregated reviews data if reviews table exists
@@ -67,7 +67,7 @@ class ProductController extends Controller
     public function storeReview(Request $request, $id)
     {
         if (!auth()->check()) {
-            return response()->json(['message' => 'Unauthorized'], 401);
+            return response()->json(['message' => __('messages.product.unauthorized')], 401);
         }
 
         $validated = $request->validate([
@@ -78,7 +78,7 @@ class ProductController extends Controller
         // Ensure product exists
         $product = DB::table('products')->where('id', $id)->first();
         if (!$product) {
-            return response()->json(['message' => 'Product not found'], 404);
+            return response()->json(['message' => __('messages.product.not_found')], 404);
         }
 
         // Check if user already has a review for this product
@@ -166,7 +166,7 @@ class ProductController extends Controller
     public function updateReview(Request $request, $id, $reviewId)
     {
         if (!auth()->check()) {
-            return response()->json(['message' => 'Unauthorized'], 401);
+            return response()->json(['message' => __('messages.product.unauthorized')], 401);
         }
 
         $review = DB::table('product_reviews')
@@ -176,7 +176,7 @@ class ProductController extends Controller
             ->first();
 
         if (!$review) {
-            return response()->json(['message' => 'Review not found or unauthorized'], 404);
+            return response()->json(['message' => __('messages.product.review_not_found')], 404);
         }
 
         $validated = $request->validate([
@@ -229,7 +229,7 @@ class ProductController extends Controller
     public function deleteReview($id, $reviewId)
     {
         if (!auth()->check()) {
-            return response()->json(['message' => 'Unauthorized'], 401);
+            return response()->json(['message' => __('messages.product.unauthorized')], 401);
         }
 
         $user = auth()->user();
@@ -241,12 +241,12 @@ class ProductController extends Controller
             ->first();
 
         if (!$review) {
-            return response()->json(['message' => 'Review not found'], 404);
+            return response()->json(['message' => __('messages.product.review_not_found_delete')], 404);
         }
 
         // Check authorization: user can delete own review, or admin/owner can delete any
         if ($review->user_id !== auth()->id() && !$isAdmin) {
-            return response()->json(['message' => 'Unauthorized to delete this review'], 403);
+            return response()->json(['message' => __('messages.product.review_unauthorized_delete')], 403);
         }
 
         // Delete the review
@@ -272,7 +272,7 @@ class ProductController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Review deleted successfully',
+            'message' => __('messages.product.review_deleted'),
             'rating' => (float)$agg->avg_rating,
             'reviews' => (int)$agg->reviews_count,
         ]);

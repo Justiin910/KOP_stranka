@@ -46,16 +46,16 @@
           <i class="fas fa-check-circle text-3xl text-green-600 dark:text-green-400"></i>
         </div>
         <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-          Objednávka potvrdená!
+          {{ $t('pages.checkout.confirmation.title') }}
         </h1>
-        <p class="text-gray-600 dark:text-gray-400">Ďakujeme za vašu objednávku</p>
+        <p class="text-gray-600 dark:text-gray-400">{{ $t('pages.checkout.confirmation.thank_you') }}</p>
       </div>
 
       <!-- Order reference -->
       <div
         class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 mb-8 border border-blue-200 dark:border-blue-800"
       >
-        <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Číslo objednávky</p>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">{{ $t('pages.checkout.confirmation.order_reference') }}</p>
         <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">
           {{ order?.reference }}
         </p>
@@ -68,20 +68,20 @@
           class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700"
         >
           <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-            Doručenie
+            {{ $t('pages.checkout.confirmation.delivery') }}
           </h2>
 
           <div class="space-y-3">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <p class="text-sm text-gray-600 dark:text-gray-400">Spôsob doručenia</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">{{ $t('pages.checkout.confirmation.delivery_method') }}</p>
                 <p class="font-medium text-gray-900 dark:text-white">
                   {{ getDeliveryMethodLabel(order.delivery?.method) }}
                 </p>
               </div>
               <div>
                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                  Poplatek za doručenie
+                  {{ $t('pages.checkout.confirmation.delivery_fee') }}
                 </p>
                 <p class="font-medium text-gray-900 dark:text-white">
                   {{ getDeliveryFee(order.delivery?.method).toFixed(2) }} €
@@ -93,7 +93,7 @@
 
             <div>
               <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                Doručovacia adresa
+                {{ $t('pages.checkout.confirmation.shipping_address') }}
               </p>
               <div class="space-y-1 text-gray-900 dark:text-white">
                 <p class="font-medium">{{ order.delivery?.address?.fullName }}</p>
@@ -118,7 +118,7 @@
           class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700"
         >
           <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-            Spôsob platby
+            {{ $t('pages.checkout.confirmation.payment') }}
           </h2>
 
           <div class="space-y-2">
@@ -135,7 +135,7 @@
                   class="text-sm text-gray-600 dark:text-gray-400"
                   v-if="order.payment?.method === 'card'"
                 >
-                  Karta končiaca na {{ order.payment?.card?.last4 }}
+                  {{ $t('pages.checkout.confirmation.card_ending', { last4: order.payment?.card?.last4 }) }}
                 </p>
               </div>
             </div>
@@ -147,7 +147,7 @@
           class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700"
         >
           <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-            Položky v objednávke
+            {{ $t('pages.checkout.confirmation.order_items') }}
           </h2>
 
           <div class="space-y-4">
@@ -159,7 +159,7 @@
               <div class="flex-1">
                 <p class="font-medium text-gray-900 dark:text-white">{{ item.title }}</p>
                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                  Množstvo: {{ item.quantity }}
+                  {{ $t('pages.checkout.confirmation.quantity') }} {{ item.quantity }}
                 </p>
               </div>
               <div class="text-right">
@@ -167,7 +167,7 @@
                   {{ (parseFloat(String(item.price)) * item.quantity).toFixed(2) }} €
                 </p>
                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                  {{ parseFloat(String(item.price)).toFixed(2) }} € / kus
+                  {{ parseFloat(String(item.price)).toFixed(2) }} {{ $t('pages.checkout.delivery.per_unit') }}
                 </p>
               </div>
             </div>
@@ -179,12 +179,12 @@
           class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700"
         >
           <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-            Súhrn objednávky
+            {{ $t('pages.checkout.payment.order_summary') }}
           </h2>
 
           <div class="space-y-3 mb-6 border-b border-gray-200 dark:border-gray-700 pb-6">
             <div class="flex justify-between text-gray-600 dark:text-gray-400">
-              <span>Spolu za položky</span>
+              <span>{{ $t('pages.checkout.confirmation.items_total_label') }}</span>
               <span
                 >{{
                   (order.total - getDeliveryFee(order.delivery?.method)).toFixed(2)
@@ -193,21 +193,21 @@
               >
             </div>
             <div class="flex justify-between text-gray-600 dark:text-gray-400">
-              <span>Doručenie</span>
+              <span>{{ $t('pages.checkout.payment.shipping') }}</span>
               <span>{{ getDeliveryFee(order.delivery?.method).toFixed(2) }} €</span>
             </div>
             <div
               class="flex justify-between text-lg font-bold text-gray-900 dark:text-white"
             >
-              <span>Celkom k úhradě</span>
+              <span>{{ $t('pages.checkout.confirmation.total_due') }}</span>
               <span>{{ parseFloat(order.total).toFixed(2) }} €</span>
             </div>
           </div>
 
           <div class="text-sm text-gray-600 dark:text-gray-400">
-            <p>Vytvoreno: {{ formatDate(order.created_at) }}</p>
+            <p>{{ $t('pages.checkout.confirmation.created_at') }}: {{ formatDate(order.created_at) }}</p>
             <p>
-              Stav: <span class="font-medium">{{ getOrderStatus(order.status || 'pending') }}</span>
+              {{ $t('pages.checkout.confirmation.status') }}: <span class="font-medium">{{ getOrderStatus(order.status || 'pending') }}</span>
             </p>
           </div>
         </div>
@@ -216,28 +216,25 @@
         <div
           class="bg-green-50 dark:bg-green-900/20 rounded-lg p-6 border border-green-200 dark:border-green-800"
         >
-          <h3 class="font-semibold text-gray-900 dark:text-white mb-3">Ďalšie kroky</h3>
+          <h3 class="font-semibold text-gray-900 dark:text-white mb-3">{{ $t('pages.checkout.confirmation.next_steps') }}</h3>
           <ul class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
             <li class="flex items-start gap-2">
               <i
                 class="fas fa-check-circle text-green-600 dark:text-green-400 mt-0.5"
               ></i>
-              <span
-                >Potvrdzovací email bol odoslaný na
-                {{ order.delivery?.address?.email }}</span
-              >
+              <span>{{ $t('pages.checkout.confirmation.email_sent_to', { email: order.delivery?.address?.email }) }}</span>
             </li>
             <li class="flex items-start gap-2">
               <i
                 class="fas fa-check-circle text-green-600 dark:text-green-400 mt-0.5"
               ></i>
-              <span>Vaša objednávka je v procese spracovania</span>
+              <span>{{ $t('pages.checkout.confirmation.order_in_processing') }}</span>
             </li>
             <li class="flex items-start gap-2">
               <i
                 class="fas fa-check-circle text-green-600 dark:text-green-400 mt-0.5"
               ></i>
-              <span>Dostanete notifikáciu keď bude objednávka odoslaná</span>
+              <span>{{ $t('pages.checkout.confirmation.will_receive_notification') }}</span>
             </li>
           </ul>
         </div>
@@ -245,18 +242,15 @@
 
       <!-- Action buttons -->
       <div class="flex gap-4 mt-12">
-        <router-link
-          to="/"
-          class="flex-1 text-center btn-primary-lg"
-        >
-          Pokračovať v nákupoch
+        <router-link to="/" class="flex-1 text-center btn-primary-lg">
+          {{ $t('pages.checkout.confirmation.continue_shopping') }}
         </router-link>
         <router-link
           v-if="isAuthenticated"
           to="/orders"
           class="flex-1 text-center bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-semibold py-3 rounded-lg"
         >
-          Moje objednávky
+          {{ $t('pages.checkout.confirmation.my_orders') }}
         </router-link>
       </div>
     </div>
@@ -278,13 +272,19 @@ export default {
     return {
       order: null,
       isAuthenticated: false,
-      steps: [
-        { label: 'Košík', active: false },
-        { label: 'Doručenie', active: false },
-        { label: 'Platba', active: false },
-        { label: 'Potvrdenie', active: true },
-      ],
+      currentStep: 3,
     };
+  },
+  computed: {
+    steps() {
+      const labels = [
+        this.$t('cart.steps.cart'),
+        this.$t('pages.checkout.delivery.step'),
+        this.$t('cart.steps.payment'),
+        this.$t('cart.steps.confirmation'),
+      ];
+      return labels.map((label, idx) => ({ label, active: idx === this.currentStep }));
+    },
   },
   methods: {
     loadOrder() {
@@ -336,12 +336,12 @@ export default {
     },
 
     getDeliveryMethodLabel(method) {
-      const labels = {
-        standard: "Štandardné doručenie (4.99 €)",
-        express: "Expresné doručenie (9.99 €)",
-        pickup: "Vyzdvihnutie v pobočke (ZDARMA)",
-      };
-      return labels[method] || method;
+      const map = { standard: 'method1', express: 'method2', pickup: 'method3' };
+      const key = map[method] || null;
+      if (!key) return method;
+      const name = this.$t(`pages.delivery.delivery_methods.${key}.name`);
+      const price = this.$t(`pages.delivery.delivery_methods.${key}.price`);
+      return `${name} ${price}`;
     },
 
     getDeliveryFee(method) {
@@ -351,12 +351,14 @@ export default {
     },
 
     getPaymentMethodLabel(method) {
-      const labels = {
-        card: "Platobná karta",
-        googlepay: "Google Pay",
-        paypal: "PayPal",
+      const mapping = {
+        card: 'payment_method_card',
+        googlepay: 'payment_method_googlepay',
+        paypal: 'payment_method_paypal',
       };
-      return labels[method] || method;
+      const key = mapping[method];
+      if (!key) return method;
+      return this.$t(`pages.checkout.payment.${key}`);
     },
 
     getPaymentMethodIcon(method) {

@@ -38,7 +38,9 @@
         </div>
       </div>
 
-      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">Platba</h1>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">
+        {{ $t("pages.checkout.payment.title") }}
+      </h1>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Payment + Delivery Summary -->
@@ -48,26 +50,30 @@
             class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700"
           >
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
-              Doručenie
+              {{ $t("pages.checkout.payment.delivery_summary") }}
             </h2>
             <div v-if="!delivery" class="text-gray-500">
-              Žiadne doručenie uložené. Prosím vyplňte doručenie najprv.
+              {{ $t("pages.checkout.payment.no_delivery") }}
             </div>
             <div v-else class="space-y-2">
               <div class="text-sm text-gray-700 dark:text-gray-300">
-                Spôsob: <span class="font-medium">{{ delivery.method }}</span>
+                {{ $t("pages.checkout.payment.delivery_method") }}:
+                <span class="font-medium">{{ delivery.method }}</span>
               </div>
               <div class="text-sm text-gray-700 dark:text-gray-300">
-                Meno: <span class="font-medium">{{ delivery.address.fullName }}</span>
+                {{ $t("pages.checkout.payment.full_name") }}:
+                <span class="font-medium">{{ delivery.address.fullName }}</span>
               </div>
               <div class="text-sm text-gray-700 dark:text-gray-300">
-                Telefón: <span class="font-medium">{{ delivery.phone }}</span>
+                {{ $t("pages.checkout.payment.phone") }}:
+                <span class="font-medium">{{ delivery.phone }}</span>
               </div>
               <div class="text-sm text-gray-700 dark:text-gray-300">
-                Email: <span class="font-medium">{{ delivery.address.email }}</span>
+                {{ $t("pages.checkout.payment.email") }}:
+                <span class="font-medium">{{ delivery.address.email }}</span>
               </div>
               <div class="text-sm text-gray-700 dark:text-gray-300">
-                Adresa:
+                {{ $t("pages.checkout.payment.address") }}:
                 <span class="font-medium"
                   >{{ delivery.address.street }}, {{ delivery.address.zip }},
                   {{ delivery.address.city }}, {{ delivery.address.country }}</span
@@ -81,7 +87,7 @@
             class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700"
           >
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
-              Spôsob platby
+              {{ $t("pages.checkout.payment.payment_methods") }}
             </h2>
 
             <div class="space-y-4">
@@ -98,11 +104,11 @@
                   <div class="flex items-center gap-2">
                     <i class="fas fa-credit-card text-blue-600"></i>
                     <div class="font-medium text-gray-900 dark:text-white">
-                      Platobná karta
+                      {{ $t("pages.checkout.payment.payment_method_card") }}
                     </div>
                   </div>
                   <div class="text-sm text-gray-500 dark:text-gray-400">
-                    Kreditná / debetná karta (Visa, MasterCard)
+                    {{ $t("pages.checkout.payment.payment_method_card_desc") }}
                   </div>
                 </div>
               </label>
@@ -125,11 +131,11 @@
                   <div class="flex items-center gap-2">
                     <i class="fab fa-google text-2xl text-blue-600"></i>
                     <div class="ml-2 font-medium text-gray-900 dark:text-white">
-                      Google Pay
+                      {{ $t("pages.checkout.payment.payment_method_googlepay") }}
                     </div>
                   </div>
                   <div class="text-sm text-gray-500 dark:text-gray-400">
-                    Rýchla platba cez Google Pay (ak podporované)
+                    {{ $t("pages.checkout.payment.payment_method_googlepay_desc") }}
                   </div>
                 </div>
               </label>
@@ -138,9 +144,9 @@
             <!-- Card form -->
             <div v-if="selectedPayment === 'card'" class="mt-6 space-y-3">
               <div>
-                <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1"
-                  >Meno na karte</label
-                >
+                <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1">
+                  {{ $t("pages.checkout.payment.card_name") }}
+                </label>
                 <input
                   v-model="card.name"
                   type="text"
@@ -150,9 +156,9 @@
                 />
               </div>
               <div>
-                <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1"
-                  >Číslo karty</label
-                >
+                <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1">
+                  {{ $t("pages.checkout.payment.card_number") }}
+                </label>
                 <input
                   v-model="card.number"
                   type="text"
@@ -165,9 +171,9 @@
               </div>
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1"
-                    >Expirácia (MM/YY)</label
-                  >
+                  <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1">
+                    {{ $t("pages.checkout.payment.card_expiry") }}
+                  </label>
                   <input
                     v-model="card.expiry"
                     type="text"
@@ -178,9 +184,9 @@
                   />
                 </div>
                 <div>
-                  <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1"
-                    >CVC</label
-                  >
+                  <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1">
+                    {{ $t("pages.checkout.payment.card_cvc") }}
+                  </label>
                   <input
                     v-model="card.cvc"
                     type="text"
@@ -197,7 +203,7 @@
             <div v-if="selectedPayment === 'googlepay'" class="mt-6">
               <div id="google-pay-button"></div>
               <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">
-                Kliknite na tlačidlo Google Pay vyššie pre platbu.
+                {{ $t("pages.checkout.payment.googlepay_help") }}
               </p>
             </div>
 
@@ -205,7 +211,7 @@
             <div v-if="selectedPayment === 'paypal'" class="mt-6">
               <div id="paypal-button-container"></div>
               <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">
-                Kliknite na tlačidlo PayPal vyššie pre platbu.
+                {{ $t("pages.checkout.payment.paypal_help") }}
               </p>
             </div>
           </div>
@@ -217,32 +223,34 @@
             class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 sticky top-6"
           >
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-              Súhrn objednávky
+              {{ $t("pages.checkout.payment.order_summary") }}
             </h2>
 
             <div
               class="space-y-3 mb-6 border-b border-gray-200 dark:border-gray-700 pb-6"
             >
               <div class="flex justify-between text-gray-600 dark:text-gray-400">
-                <span>Spolu za položky</span>
+                <span>{{ $t("pages.checkout.payment.subtotal") }}</span>
                 <span>{{ cartSubtotal.toFixed(2) }} €</span>
               </div>
               <div class="flex justify-between text-gray-600 dark:text-gray-400">
-                <span>Doručenie</span>
+                <span>{{ $t("pages.checkout.payment.shipping") }}</span>
                 <span>{{ deliveryFee.toFixed(2) }} €</span>
               </div>
               <div
                 class="flex justify-between text-lg font-bold text-gray-900 dark:text-white"
               >
-                <span>Celkom</span>
+                <span>{{ $t("pages.checkout.payment.total") }}</span>
                 <span>{{ (cartSubtotal + deliveryFee).toFixed(2) }} €</span>
               </div>
             </div>
 
             <div class="space-y-3 mb-6">
-              <h3 class="font-semibold text-gray-900 dark:text-white">Položky</h3>
+              <h3 class="font-semibold text-gray-900 dark:text-white">
+                {{ $t("pages.checkout.delivery.order_items") }}
+              </h3>
               <div v-if="cartStore.cartItems.length === 0" class="text-gray-500">
-                Váš košík je prázdny
+                {{ $t("pages.checkout.delivery.empty_cart") }}
               </div>
               <div v-else class="space-y-3">
                 <div
@@ -262,7 +270,7 @@
             </div>
 
             <button @click="confirmPayment" class="w-full btn-primary-lg">
-              Potvrdiť objednávku
+              {{ $t("pages.checkout.payment.place_order") }}
             </button>
           </div>
         </div>
@@ -284,12 +292,8 @@ export default {
   },
   data() {
     return {
-      steps: [
-        { label: "Košík", active: false },
-        { label: "Doručenie", active: false },
-        { label: "Platba", active: true },
-        { label: "Potvrdenie", active: false },
-      ],
+      // use currentStep + computed `steps` for reactive translations
+      currentStep: 2,
       delivery: null,
       selectedPayment: "card",
       card: {
@@ -304,6 +308,15 @@ export default {
     };
   },
   computed: {
+    steps() {
+      const labels = [
+        this.$t("cart.steps.cart"),
+        this.$t("pages.checkout.delivery.step"),
+        this.$t("cart.steps.payment"),
+        this.$t("cart.steps.confirmation"),
+      ];
+      return labels.map((label, idx) => ({ label, active: idx === this.currentStep }));
+    },
     cartSubtotal() {
       return this.cartStore.subtotal || 0;
     },
@@ -456,13 +469,15 @@ export default {
                 })
                 .catch((err) => {
                   console.error("Payment failed:", err);
-                  alert("Platba cez Google Pay zlyhala");
+                  alert(this.$t("pages.checkout.payment.alert_payment_failed_googlepay"));
                 });
             });
 
             // Create button dynamically
             button.innerHTML =
-              '<button style="width: 200px; padding: 10px; background: #1f2937; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Platiť cez Google Pay</button>';
+              '<button style="width: 200px; padding: 10px; background: #1f2937; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">' +
+              this.$t("pages.checkout.payment.pay_googlepay") +
+              "</button>";
             this.googlePayReady = true;
           }
         });
@@ -540,7 +555,7 @@ export default {
             },
             onError: (err) => {
               console.error("PayPal error:", err);
-              alert("Platba cez PayPal zlyhala");
+              alert(this.$t("pages.checkout.payment.alert_payment_failed_paypal"));
             },
           });
 
@@ -572,7 +587,7 @@ export default {
       try {
         // Validate delivery
         if (!this.delivery) {
-          alert("Chýba informácia o doručení");
+          alert(this.$t("pages.checkout.payment.alert_missing_delivery"));
           return;
         }
 
@@ -662,20 +677,23 @@ export default {
         this.router.push("/checkout/confirmation");
       } catch (error) {
         console.error("Order creation failed:", error);
-        alert("Nepodarilo sa vytvoriť objednávku: " + error.message);
+        alert(
+          this.$t("pages.checkout.payment.alert_order_create_failed_prefix") +
+            error.message
+        );
       }
     },
 
     async confirmPayment() {
       if (!this.delivery) {
-        alert("Chýba informácia o doručení");
+        alert(this.$t("pages.checkout.payment.alert_missing_delivery"));
         return;
       }
 
       // For card payment, validate and process directly
       if (this.selectedPayment === "card") {
         if (!this.validateCard()) {
-          alert("Skontrolujte údaje o karte");
+          alert(this.$t("pages.checkout.payment.alert_check_card_details"));
           return;
         }
 
@@ -687,9 +705,9 @@ export default {
       }
       // Google Pay and PayPal have their own buttons, so this won't be called for them
       else if (this.selectedPayment === "googlepay" && !this.googlePayReady) {
-        alert("Google Pay sa zatiaľ načítava. Skúste znova.");
+        alert(this.$t("pages.checkout.payment.alert_googlepay_loading"));
       } else if (this.selectedPayment === "paypal" && !this.paypalReady) {
-        alert("PayPal sa zatiaľ načítava. Skúste znova.");
+        alert(this.$t("pages.checkout.payment.alert_paypal_loading"));
       }
     },
   },

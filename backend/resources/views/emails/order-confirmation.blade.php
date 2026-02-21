@@ -180,7 +180,7 @@
 
             <p>Ďakujeme za vašu objednávku! Budeme vás informovať o jej stave prostredníctvom e-mailu.</p>
 
-            <a href="#" class="button">Sledovať objednávku</a>
+           <!-- <a href="#" class="button">Sledovať objednávku</a> -->
 
             <p style="color: #999; font-size: 12px; margin-top: 30px;">Ak ste si túto objednávku neobjednali, prosím ignorujte tento e-mail.</p>
         </div>

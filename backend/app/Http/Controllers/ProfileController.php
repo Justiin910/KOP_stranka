@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
 
 class ProfileController extends Controller
@@ -58,7 +59,7 @@ class ProfileController extends Controller
         }
 
         return response()->json([
-            'message' => 'Profil bol úspešne aktualizovaný.',
+            'message' => __('messages.profile.profile_updated'),
             'user' => $user
         ]);
     }
@@ -99,7 +100,7 @@ class ProfileController extends Controller
         }
 
         return response()->json([
-            'message' => 'Heslo bolo úspešne zmenené.'
+            'message' => __('messages.profile.password_changed')
         ]);
     }
 
@@ -117,7 +118,7 @@ class ProfileController extends Controller
         // Verify password
         if (!Hash::check($validated['password'], $user->password)) {
             return response()->json([
-                'message' => 'Nesprávne heslo.'
+                'message' => __('messages.profile.incorrect_password')
             ], 403);
         }
 
@@ -125,11 +126,57 @@ class ProfileController extends Controller
             $user->delete();
 
             return response()->json([
-                'message' => 'Váš účet bol úspešne zmazaný.'
+                'message' => __('messages.profile.account_deleted')
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Chyba pri mazaní účtu: ' . $e->getMessage()
+                'message' => __('messages.profile.account_delete_error', ['error' => $e->getMessage()])
+            ], 500);
+        }
+    }
+
+    /**
+     * Upload user avatar
+     */
+    public function uploadAvatar(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'avatar' => ['required', 'image', 'mimes:jpeg,png,jpg,gif', 'max:5120'], // 5MB max
+            ]);
+
+            $user = $request->user();
+
+            // Delete old avatar if it exists
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+
+            // Ensure avatars directory exists
+            if (!Storage::disk('public')->exists('avatars')) {
+                Storage::disk('public')->makeDirectory('avatars', 0755, true);
+            }
+
+            // Store new avatar
+            $path = $request->file('avatar')->store('avatars', 'public');
+
+            // Update user record
+            $user->update(['avatar' => $path]);
+
+            return response()->json([
+                'message' => __('messages.profile.avatar_updated'),
+                'user' => $user,
+                'avatar_url' => Storage::disk('public')->url($path)
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => __('messages.profile.validation_error'),
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Avatar upload error: ' . $e->getMessage(), ['exception' => $e]);
+            return response()->json([
+                'message' => __('messages.profile.avatar_upload_error', ['error' => $e->getMessage()])
             ], 500);
         }
     }

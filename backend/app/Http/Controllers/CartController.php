@@ -58,7 +58,7 @@ class CartController extends Controller
         );
 
         return response()->json([
-            'message' => 'Item added to cart',
+            'message' => __('messages.cart.item_added'),
             'cart_item' => $cartItem,
         ], 201);
     }
@@ -79,7 +79,7 @@ class CartController extends Controller
         $cartItem->update(['quantity' => $request->quantity]);
 
         return response()->json([
-            'message' => 'Cart item updated',
+            'message' => __('messages.cart.item_updated'),
             'cart_item' => $cartItem,
         ]);
     }
@@ -93,7 +93,7 @@ class CartController extends Controller
             ->where('product_id', $productId)
             ->delete();
 
-        return response()->json(['message' => 'Item removed from cart']);
+        return response()->json(['message' => __('messages.cart.item_removed')]);
     }
 
     /**
@@ -103,6 +103,6 @@ class CartController extends Controller
     {
         CartItem::where('user_id', auth()->id())->delete();
 
-        return response()->json(['message' => 'Cart cleared']);
+        return response()->json(['message' => __('messages.cart.cleared')]);
     }
 }

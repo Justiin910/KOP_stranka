@@ -66,14 +66,14 @@ class ContactController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Vaša správa bola úspešne odoslaná. Odpovieme vám do 24 hodín.'
+                'message' => __('messages.contact.message_sent')
             ]);
         } catch (\Exception $e) {
             \Log::error('Contact form error: ' . $e->getMessage() . '\n' . $e->getTraceAsString());
             
             return response()->json([
                 'success' => false,
-                'message' => 'Pri spracovaní vašej správy došlo k chybe. Skúste prosím neskôr alebo nás kontaktujte priamo.'
+                'message' => __('messages.contact.send_failed', ['error' => $e->getMessage()])
             ], 500);
         }
     }

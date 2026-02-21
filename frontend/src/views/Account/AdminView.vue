@@ -155,7 +155,10 @@
           <input
             v-model="userSearch"
             type="text"
-            :placeholder="$t('admin.users.search_placeholder')"
+            :placeholder="
+              $t('admin.users.search_placeholder') +
+              ' (napr. meno, email alebo #3 pre ID)'
+            "
             class="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
@@ -196,8 +199,14 @@
           <div
             v-for="user in filteredUsers"
             :key="user.id"
-            class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
+            class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow relative"
           >
+            <!-- User ID Badge in top-right corner -->
+            <div
+              class="absolute top-4 right-4 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-xs font-mono text-gray-600 dark:text-gray-400"
+            >
+              #{{ user.id }}
+            </div>
             <div class="flex items-center mb-4">
               <div
                 class="w-12 h-12 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg"
@@ -462,6 +471,422 @@
                   activity.value
                 }}</span>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notifications Management -->
+      <div v-if="activeTab === 'notifications'" class="space-y-6">
+        <!-- Grid Layout: Stats on left, Form on right -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Notification Statistics (Left Side) -->
+          <div class="md:col-span-1 space-y-6">
+            <!-- Total Notifications Card -->
+            <div
+              class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow p-6 text-white"
+            >
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-indigo-100 text-sm font-medium">
+                    {{ $t("admin.notifications.statistics.total_count") }}
+                  </p>
+                  <p class="text-3xl font-bold mt-1">{{ notifications.length }}</p>
+                </div>
+                <div
+                  class="bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full p-3"
+                >
+                  <svg class="w-8 h-8" fill="white" viewBox="0 0 24 24">
+                    <path
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                    ></path>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- Notifications by Type -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">
+                {{ $t("admin.notifications.by_type") }}
+              </h4>
+              <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-indigo-500"></div>
+                    <span class="text-sm text-gray-600 dark:text-gray-400">{{
+                      $t("admin.notifications.type_general")
+                    }}</span>
+                  </div>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">
+                    {{ notifications.filter((n) => n.type === "general").length }}
+                  </span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-purple-500"></div>
+                    <span class="text-sm text-gray-600 dark:text-gray-400">{{
+                      $t("admin.notifications.type_promotion")
+                    }}</span>
+                  </div>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">
+                    {{ notifications.filter((n) => n.type === "promotion").length }}
+                  </span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                    <span class="text-sm text-gray-600 dark:text-gray-400">{{
+                      $t("admin.notifications.type_order")
+                    }}</span>
+                  </div>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">
+                    {{ notifications.filter((n) => n.type === "order").length }}
+                  </span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                    <span class="text-sm text-gray-600 dark:text-gray-400">{{
+                      $t("admin.notifications.type_payment")
+                    }}</span>
+                  </div>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">
+                    {{ notifications.filter((n) => n.type === "payment").length }}
+                  </span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-gray-500"></div>
+                    <span class="text-sm text-gray-600 dark:text-gray-400">{{
+                      $t("admin.notifications.type_system")
+                    }}</span>
+                  </div>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">
+                    {{ notifications.filter((n) => n.type === "system").length }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">
+                {{ $t("admin.notifications.quick_actions") }}
+              </h4>
+              <div class="space-y-2">
+                <button
+                  @click="
+                    notificationForm.type = 'promotion';
+                    notificationForm.sendToAll = true;
+                  "
+                  class="w-full px-4 py-2 bg-purple-50 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded-lg text-sm font-medium hover:bg-purple-100 dark:hover:bg-purple-800 transition"
+                >
+                  {{ $t("admin.notifications.quick_action_promotion") }}
+                </button>
+                <button
+                  @click="
+                    notificationForm.type = 'general';
+                    notificationForm.sendToAll = true;
+                  "
+                  class="w-full px-4 py-2 bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-lg text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-800 transition"
+                >
+                  {{ $t("admin.notifications.quick_action_announcement") }}
+                </button>
+                <button
+                  @click="sendSaleNotification"
+                  class="w-full px-4 py-2 bg-red-50 dark:bg-red-900 text-red-700 dark:text-red-300 rounded-lg text-sm font-medium hover:bg-red-100 dark:hover:bg-red-800 transition"
+                >
+                  {{ $t("admin.notifications.quick_action_sale") }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Create Notification Form (Right Side) -->
+          <div class="md:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              {{ $t("admin.notifications.title") }}
+            </h3>
+            <form @submit.prevent="sendNotification" class="space-y-4">
+              <div>
+                <label
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
+                  {{ $t("admin.notifications.type_label") }}
+                </label>
+                <select
+                  v-model="notificationForm.type"
+                  class="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="general">
+                    {{ $t("admin.notifications.type_general") }}
+                  </option>
+                  <option value="promotion">
+                    {{ $t("admin.notifications.type_promotion") }}
+                  </option>
+                  <option value="order">
+                    {{ $t("admin.notifications.type_order") }}
+                  </option>
+                  <option value="payment">
+                    {{ $t("admin.notifications.type_payment") }}
+                  </option>
+                  <option value="system">
+                    {{ $t("admin.notifications.type_system") }}
+                  </option>
+                </select>
+              </div>
+
+              <div>
+                <label
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
+                  {{ $t("admin.notifications.title_label") }}
+                </label>
+                <input
+                  v-model="notificationForm.title"
+                  type="text"
+                  :placeholder="$t('admin.notifications.title_placeholder')"
+                  class="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+
+              <div>
+                <label
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
+                  {{ $t("admin.notifications.message_label") }}
+                </label>
+                <textarea
+                  v-model="notificationForm.message"
+                  :placeholder="$t('admin.notifications.message_placeholder')"
+                  rows="4"
+                  class="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                ></textarea>
+              </div>
+
+              <div class="flex items-center gap-4">
+                <label class="flex items-center gap-2">
+                  <input
+                    v-model="notificationForm.sendToAll"
+                    type="checkbox"
+                    class="rounded"
+                  />
+                  <span class="text-sm text-gray-700 dark:text-gray-300">{{
+                    $t("admin.notifications.send_all")
+                  }}</span>
+                </label>
+              </div>
+
+              <div
+                v-if="!notificationForm.sendToAll"
+                class="space-y-2 relative"
+                data-notification-user-dropdown
+              >
+                <label
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
+                  {{ $t("admin.notifications.specific_user") }}
+                </label>
+                <input
+                  v-model="userSearchQueryForNotification"
+                  @focus="showUserDropdownForNotification = true"
+                  type="text"
+                  :placeholder="$t('admin.notifications.user_search_placeholder')"
+                  class="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+
+                <!-- Selected User Display -->
+                <div
+                  v-if="selectedUserForNotification"
+                  class="mt-2 p-3 bg-indigo-50 dark:bg-indigo-900 rounded-lg border border-indigo-200 dark:border-indigo-700 flex items-center justify-between"
+                >
+                  <div class="flex-1">
+                    <div class="font-medium text-sm text-gray-900 dark:text-white">
+                      {{ selectedUserForNotification.name }}
+                    </div>
+                    <div class="text-xs text-gray-600 dark:text-gray-400">
+                      #{{ selectedUserForNotification.id }} •
+                      {{ selectedUserForNotification.email }}
+                    </div>
+                  </div>
+                  <button
+                    @click="
+                      selectedUserForNotification = null;
+                      userSearchQueryForNotification = '';
+                      notificationForm.userId = null;
+                    "
+                    type="button"
+                    class="ml-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <!-- User Dropdown -->
+                <div
+                  v-if="
+                    showUserDropdownForNotification &&
+                    (userSearchQueryForNotification ||
+                      filteredUsersForNotification.length > 0)
+                  "
+                  class="absolute top-17 left-0 right-0 z-10 max-h-64 overflow-y-auto custom-scrollbar bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg"
+                >
+                  <div
+                    v-if="filteredUsersForNotification.length === 0"
+                    class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400"
+                  >
+                    {{ $t("admin.notifications.no_users_found") }}
+                  </div>
+                  <div
+                    v-for="user in filteredUsersForNotification"
+                    :key="user.id"
+                    @click="selectUserForNotification(user)"
+                    :class="[
+                      'px-4 py-3 cursor-pointer transition-colors border-b border-gray-100 dark:border-gray-600 last:border-0',
+                      selectedUserForNotification?.id === user.id
+                        ? 'bg-indigo-100 dark:bg-indigo-900'
+                        : 'hover:bg-gray-50 dark:hover:bg-gray-600',
+                    ]"
+                  >
+                    <div class="font-medium text-sm text-gray-900 dark:text-white">
+                      #{{ user.id }} • {{ user.name }}
+                    </div>
+                    <div class="text-xs text-gray-600 dark:text-gray-400">
+                      {{ user.email }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                :disabled="
+                  !notificationForm.title ||
+                  !notificationForm.message ||
+                  notificationsLoading
+                "
+                class="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold disabled:opacity-50 transition"
+              >
+                {{
+                  notificationsLoading
+                    ? $t("admin.notifications.sending")
+                    : $t("admin.notifications.send_button")
+                }}
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Notifications List -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            {{ $t("admin.notifications.sent_title") }}
+          </h3>
+
+          <!-- Search Bar -->
+          <div class="mb-4">
+            <input
+              v-model="notificationSearch"
+              type="text"
+              :placeholder="$t('admin.notifications.search_placeholder')"
+              class="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          <!-- Notifications Table -->
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th
+                    class="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-300"
+                  >
+                    {{ $t("admin.notifications.table_headers.id") }}
+                  </th>
+                  <th
+                    class="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-300"
+                  >
+                    {{ $t("admin.notifications.table_headers.type") }}
+                  </th>
+                  <th
+                    class="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-300"
+                  >
+                    {{ $t("admin.notifications.table_headers.title") }}
+                  </th>
+                  <th
+                    class="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-300"
+                  >
+                    {{ $t("admin.notifications.table_headers.message") }}
+                  </th>
+                  <th
+                    class="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-300"
+                  >
+                    {{ $t("admin.notifications.table_headers.date") }}
+                  </th>
+                  <th
+                    class="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-300"
+                  >
+                    {{ $t("admin.notifications.table_headers.users") }}
+                  </th>
+                  <th
+                    class="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-300"
+                  >
+                    {{ $t("admin.notifications.table_headers.actions") }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                <tr
+                  v-for="notification in filteredNotifications"
+                  :key="notification.id"
+                  class="hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                >
+                  <td class="px-4 py-3 text-gray-900 dark:text-white">
+                    #{{ notification.id }}
+                  </td>
+                  <td class="px-4 py-3">
+                    <span
+                      class="px-2 py-1 rounded text-xs font-medium"
+                      :class="getNotificationTypeClass(notification.type)"
+                    >
+                      {{ getNotificationTypeName(notification.type) }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white font-medium">
+                    {{ notification.title }}
+                  </td>
+                  <td class="px-4 py-3 text-gray-600 dark:text-gray-400 line-clamp-2">
+                    {{ notification.message }}
+                  </td>
+                  <td class="px-4 py-3 text-gray-600 dark:text-gray-400 text-xs">
+                    {{ formatDate(notification.created_at) }}
+                  </td>
+                  <td class="px-4 py-3 text-center">
+                    <span
+                      v-if="notification.isBroadcast"
+                      class="inline-block px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs font-medium"
+                    >
+                      {{ notification.broadcastCount }}
+                    </span>
+                    <span v-else class="text-gray-600 dark:text-gray-400 text-xs">1</span>
+                  </td>
+                  <td class="px-4 py-3 space-x-2">
+                    <button
+                      @click="deleteNotificationAdm(notification, $event)"
+                      class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-xs font-medium"
+                    >
+                      {{ $t("admin.notifications.delete_button") }}
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div
+              v-if="notifications.length === 0"
+              class="text-center py-8 text-gray-500 dark:text-gray-400"
+            >
+              {{ $t("admin.notifications.empty") }}
             </div>
           </div>
         </div>
@@ -1240,6 +1665,48 @@
       </div>
     </div>
 
+    <!-- Confirmation Modal for Notification Deletion -->
+    <div
+      v-if="showDeleteNotificationConfirm && notificationToDelete"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      @click="showDeleteNotificationConfirm = false"
+    >
+      <div
+        class="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-md w-full mx-4"
+        @click.stop
+      >
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          {{ $t("admin.notifications.delete_button") }}?
+        </h2>
+        <p class="text-gray-600 dark:text-gray-400 mb-6">
+          <span v-if="notificationToDelete.isBroadcast">
+            {{
+              $t("admin.notifications.delete_broadcast_confirm", {
+                count: notificationToDelete.broadcastCount,
+              })
+            }}
+          </span>
+          <span v-else>
+            {{ $t("admin.notifications.delete_single_confirm") }}
+          </span>
+        </p>
+        <div class="flex gap-3">
+          <button
+            @click="confirmDeleteNotification"
+            class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+          >
+            {{ $t("admin.notifications.delete_button") }}
+          </button>
+          <button
+            @click="showDeleteNotificationConfirm = false"
+            class="flex-1 px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-white rounded-lg font-medium transition-colors"
+          >
+            {{ $t("admin.actions.cancel") }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Confirmation Modal for Password Generation -->
     <div
       v-if="showPasswordConfirmation"
@@ -1664,7 +2131,13 @@ export default {
         Zrušené: "status_cancelled",
       },
 
-      allTabs: [{ id: "stats" }, { id: "orders" }, { id: "users" }, { id: "products" }],
+      allTabs: [
+        { id: "stats" },
+        { id: "orders" },
+        { id: "users" },
+        { id: "products" },
+        { id: "notifications" },
+      ],
 
       stats: [],
       recentActivity: [],
@@ -1676,6 +2149,23 @@ export default {
       users: [],
 
       products: [],
+
+      // Notifications
+      notifications: [],
+      notificationForm: {
+        type: "general",
+        title: "",
+        message: "",
+        sendToAll: false,
+        userId: null,
+      },
+      notificationSearch: "",
+      notificationsLoading: false,
+      showDeleteNotificationConfirm: false,
+      notificationToDelete: null,
+      userSearchQueryForNotification: "",
+      showUserDropdownForNotification: false,
+      selectedUserForNotification: null,
     };
   },
   mounted() {
@@ -1690,7 +2180,19 @@ export default {
     this.fetchUsers();
     this.fetchOrders();
     this.loadProducts();
+    // Load notifications if method exists
+    if (typeof this.fetchNotifications === "function") {
+      this.fetchNotifications().catch((error) => {
+        console.error("Error in fetchNotifications:", error);
+      });
+    }
     this.updateBodyScroll();
+
+    // Add click-outside handler for notification user dropdown
+    document.addEventListener("click", this.handleClickOutsideNotificationDropdown);
+  },
+  beforeUnmount() {
+    document.removeEventListener("click", this.handleClickOutsideNotificationDropdown);
   },
   computed: {
     tabs() {
@@ -1716,6 +2218,16 @@ export default {
     filteredUsers() {
       if (!this.userSearch) return this.users;
       const search = this.userSearch.toLowerCase();
+
+      // Check if search is by ID (starts with #)
+      if (search.startsWith("#")) {
+        const userId = search.substring(1).trim();
+        if (userId) {
+          return this.users.filter((user) => user.id.toString() === userId);
+        }
+      }
+
+      // Regular search by name or email
       return this.users.filter(
         (user) =>
           user.name.toLowerCase().includes(search) ||
@@ -1735,6 +2247,26 @@ export default {
     uniqueCategories() {
       const categories = new Set(this.products.map((p) => p.category).filter(Boolean));
       return Array.from(categories).sort();
+    },
+    filteredUsersForNotification() {
+      if (!this.userSearchQueryForNotification) return this.users;
+      const search = this.userSearchQueryForNotification.toLowerCase();
+
+      // Check if search is by ID (starts with #)
+      if (search.startsWith("#")) {
+        const userId = search.substring(1).trim();
+        if (userId) {
+          return this.users.filter((user) => user.id.toString() === userId);
+        }
+      }
+
+      // Regular search by name, email, or ID
+      return this.users.filter(
+        (user) =>
+          user.name.toLowerCase().includes(search) ||
+          user.email.toLowerCase().includes(search) ||
+          user.id.toString().includes(search)
+      );
     },
     filteredProductsForModal() {
       if (!this.productSearchQuery) return this.products;
@@ -1763,6 +2295,58 @@ export default {
         value,
         display: this.$t(`admin.orders.${this.statusValueMap[value]}`),
       }));
+    },
+    filteredNotifications() {
+      let filtered = this.notifications;
+
+      // Apply search filter
+      if (this.notificationSearch) {
+        const search = this.notificationSearch.toLowerCase();
+        filtered = filtered.filter((notification) => {
+          if (notification.title && notification.title.toLowerCase().includes(search))
+            return true;
+          if (notification.message && notification.message.toLowerCase().includes(search))
+            return true;
+          if (notification.type && notification.type.toLowerCase().includes(search))
+            return true;
+          return false;
+        });
+      }
+
+      // Group broadcast notifications (same title, type, and created at same minute)
+      const grouped = [];
+      const seenGroups = new Set();
+
+      filtered.forEach((notif) => {
+        const createdMinute = new Date(notif.created_at).toISOString().slice(0, 16);
+        const groupKey = `${notif.title}|${notif.type}|${createdMinute}`;
+
+        if (!seenGroups.has(groupKey)) {
+          const groupNotifications = filtered.filter((n) => {
+            const nMinute = new Date(n.created_at).toISOString().slice(0, 16);
+            return (
+              n.title === notif.title &&
+              n.type === notif.type &&
+              nMinute === createdMinute
+            );
+          });
+
+          // If multiple notifications with same title/type/time, it's likely a broadcast
+          if (groupNotifications.length > 1) {
+            grouped.push({
+              ...notif,
+              isBroadcast: true,
+              broadcastCount: groupNotifications.length,
+              broadcastIds: groupNotifications.map((n) => n.id),
+            });
+            seenGroups.add(groupKey);
+          } else {
+            grouped.push(notif);
+          }
+        }
+      });
+
+      return grouped;
     },
   },
 
@@ -2588,11 +3172,180 @@ export default {
       }
     },
     removeDiscount() {
-      // When removing discount, price becomes equal to oldPrice (base price)
+      //When removing discount, price becomes equal to oldPrice (base price)
       this.currentProduct.price = this.currentProduct.oldPrice;
       // Clear discount fields only
       this.currentProduct.discount_type = "percent";
       this.currentProduct.discount_value = 0;
+    },
+    // Notification Methods
+    async sendNotification() {
+      console.log("🔔 sendNotification called!");
+      console.log("notificationForm:", this.notificationForm);
+      this.notificationsLoading = true;
+      try {
+        // Validate form
+        if (!this.notificationForm.title || !this.notificationForm.title.trim()) {
+          alert(this.$t("admin.notifications.validation.title_required"));
+          this.notificationsLoading = false;
+          return;
+        }
+        if (!this.notificationForm.message || !this.notificationForm.message.trim()) {
+          alert(this.$t("admin.notifications.validation.message_required"));
+          this.notificationsLoading = false;
+          return;
+        }
+
+        const payload = {
+          type: this.notificationForm.type,
+          title: this.notificationForm.title.trim(),
+          message: this.notificationForm.message.trim(),
+        };
+
+        let response;
+        if (this.notificationForm.sendToAll) {
+          console.log("Sending broadcast notification:", payload);
+          response = await api.post("api/admin/notifications/broadcast", payload);
+        } else if (this.notificationForm.userId) {
+          payload.user_id = this.notificationForm.userId;
+          console.log("Sending notification to user:", payload);
+          response = await api.post("api/admin/notifications", payload);
+        } else {
+          alert(this.$t("admin.notifications.validation.recipient_required"));
+          this.notificationsLoading = false;
+          return;
+        }
+
+        console.log("Notification sent successfully:", response);
+
+        // Reset form
+        this.notificationForm = {
+          type: "general",
+          title: "",
+          message: "",
+          sendToAll: false,
+          userId: null,
+        };
+
+        alert(this.$t("admin.notifications.alerts.sent"));
+        await this.fetchNotifications();
+      } catch (error) {
+        console.error("Error sending notification:", error);
+        console.error("Error response:", error.response);
+        const errorMessage =
+          error.response?.data?.message || error.message || "Unknown error";
+        alert(this.$t("admin.notifications.alerts.send_error", { error: errorMessage }));
+      } finally {
+        this.notificationsLoading = false;
+      }
+    },
+    selectUserForNotification(user) {
+      this.selectedUserForNotification = user;
+      this.notificationForm.userId = user.id;
+      this.userSearchQueryForNotification = "";
+      this.showUserDropdownForNotification = false;
+    },
+    handleClickOutsideNotificationDropdown(event) {
+      const notificationUserContainer = document.querySelector(
+        "[data-notification-user-dropdown]"
+      );
+      if (
+        notificationUserContainer &&
+        !notificationUserContainer.contains(event.target)
+      ) {
+        this.showUserDropdownForNotification = false;
+      }
+    },
+    async sendSaleNotification() {
+      // Get products with discount >= 10%
+      const discountedProducts = this.products.filter(
+        (product) => product.discount_value && product.discount_value >= 10
+      );
+
+      const maxDiscount =
+        discountedProducts.length > 0
+          ? Math.max(...discountedProducts.map((p) => p.discount_value))
+          : 10;
+
+      this.notificationForm.type = "promotion";
+      this.notificationForm.title = this.$t("admin.notifications.premade_sale_title");
+      this.notificationForm.message = this.$t(
+        "admin.notifications.premade_sale_message",
+        { maxDiscount }
+      );
+      this.notificationForm.sendToAll = true;
+
+      // Auto-send after a short delay
+      setTimeout(() => {
+        this.sendNotification();
+      }, 100);
+    },
+    async fetchNotifications() {
+      try {
+        const response = await api.get("api/admin/notifications");
+        // Handle paginated response structure
+        this.notifications = response.data.data || response.data || [];
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+        this.notifications = [];
+      }
+    },
+    async deleteNotificationAdm(notification, event) {
+      this.notificationToDelete = notification;
+      this.showDeleteNotificationConfirm = true;
+    },
+    async confirmDeleteNotification() {
+      try {
+        const notification = this.notificationToDelete;
+        this.showDeleteNotificationConfirm = false;
+
+        if (notification.isBroadcast) {
+          for (const id of notification.broadcastIds) {
+            await api.delete(`api/admin/notifications/${id}`);
+          }
+          alert(
+            `Notifikácia bola vymazaná pre ${notification.broadcastCount} používateľov!`
+          );
+        } else {
+          await api.delete(`api/admin/notifications/${notification.id}`);
+        }
+        await this.fetchNotifications();
+      } catch (error) {
+        console.error("Error deleting notification:", error);
+        alert("Chyba pri vymazávaní notifikácie!");
+      } finally {
+        this.notificationToDelete = null;
+      }
+    },
+    getNotificationTypeName(type) {
+      const typeMap = {
+        general: this.$t("admin.notifications.type_general"),
+        promotion: this.$t("admin.notifications.type_promotion"),
+        order: this.$t("admin.notifications.type_order"),
+        payment: this.$t("admin.notifications.type_payment"),
+        system: this.$t("admin.notifications.type_system"),
+      };
+      return typeMap[type] || type;
+    },
+    getNotificationTypeClass(type) {
+      const classes = {
+        order: "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200",
+        payment: "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200",
+        promotion:
+          "bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200",
+        system: "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200",
+        general: "bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200",
+      };
+      return classes[type] || classes.general;
+    },
+    formatDate(date) {
+      return new Date(date).toLocaleDateString("sk-SK", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
     },
   },
   watch: {
@@ -2615,38 +3368,52 @@ export default {
 
       // Format phone for display
       if (newVal.address.phone) {
-        newVal.address.phone = this.formatPhone(newVal.address.phone);
+        // Convert +421900123456 to +421 900 123 456 for display
+        newVal.address.phone = newVal.address.phone.replace(
+          /^(\+\d{3})(\d{3})(\d{3})(\d{3})$/,
+          "$1 $2 $3 $4"
+        );
       }
 
-      // Use $nextTick to ensure computed properties are ready
-      this.$nextTick(() => {
-        // If country is empty or not in current language options, use first option
-        const countryNames = this.countryOptions.map((c) => c.name);
-        if (!newVal.address.country || !countryNames.includes(newVal.address.country)) {
-          if (this.countryOptions.length > 0) {
-            newVal.address.country = this.countryOptions[0]?.name || "";
-          }
+      // Handle country mapping
+      const countryCode = newVal.address.country_code;
+      if (countryCode) {
+        const countryObj = this.countryOptionsCodes.find((c) => c.code === countryCode);
+        if (countryObj) {
+          newVal.address.country = this.$t(`admin.orders.${countryObj.key}`);
         }
+      } else {
+        // If no country code, try to find it from country name
+        const countryName = newVal.address.country;
+        const matchedCountry = this.countryOptionsCodes.find(
+          (c) => this.$t(`admin.orders.${c.key}`) === countryName
+        );
+        if (matchedCountry) {
+          newVal.address.country_code = matchedCountry.code;
+        } else if (this.countryOptions.length > 0) {
+          // Fallback to first option
+          newVal.address.country = this.countryOptions[0]?.name || "";
+        }
+      }
 
-        // If delivery method is empty or not in current language options, use first option
-        if (
-          !newVal.delivery_method ||
-          !this.deliveryOptions.includes(newVal.delivery_method)
-        ) {
-          if (this.deliveryOptions.length > 0) {
-            newVal.delivery_method = this.deliveryOptions[0];
-          }
+      // If delivery method is empty or not in current language options, use first option
+      if (
+        !newVal.delivery_method ||
+        !this.deliveryOptions.includes(newVal.delivery_method)
+      ) {
+        if (this.deliveryOptions.length > 0) {
+          newVal.delivery_method = this.deliveryOptions[0];
         }
-        // If payment method is empty or not in current language options, use first option
-        if (
-          !newVal.payment_method ||
-          !this.paymentOptions.includes(newVal.payment_method)
-        ) {
-          if (this.paymentOptions.length > 0) {
-            newVal.payment_method = this.paymentOptions[0];
-          }
+      }
+      // If payment method is empty or not in current language options, use first option
+      if (
+        !newVal.payment_method ||
+        !this.paymentOptions.includes(newVal.payment_method)
+      ) {
+        if (this.paymentOptions.length > 0) {
+          newVal.payment_method = this.paymentOptions[0];
         }
-      });
+      }
     },
   },
 };

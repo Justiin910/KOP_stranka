@@ -177,19 +177,23 @@ export default defineComponent({
   },
   data(): {
     shipping: number;
-    steps: Step[];
+    currentStep: number;
   } {
     return {
       shipping: 4.99,
-      steps: [
-        { label: this.$t('cart.steps.cart'), active: true },
-        { label: this.$t('cart.steps.delivery'), active: false },
-        { label: this.$t('cart.steps.payment'), active: false },
-        { label: this.$t('cart.steps.confirmation'), active: false },
-      ],
+      currentStep: 0,
     };
   },
   computed: {
+    steps(): Step[] {
+      const labels = [
+        this.$t('cart.steps.cart'),
+        this.$t('cart.steps.delivery'),
+        this.$t('cart.steps.payment'),
+        this.$t('cart.steps.confirmation'),
+      ];
+      return labels.map((label, idx) => ({ label, active: idx === this.currentStep }));
+    },
     total(): number {
       return (this.cartStore?.subtotal ?? 0) + this.shipping;
     },

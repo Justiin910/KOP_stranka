@@ -39,7 +39,7 @@
       </div>
 
       <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">
-        Spôsob doručenia
+        {{ $t("pages.checkout.delivery.title") }}
       </h1>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -50,7 +50,7 @@
             class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700"
           >
             <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
-              Spôsob doručenia
+              {{ $t("pages.checkout.delivery.method_label") }}
             </h2>
 
             <div class="space-y-4">
@@ -72,10 +72,18 @@
                 />
                 <div class="ml-4 flex-1">
                   <h3 class="font-semibold text-gray-900 dark:text-white">
-                    {{ option.name }}
+                    {{
+                      $t("pages.delivery.delivery_methods." + option.methodKey + ".name")
+                    }}
                   </h3>
                   <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    {{ option.description }}
+                    {{
+                      $t(
+                        "pages.delivery.delivery_methods." +
+                          option.methodKey +
+                          ".description"
+                      )
+                    }}
                   </p>
                   <p class="text-sm font-semibold text-gray-900 dark:text-white mt-2">
                     {{ option.price }} €
@@ -95,11 +103,13 @@
             class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700"
           >
             <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
-              Položky v objednávke
+              {{ $t('pages.checkout.delivery.order_items') }}
             </h2>
 
             <div v-if="cartStore.cartItems.length === 0" class="text-center py-8">
-              <p class="text-gray-500 dark:text-gray-400">Váš košík je prázdny</p>
+              <p class="text-gray-500 dark:text-gray-400">
+                {{ $t("pages.checkout.delivery.empty_cart") }}
+              </p>
             </div>
 
             <div v-else class="space-y-4">
@@ -113,7 +123,8 @@
                     {{ item.title }}
                   </h3>
                   <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    {{ parseFloat(item.price).toFixed(2) }} € za kus
+                    {{ parseFloat(item.price).toFixed(2) }} €
+                    {{ $t("pages.checkout.delivery.per_unit") }}
                   </p>
                 </div>
                 <div class="text-right">
@@ -132,7 +143,7 @@
             class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700"
           >
             <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
-              Adresa doručenia
+              {{ $t("pages.checkout.delivery.shipping_address") }}
             </h2>
 
             <div class="space-y-4">
@@ -140,7 +151,7 @@
                 <div>
                   <label
                     class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                    >Meno a priezvisko</label
+                    >{{ $t("pages.checkout.delivery.full_name") }}</label
                   >
                   <input
                     v-model="address.fullName"
@@ -153,7 +164,7 @@
                 <div>
                   <label
                     class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                    >Telefón</label
+                    >{{ $t("pages.checkout.delivery.phone") }}</label
                   >
                   <div class="flex gap-2">
                     <select
@@ -184,7 +195,7 @@
               <div>
                 <label
                   class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                  >Email</label
+                  >{{ $t("pages.checkout.delivery.email") }}</label
                 >
                 <input
                   v-model="address.email"
@@ -197,7 +208,7 @@
               <div>
                 <label
                   class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                  >Adresa</label
+                  >{{ $t("pages.checkout.delivery.address") }}</label
                 >
                 <input
                   v-model="address.street"
@@ -211,7 +222,7 @@
                 <div>
                   <label
                     class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                    >PSČ</label
+                    >{{ $t("pages.checkout.delivery.zip") }}</label
                   >
                   <input
                     v-model="address.zip"
@@ -225,7 +236,7 @@
                 <div>
                   <label
                     class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                    >Mesto</label
+                    >{{ $t("pages.checkout.delivery.city") }}</label
                   >
                   <input
                     v-model="address.city"
@@ -239,7 +250,7 @@
               <div>
                 <label
                   class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                  >Krajina</label
+                  >{{ $t("pages.checkout.delivery.country") }}</label
                 >
                 <select
                   v-model="address.country"
@@ -262,31 +273,31 @@
             class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 sticky top-6"
           >
             <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
-              Súhrn objednávky
+              {{ $t("pages.checkout.payment.order_summary") }}
             </h2>
 
             <div
               class="space-y-3 mb-6 border-b border-gray-200 dark:border-gray-700 pb-6"
             >
               <div class="flex justify-between text-gray-600 dark:text-gray-400">
-                <span>Spolu za položky</span>
+                <span>{{ $t("pages.checkout.payment.subtotal") }}</span>
                 <span>{{ cartStore.subtotal.toFixed(2) }} €</span>
               </div>
               <div class="flex justify-between text-gray-600 dark:text-gray-400">
-                <span>Doručenie</span>
+                <span>{{ $t("pages.checkout.payment.shipping") }}</span>
                 <span>{{ selectedDeliveryPrice }} €</span>
               </div>
               <div
                 class="flex justify-between text-lg font-bold text-gray-900 dark:text-white"
               >
-                <span>Celkom</span>
+                <span>{{ $t("pages.checkout.payment.total") }}</span>
                 <span>{{ total.toFixed(2) }} €</span>
               </div>
             </div>
 
             <div class="space-y-3 mb-6">
               <h3 class="font-semibold text-gray-900 dark:text-white">
-                Položky v košíku:
+                {{ $t("pages.checkout.delivery.order_items") }}:
               </h3>
               <div
                 v-for="item in cartStore.cartItems"
@@ -299,14 +310,14 @@
             </div>
 
             <button @click="proceedToPayment" class="w-full btn-primary-lg">
-              Pokračovať na platbu
+              {{ $t("pages.checkout.delivery.continue") }}
             </button>
 
             <button
               @click="goBack"
               class="w-full mt-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-semibold py-3 rounded-lg transition-colors"
             >
-              Späť na košík
+              {{ $t("cart.summary.continue_shopping") }}
             </button>
           </div>
         </div>
@@ -317,7 +328,7 @@
 
 <script>
 import { useRouter } from "vue-router";
-import { useCartStore } from '../../stores/cartStore';
+import { useCartStore } from "../../stores/cartStore";
 import api from "../../api";
 
 export default {
@@ -329,32 +340,19 @@ export default {
   },
   data() {
     return {
-      steps: [
-        { label: "Košík", active: false },
-        { label: "Doručenie", active: true },
-        { label: "Platba", active: false },
-        { label: "Potvrdenie", active: false },
-      ],
+      currentStep: 1,
       selectedDelivery: "standard",
       deliveryOptions: [
         {
           id: "standard",
-          name: "Štandardná doprava",
-          description: "Doručenie kuriérom na adresu",
+          methodKey: "method1",
           price: 4.99,
           deliveryTime: "do 3 pracovných dní",
         },
-        {
-          id: "express",
-          name: "Expresná doprava",
-          description: "Rýchle doručenie v rámci Bratislavy",
-          price: 9.99,
-          deliveryTime: "do 24 hodín",
-        },
+
         {
           id: "pickup",
-          name: "Osobný odber",
-          description: "Odber na pobočke alebo pick-up pointu",
+          methodKey: "method3",
           price: 0,
           deliveryTime: "od nasledujúceho pracovného dňa",
         },
@@ -375,6 +373,15 @@ export default {
     };
   },
   computed: {
+    steps() {
+      const labels = [
+        this.$t('cart.steps.cart'),
+        this.$t('pages.checkout.delivery.step'),
+        this.$t('cart.steps.payment'),
+        this.$t('cart.steps.confirmation'),
+      ];
+      return labels.map((label, idx) => ({ label, active: idx === this.currentStep }));
+    },
     selectedDeliveryPrice() {
       const option = this.deliveryOptions.find((o) => o.id === this.selectedDelivery);
       return option ? option.price : 0;
@@ -395,25 +402,25 @@ export default {
         !this.address.city ||
         !this.address.zip
       ) {
-        alert("Prosím vyplňte všetky povinné polia");
+        alert(this.$t("pages.checkout.delivery.error_invalid_address"));
         return;
       }
 
       // Validate email
       if (!this.isValidEmail(this.address.email)) {
-        alert("Prosím zadajte platnú emailovú adresu");
+        alert(this.$t("pages.checkout.delivery.error_invalid_email"));
         return;
       }
 
       // Validate phone (9 digits)
       if (this.phoneNumber && this.phoneDigits !== 9) {
-        alert("Telefón musí mať presne 9 číslic");
+        alert(this.$t("pages.checkout.delivery.error_invalid_phone"));
         return;
       }
 
       // Validate zip format
       if (!this.isValidZip(this.address.zip)) {
-        alert("PSČ musí mať presne 5 číslic");
+        alert(this.$t("pages.checkout.delivery.error_invalid_phone"));
         return;
       }
 

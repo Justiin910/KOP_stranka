@@ -34,7 +34,7 @@ class FavoriteController extends Controller
     {
         $user = $request->user();
         if (! $user) {
-            return response()->json(['message' => 'Unauthenticated'], 401);
+            return response()->json(['message' => __('messages.favorite.unauthenticated')], 401);
         }
 
         $ids = [];
@@ -63,7 +63,7 @@ class FavoriteController extends Controller
     {
         $user = $request->user();
         if (! $user) {
-            return response()->json(['message' => 'Unauthenticated'], 401);
+            return response()->json(['message' => __('messages.favorite.unauthenticated')], 401);
         }
 
         Favorite::where('user_id', $user->id)->where('product_id', $productId)->delete();
@@ -76,7 +76,7 @@ class FavoriteController extends Controller
     {
         $user = $request->user();
         if (! $user) {
-            return response()->json(['message' => 'Unauthenticated'], 401);
+            return response()->json(['message' => __('messages.favorite.unauthenticated')], 401);
         }
 
         $ids = (array) $request->input('ids', []);

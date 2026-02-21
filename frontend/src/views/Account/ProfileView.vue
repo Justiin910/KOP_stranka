@@ -57,6 +57,17 @@
         <div class="flex items-start gap-6">
           <div class="relative">
             <div
+              v-if="user.avatar"
+              class="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-700"
+            >
+              <img 
+                :src="getAvatarUrl(user.avatar)" 
+                :alt="user.name"
+                class="w-full h-full object-cover"
+              />
+            </div>
+            <div
+              v-else
               class="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold"
             >
               {{ getInitials(user.name) }}
@@ -70,10 +81,11 @@
             />
             <button
               @click="$refs.avatarInput.click()"
-              class="absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-2 shadow-lg transition-colors"
+              :disabled="isUploadingAvatar"
+              class="absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-full p-2 shadow-lg transition-colors"
               :title="$t('profile.change_avatar')"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg v-if="!isUploadingAvatar" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -85,6 +97,14 @@
                   stroke-linejoin="round"
                   stroke-width="2"
                   d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+              <svg v-else class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 12a8 8 0 018-8V0c4.418 0 8 3.582 8 8h-2c0-3.316-2.686-6-6-6v2c1.657 0 3 1.343 3 3v3h3a3 3 0 01-3 3v2a5 5 0 005-5h2z"
                 />
               </svg>
             </button>
@@ -511,10 +531,10 @@
         <h2 class="text-xl font-bold text-red-900 dark:text-red-400 mb-2">
           {{ $t("profile.danger_zone_title") }}
         </h2>
-        <p
-          class="text-sm text-red-700 dark:text-red-300 mb-6"
-          v-html="$t('profile.danger_zone_desc_html')"
-        ></p>
+        <p class="text-sm text-red-700 dark:text-red-300 mb-6">
+          {{ $t('profile.danger_zone_desc') }}
+          <strong class="font-semibold">{{ $t('profile.danger_zone_desc_emphasis') }}</strong>
+        </p>
 
         <button
           @click="showDeleteConfirmation = true"
@@ -636,6 +656,7 @@ export default {
       loading: true,
       editMode: false,
       isSaving: false,
+      isUploadingAvatar: false,
       verificationSent: false,
       resendTimeout: null,
       isChangingPassword: false,
@@ -1074,10 +1095,76 @@ export default {
     },
     handleAvatarChange(event) {
       const file = event.target.files[0];
-      if (file) {
-        console.log("Avatar file:", file);
-        alert("Funkcia uploadu avatara bude implementovaná neskôr.");
+      if (!file) return;
+
+      // Validate file
+      const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
+      const maxSize = 5 * 1024 * 1024; // 5MB
+
+      if (!validTypes.includes(file.type)) {
+        this.errorMessage = this.$t('profile.validation.avatar_invalid_format');
+        this.scrollToMessages();
+        return;
       }
+
+      if (file.size > maxSize) {
+        this.errorMessage = this.$t('profile.validation.avatar_too_large');
+        this.scrollToMessages();
+        return;
+      }
+
+      this.uploadAvatar(file);
+    },
+    async uploadAvatar(file) {
+      this.isUploadingAvatar = true;
+      this.errorMessage = '';
+      this.successMessage = '';
+
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      try {
+        const response = await api.post('api/user/avatar', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          }
+        });
+
+        // Update user data
+        this.user = response.data.user;
+        this.successMessage = response.data.message;
+        this.scrollToMessages();
+
+        setTimeout(() => {
+          this.successMessage = '';
+        }, 3000);
+      } catch (error) {
+        console.error('Error uploading avatar:', error);
+
+        if (error.response?.data?.message) {
+          this.errorMessage = error.response.data.message;
+        } else if (error.response?.data?.errors) {
+          const errors = error.response.data.errors;
+          const firstError = Object.values(errors)[0];
+          this.errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
+        } else {
+          this.errorMessage = this.$t('profile.avatar_upload_error');
+        }
+        this.scrollToMessages();
+      } finally {
+        this.isUploadingAvatar = false;
+        // Reset file input
+        if (this.$refs.avatarInput) {
+          this.$refs.avatarInput.value = '';
+        }
+      }
+    },
+    getAvatarUrl(avatar) {
+      if (!avatar) return '';
+      // If it's already a full URL, return it
+      if (avatar.startsWith('http')) return avatar;
+      // Otherwise, construct the storage URL
+      return `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/storage/${avatar}`;
     },
     getInitials(name) {
       if (!name) return "?";

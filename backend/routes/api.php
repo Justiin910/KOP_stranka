@@ -15,6 +15,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\NotificationController;
 
 // Get authenticated user
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
@@ -55,6 +56,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::put('/user/profile', [ProfileController::class, 'updateProfile']);
     Route::put('/user/password', [ProfileController::class, 'updatePassword']);
+    Route::post('/user/avatar', [ProfileController::class, 'uploadAvatar']);
     Route::delete('/user', [ProfileController::class, 'deleteAccount']);
     
     // Favorites API
@@ -74,6 +76,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders', [OrderController::class, 'index']);
     Route::get('/orders/{order}', [OrderController::class, 'show']);
     Route::post('/orders/{order}/send-confirmation', [OrderController::class, 'sendConfirmationEmail']);
+    
+    // Notifications API
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+    Route::put('/notifications/{id}/mark-read', [NotificationController::class, 'markAsRead']);
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
     
 });
 
@@ -101,4 +109,10 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::post('/admin/products', [AdminController::class, 'createProduct']);
     Route::put('/admin/products/{id}', [AdminController::class, 'updateProduct']);
     Route::delete('/admin/products/{id}', [AdminController::class, 'deleteProduct']);
+    
+    // Notifications management
+    Route::get('/admin/notifications', [NotificationController::class, 'adminIndex']);
+    Route::post('/admin/notifications', [NotificationController::class, 'store']);
+    Route::post('/admin/notifications/broadcast', [NotificationController::class, 'broadcast']);
+    Route::delete('/admin/notifications/{id}', [NotificationController::class, 'destroy']);
 });
