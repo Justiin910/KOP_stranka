@@ -40,7 +40,7 @@
                 d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
               />
             </svg>
-            {{ $t('profile.login') }}
+            {{ $t("profile.login") }}
           </button>
           <button
             @click="goToRegister"
@@ -54,7 +54,7 @@
                 d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
               />
             </svg>
-            {{ $t('profile.register') }}
+            {{ $t("profile.register") }}
           </button>
         </template>
 
@@ -62,7 +62,7 @@
         <template v-else>
           <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
             <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">
-              {{ user.name || $t('profile.guest') }}
+              {{ user.name || $t("profile.guest") }}
             </p>
             <p class="text-xs text-gray-600 dark:text-gray-400 truncate">
               {{ user.email || "" }}
@@ -81,7 +81,7 @@
                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
               />
             </svg>
-            {{ $t('profile.my_profile') }}
+            {{ $t("profile.my_profile") }}
           </button>
 
           <button
@@ -96,8 +96,10 @@
                 d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
               />
             </svg>
-            {{ $t('profile.orders') }}
+            {{ $t("profile.orders") }}
           </button>
+
+          <!-- Settings Link 
 
           <button
             @click="goToSettings"
@@ -134,7 +136,7 @@
                 d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
               />
             </svg>
-            {{ $t('profile.admin_panel') }}
+            {{ $t("profile.admin_panel") }}
           </button>
 
           <div class="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
@@ -172,7 +174,7 @@
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              {{ isLoggingOut ? $t('profile.logging_out') : $t('profile.logout') }}
+              {{ isLoggingOut ? $t("profile.logging_out") : $t("profile.logout") }}
             </button>
           </div>
         </template>
@@ -251,35 +253,35 @@ export default {
     },
     async mergeLocalFavorites() {
       try {
-        const raw = localStorage.getItem('favorites');
+        const raw = localStorage.getItem("favorites");
         const ids = raw ? JSON.parse(raw) : [];
         if (!Array.isArray(ids) || ids.length === 0) return;
 
         // Try a batch sync endpoint first
         try {
-          await api.post('/api/favorites/sync', { ids });
+          await api.post("/api/favorites/sync", { ids });
         } catch (err) {
           // fallback to a common /api/favorites endpoint that accepts product_ids
           try {
-            await api.post('/api/favorites', { product_ids: ids });
+            await api.post("/api/favorites", { product_ids: ids });
           } catch (err2) {
             // last resort: post individually
             for (const id of ids) {
               try {
-                await api.post('/api/favorites', { product_id: id });
+                await api.post("/api/favorites", { product_id: id });
               } catch (e) {
                 // ignore individual failures
-                console.warn('Failed to sync favorite', id, e);
+                console.warn("Failed to sync favorite", id, e);
               }
             }
           }
         }
 
         // On success (or best-effort), remove local cache and notify
-        localStorage.removeItem('favorites');
-        window.dispatchEvent(new Event('favorites-updated'));
+        localStorage.removeItem("favorites");
+        window.dispatchEvent(new Event("favorites-updated"));
       } catch (e) {
-        console.warn('Failed merging local favorites to server', e);
+        console.warn("Failed merging local favorites to server", e);
       }
     },
     handleLoggedOut() {
@@ -336,7 +338,7 @@ export default {
 
         // Redirect to home
         this.$router.push("/");
-        
+
         this.isLoggingOut = false;
       }
     },

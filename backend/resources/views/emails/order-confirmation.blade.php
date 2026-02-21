@@ -166,7 +166,7 @@
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Telefón:</span>
-                    <span>{{ $phone }}</span>
+                    <span>{{ $phone ? '+' . preg_replace('/\D/', '', substr($phone, 0, 5)) . ' ' . implode(' ', str_split(preg_replace('/\D/', '', substr($phone, 5)), 4)) : '' }}</span>
                 </div>
             </div>
 

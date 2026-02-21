@@ -5,12 +5,12 @@
   },
   "search": {
     "placeholder": "What are you looking for? e.g. iPhone 17 Pro...",
-    "button": "Search"
-    ,"results_title": "Search Results"
-    ,"enter_query": "Enter a search term in the search field."
-    ,"searching": "Searching"
-    ,"loading": "Loading..."
-    ,"no_results": "No results found."
+    "button": "Search",
+    "results_title": "Search Results",
+    "enter_query": "Enter a search term in the search field.",
+    "searching": "Searching",
+    "loading": "Loading...",
+    "no_results": "No results found."
   },
   "tooltip": {
     "language": "Language",
@@ -23,11 +23,10 @@
     "login": "Log in",
     "register": "Register",
     "home": "Home"
-  }
-  ,
+  },
   "home": {
     "hero": {
-      "title": "Christmas Gifts 2025",
+      "title": "Mega Sale of the Year",
       "subtitle": "Top technology at great prices",
       "cta": "See offers"
     },
@@ -35,21 +34,24 @@
       "heading": "News & Events",
       "event1": {
         "tag": "EVENT",
-        "title": "New Google Pixel 9 phones",
+        "title": "New Google Pixel 10 phones",
         "desc": "Discover the latest generation of smartphones with AI features and improved camera.",
-        "cta": "Learn more →"
+        "cta": "Learn more →",
+        "url": "https://store.google.com/us/product/pixel_10"
       },
       "event2": {
         "tag": "NEW",
         "title": "Apple AirPods Pro (3rd gen)",
         "desc": "Premium wireless headphones with adaptive sound and improved ANC.",
-        "cta": "Extended pre-order →"
+        "cta": "Learn more →",
+        "url": "https://www.apple.com/airpods-pro/"
       },
       "event3": {
-        "tag": "Gaming",
-        "title": "Gaming week - Up to -30%",
-        "desc": "Consoles, accessories and PC components at unbeatable prices.",
-        "cta": "Shop deals →"
+        "tag": "NEW",
+        "title": "Steam Machine - Revolutionary Gaming",
+        "desc": "Discover Valve's latest PC consoles with cutting-edge games.",
+        "cta": "Learn more →",
+        "url": "https://store.steampowered.com/sale/steammachine"
       }
     },
     "banners": {
@@ -68,7 +70,8 @@
       "title": "Recommended for you"
     },
     "mega_sale": {
-      "title": "Mega Sale of the Year"
+      "title": "Mega Sale of the Year",
+      "show_all": "Show All →"
     },
     "bottom": {
       "fast_delivery": {
@@ -88,12 +91,38 @@
   "product": {
     "in_stock": "✓ In stock ({count})",
     "out_of_stock": "✗ Out of stock",
-    "add_to_cart": "Add to cart"
-    ,
+    "add_to_cart": "Add to cart",
     "confirm_delete_title": "Confirm deletion",
-    "review_delete_confirm": "Are you sure you want to delete your review?"
-  }
-  ,
+    "review_delete_confirm": "Are you sure you want to delete your review?",
+    "loading": "Loading product...",
+    "back_home": "Back to home",
+    "product_code": "Product code:",
+    "in_stock_units": "In stock - {count}",
+    "reviews_count": "({count} reviews)",
+    "specs": "Specifications",
+    "no_specs": "No specifications available.",
+    "write_review": "Write a review",
+    "login_to_review": "To write reviews, please",
+    "login_link": "log in",
+    "rating_label": "Rating",
+    "rating_out_of": "out of 5",
+    "comment_label": "Your comment",
+    "comment_placeholder": "Write your review...",
+    "submit_review": "Submit review",
+    "submitting": "Submitting...",
+    "latest_reviews": "Latest reviews",
+    "anonymous_user": "User",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save_changes": "Save changes",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "reviewed_on": "a {date}",
+    "select_rating": "Please select a rating",
+    "review_deleted": "Review deleted!",
+    "review_delete_failed": "Error deleting review",
+    "monthly_price": "or from {price} € per month"
+  },
   "products": {
     "items": "{count} items",
     "all": "All",
@@ -115,12 +144,11 @@
     "accessories": "Accessories",
     "monitors": "Monitors",
     "peripherals": "Peripherals",
-    "mobily": "Mobiles"
-    ,"powerbanks": "Powerbanks & Chargers",
+    "mobily": "Mobiles",
+    "powerbanks": "Powerbanks & Chargers",
     "headphones": "Headphones & Audio",
     "sluchadla": "Headphones & Audio"
-  }
-  ,
+  },
   "footer": {
     "brand": {
       "title": "TechShop",
@@ -145,14 +173,15 @@
   },
   "sidebar": {
     "heading": "Categories"
-  }
-  ,
+  },
   "common": {
+    "confirm_title": "Confirmation",
     "cancel": "Cancel",
+    "confirm_yes": "Yes",
     "delete": "Delete",
-    "deleting": "Deleting..."
-  }
-  ,
+    "deleting": "Deleting...",
+    "discount": "Discount"
+  },
   "favorites": {
     "title": "Favorites",
     "count": "{count} products",
@@ -169,8 +198,7 @@
     "add_all_success": "Added {count} products to cart!",
     "add_failed": "Failed to add to cart",
     "add_all_failed": "Failed to add all products to cart"
-  }
-  ,
+  },
   "profile": {
     "login": "Log in",
     "register": "Register",
@@ -235,15 +263,220 @@
       "phone_required": "Phone is required.",
       "phone_digits": "Phone must have exactly 9 digits.",
       "email_invalid": "Invalid email."
-    }
-    ,"save_success": "Profile updated successfully!",
+    },
+    "save_success": "Profile updated successfully!",
     "save_failed": "Failed to save changes.",
     "reset_link_sent": "A password reset link was sent to your email!",
     "reset_link_failed": "Failed to send reset link.",
     "verification_resent": "Verification email resent.",
     "verification_failed": "Failed to resend verification."
-  }
-  ,
+  },
+  "admin": {
+    "tabs": {
+      "stats": "Statistics",
+      "orders": "Orders",
+      "users": "Users",
+      "products": "Products"
+    },
+    "descriptions": {
+      "stats": "Overview of your shop performance",
+      "orders": "Manage customer orders",
+      "users": "Manage user accounts",
+      "products": "Manage store products"
+    },
+    "orders": {
+      "search_placeholder": "Search orders (ID, email, name)...",
+      "delivery": "Delivery",
+      "payment": "Payment",
+      "delivery_address": "Delivery Address",
+      "street": "Street",
+      "zip": "ZIP",
+      "country": "Country",
+      "phone": "Phone",
+      "hide": "Hide",
+      "add_item": "Add item",
+      "add_new_item": "Add new item",
+      "no_products": "No products found",
+      "save_changes": "Save changes",
+      "price_currency": "Price €",
+      "saving": "Saving...",
+      "cancel_action": "Cancel",
+      "status_pending": "Pending",
+      "status_processing": "Processing",
+      "status_shipped": "In transit",
+      "status_delivered": "Delivered",
+      "status_cancelled": "Cancelled",
+      "delivery_label": "Delivery:",
+      "payment_label": "Payment:",
+      "methods_section": "Methods",
+      "items_title": "Order items",
+      "phone_label": "Phone:",
+      "email_label": "Email:",
+      "address_name": "Name",
+      "address_street": "Street",
+      "address_zip": "ZIP",
+      "address_city": "City",
+      "address_country": "Country",
+      "address_phone": "Phone",
+      "status_label": "Status",
+      "email_input_label": "Email",
+      "quantity_label": "Quantity",
+      "product": "Product",
+      "delivery_option_1": "Courier - Slovak Post",
+      "delivery_option_2": "Packeta - pickup point",
+      "delivery_option_3": "Personal pickup",
+      "payment_option_1": "Card payment",
+      "payment_option_2": "Cash on delivery",
+      "payment_option_3": "Bank transfer",
+      "payment_option_4": "PayPal",
+      "customer_label": "Customer",
+      "reference_label": "Reference",
+      "total_amount_label": "Total amount",
+      "items_count_label": "Items count",
+      "items_one": "item",
+      "items_few": "items",
+      "items_many": "items"
+    },
+    "countries": {
+      "slovakia": "Slovakia",
+      "czechia": "Czech Republic",
+      "poland": "Poland",
+      "hungary": "Hungary",
+      "austria": "Austria",
+      "germany": "Germany"
+    },
+    "table": {
+      "id": "ID",
+      "reference": "Reference",
+      "customer": "Customer",
+      "products": "Products",
+      "total": "Total",
+      "status": "Status",
+      "actions": "Actions",
+      "price": "Price",
+      "items_count": "Items count"
+    },
+    "actions": {
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete",
+      "reset_password": "Reset password",
+      "cancel": "Cancel",
+      "close": "Close",
+      "remove": "Remove"
+    },
+    "stats": {
+      "vs_last_month": "vs last month",
+      "total_revenue": "Total revenue",
+      "total_orders": "Orders",
+      "total_users": "Customers",
+      "avg_order_value": "Avg. order"
+    },
+    "recent_activity": "Recent activity",
+    "activity": {
+      "new_order": "New order from",
+      "new_registration": "New registration",
+      "just_now": "just now",
+      "minutes_ago": "{count} minute(s) ago",
+      "hours_ago": "{count} hour(s) ago",
+      "days_ago": "{count} day(s) ago"
+    },
+    "order": {
+      "title": "Order #{id}",
+      "customer": "Customer",
+      "reference": "Reference",
+      "total_amount": "Total amount",
+      "status": "Status",
+      "items_count": "Items count",
+      "items_title": "Order items",
+      "product": "Product",
+      "quantity": "Quantity",
+      "price": "Price",
+      "total": "Total"
+    },
+    "error_label": "Error",
+    "loading": "Loading...",
+    "retry": "Try again",
+    "note_label": "Note:",
+    "users": {
+      "empty_desc": "No users found. Please ensure you are signed in and have admin permissions.",
+      "edit": "Edit user",
+      "registered_label": "Registered",
+      "search_placeholder": "Search users (email, name)...",
+      "cannot_reset_owner_password": "You cannot reset the password for an Owner account",
+      "orders_label": "Orders",
+      "role": "Role",
+      "set_password": "Set password",
+      "generate_password": "Generate password",
+      "password_generated": "Password generated and saved:",
+      "confirm_generate_password": "Confirm password generation",
+      "confirm_yes": "Yes, generate"
+    },
+    "products": {
+      "search_placeholder": "Search products...",
+      "add_product": "Add product",
+      "edit_product": "Edit product",
+      "add_new_product": "Add new product",
+      "name": "Name",
+      "brand": "Brand",
+      "price": "Price",
+      "stock": "Stock",
+      "category": "Category",
+      "select_category": "-- Select category --",
+      "current_price": "Current price",
+      "prices_discounts": "Prices and discounts",
+      "final_price": "Final price",
+      "saving": "Saving...",
+      "product_name_placeholder": "Product name",
+      "product_brand_placeholder": "Product brand",
+      "description_placeholder": "Detailed product description...",
+      "edit_product_title": "Edit product",
+      "add_product_title": "Add new product",
+      "remove_discount": "Remove discount",
+      "image_url": "Image URL",
+      "description": "Description",
+      "discount_type": "Discount type",
+      "discount_amount": "Discount amount",
+      "percent": "Percent (%)",
+      "fixed_amount": "Fixed amount (€)",
+      "no_discount": "No discount"
+    },
+    "confirm": {
+      "delete_order": "Are you sure you want to delete this order?",
+      "delete_user": "Are you sure you want to delete this account?",
+      "reset_user_password": "Are you sure you want to reset this user's password?",
+      "delete_product": "Are you sure you want to delete this product?",
+      "generate_password": "Are you sure you want to generate a password for this user?"
+    },
+    "messages": {
+      "order_deleted": "Order deleted!",
+      "delete_order_failed": "Failed to delete order.",
+      "cannot_delete_owner": "You cannot delete the Owner account.",
+      "user_deleted": "User deleted!",
+      "delete_user_failed": "Failed to delete user.",
+      "cannot_reset_owner": "You cannot reset Owner account password.",
+      "reset_sent": "A reset link was sent to the user's email!",
+      "reset_failed": "Failed to reset password.",
+      "product_deleted": "Product deleted!",
+      "delete_product_failed": "Failed to delete product.",
+      "order_updated": "Order was updated!",
+      "select_product": "Please select a product",
+      "min_quantity": "Quantity must be at least 1",
+      "cannot_edit_owner": "You cannot edit Owner account.",
+      "cannot_remove_owner_privilege": "You cannot remove Owner privilege.",
+      "password_set": "Password was set.",
+      "changes_saved": "Changes were saved!",
+      "product_updated": "Product was updated!",
+      "product_created": "Product was created!",
+      "product_save_error": "Error saving product",
+      "orders_loading_error": "Error loading orders",
+      "user_save_error": "Error saving user",
+      "order_save_error": "Error saving order",
+      "password_set_error": "Error setting password",
+      "enter_new_password": "Please enter a new password",
+      "users_loading_error": "Error loading users"
+    }
+  },
   "reset": {
     "title": "Reset password",
     "intro": "Enter a new password for your account",
@@ -266,8 +499,7 @@
     "password_requirements_failed": "Password does not meet the requirements. Please check the list below.",
     "reset_failed": "Failed to reset password. Try again or request a new link.",
     "token_invalid": "The password reset link is invalid or has expired. Please request a new link."
-  }
-  ,
+  },
   "auth": {
     "login": {
       "title": "Welcome back",
@@ -308,8 +540,7 @@
       "password_min": "Password must be at least 8 characters",
       "phone_digits": "Phone must have 9 digits",
       "passwords_mismatch": "Passwords do not match"
-    }
-    ,
+    },
     "password_reset": {
       "title": "Forgot your password?",
       "enter_email": "Enter your email and we'll send a password reset link",
@@ -549,3 +780,4 @@
     }
   }
 }
+

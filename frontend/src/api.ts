@@ -1,9 +1,11 @@
 import axios from 'axios';
 
 // Store token in memory (not in storage) for session-only authentication
-// Store token in memory (not in storage) for session-only authentication
 // We also persist it to `sessionStorage` so a session-only login survives a page reload
 let sessionToken: string | null = null;
+
+// Store current locale for API requests
+let currentLocale: string = localStorage.getItem('locale') || 'sk';
 
 // Initialize sessionToken from sessionStorage (survives reloads, cleared when tab/window closes)
 try {
@@ -39,6 +41,10 @@ api.interceptors.request.use((config) => {
             config.headers.Authorization = `Bearer ${sessionToken}`;
         }
     }
+    
+    // Add current locale header so backend responds in correct language
+    config.headers['Accept-Language'] = currentLocale;
+    
     return config;
 });
 
@@ -77,6 +83,11 @@ export function setSessionToken(token: string | null) {
 
 export function getSessionToken() {
     return sessionToken;
+}
+
+export function setLocale(locale: string) {
+    currentLocale = locale;
+    localStorage.setItem('locale', locale);
 }
 
 export default api;

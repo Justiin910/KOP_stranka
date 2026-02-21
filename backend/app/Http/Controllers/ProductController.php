@@ -224,7 +224,7 @@ class ProductController extends Controller
     }
 
     /**
-     * Delete user's own review
+         * Delete a review - Users can delete their own, owners/admins can delete any
      */
     public function deleteReview($id, $reviewId)
     {
@@ -232,14 +232,21 @@ class ProductController extends Controller
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
+        $user = auth()->user();
+        $isAdmin = $user->role === 'admin' || $user->role === 'owner';
+
         $review = DB::table('product_reviews')
             ->where('id', $reviewId)
             ->where('product_id', $id)
-            ->where('user_id', auth()->id())
             ->first();
 
         if (!$review) {
-            return response()->json(['message' => 'Review not found or unauthorized'], 404);
+            return response()->json(['message' => 'Review not found'], 404);
+        }
+
+        // Check authorization: user can delete own review, or admin/owner can delete any
+        if ($review->user_id !== auth()->id() && !$isAdmin) {
+            return response()->json(['message' => 'Unauthorized to delete this review'], 403);
         }
 
         // Delete the review

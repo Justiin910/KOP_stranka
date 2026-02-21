@@ -86,7 +86,7 @@ class AdminController extends Controller
             if ($domain) {
                 $hasMx = function_exists('checkdnsrr') && checkdnsrr($domain, 'MX');
                 if (!$hasMx) {
-                    return response()->json(['message' => 'E-mailová doména nemá MX záznamy alebo je neplatná.'], 422);
+                    return response()->json(['message' => __('admin.user.invalid_domain')], 422);
                 }
             }
         }
@@ -99,7 +99,7 @@ class AdminController extends Controller
         if (isset($validated['role']) && Auth::user() && Auth::user()->role === 'owner') {
             // Prevent owner from demoting themselves
             if (Auth::id() === $user->id && $validated['role'] !== 'owner') {
-                return response()->json(['message' => 'Nemôžete si odobrať rolu owner.'], 403);
+                return response()->json(['message' => __('admin.user.cannot_remove_owner')], 403);
             }
             $user->role = $validated['role'];
         }
@@ -111,7 +111,7 @@ class AdminController extends Controller
         $user->save();
 
         return response()->json([
-            'message' => 'Používateľ bol aktualizovaný',
+            'message' => __('admin.user.updated'),
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -131,7 +131,7 @@ class AdminController extends Controller
         $user->delete();
 
         return response()->json([
-            'message' => 'Používateľ bol vymazaný'
+            'message' => __('admin.user.deleted')
         ]);
     }
 
@@ -196,7 +196,7 @@ class AdminController extends Controller
             
             \Mail::html($htmlBody, function ($message) use ($user) {
                 $message->to($user->email)
-                        ->subject('Vaše dočasné heslo - Obnovenie prístupu')
+                        ->subject(__('admin.email.temp_password_subject'))
                         ->from(config('mail.from.address'), config('mail.from.name'));
             });
             
@@ -216,7 +216,7 @@ class AdminController extends Controller
 
             \Mail::html($htmlBody, function($message) use ($user) {
                 $message->to($user->email)
-                        ->subject('Vaše heslo bolo zmenené')
+                        ->subject(__('admin.email.password_changed_subject'))
                         ->from(config('mail.from.address'), config('mail.from.name'));
             });
 
@@ -227,7 +227,7 @@ class AdminController extends Controller
         }
         
         return response()->json([
-            'message' => 'Dočasné heslo bolo odoslané na ' . $user->email
+            'message' => __('admin.user.temp_password_sent', ['email' => $user->email])
         ]);
     }
 
@@ -252,7 +252,7 @@ class AdminController extends Controller
         \Log::info('Password saved successfully');
 
         return response()->json([
-            'message' => 'Heslo používateľa bolo nastavené'
+            'message' => __('admin.user.password_set')
         ]);
     }
 
@@ -435,7 +435,7 @@ class AdminController extends Controller
         $product = \App\Models\Product::create($data);
 
         return response()->json([
-            'message' => 'Produkt bol vytvorený',
+            'message' => __('admin.product.created'),
             'product' => $product
         ], 201);
     }
@@ -502,7 +502,7 @@ class AdminController extends Controller
         $product->update($data);
 
         return response()->json([
-            'message' => 'Produkt bol aktualizovaný',
+            'message' => __('admin.product.updated'),
             'product' => $product
         ]);
     }
@@ -516,7 +516,7 @@ class AdminController extends Controller
         $product->delete();
 
         return response()->json([
-            'message' => 'Produkt bol vymazaný'
+            'message' => __('admin.product.deleted')
         ]);
     }
 
@@ -589,7 +589,7 @@ class AdminController extends Controller
         $order->delete();
 
         return response()->json([
-            'message' => 'Objednávka bola vymazaná'
+            'message' => __('admin.order.deleted')
         ]);
     }
 
@@ -681,7 +681,7 @@ class AdminController extends Controller
         $customerName = $order->user ? $order->user->name : ($address['fullName'] ?? 'Guest');
 
         return response()->json([
-            'message' => 'Objednávka bola aktualizovaná',
+            'message' => __('admin.order.updated'),
             'order' => [
                 'id' => $order->id,
                 'reference' => $order->reference,

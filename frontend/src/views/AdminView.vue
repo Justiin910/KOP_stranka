@@ -3,7 +3,9 @@
     <!-- Sidebar -->
     <aside class="w-64 bg-white dark:bg-gray-800 shadow-lg h-auto">
       <div class="p-6">
-        <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">Admin Panel</h2>
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">
+          {{ $t("profile.admin_panel") }}
+        </h2>
         <nav class="space-y-2">
           <button
             v-for="tab in tabs"
@@ -16,7 +18,7 @@
                 : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700',
             ]"
           >
-            {{ tab.label }}
+            {{ $t(`admin.tabs.${tab.id}`) }}
           </button>
         </nav>
       </div>
@@ -27,10 +29,10 @@
       <!-- Header -->
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-800 dark:text-white mb-2">
-          {{ tabs.find((t) => t.id === activeTab)?.label || tabs[0]?.label }}
+          {{ $t(`admin.tabs.${activeTab}`) }}
         </h1>
         <p class="text-gray-600 dark:text-gray-400">
-          {{ tabs.find((t) => t.id === activeTab)?.description || tabs[0]?.description }}
+          {{ $t(`admin.descriptions.${activeTab}`) }}
         </p>
       </div>
 
@@ -41,7 +43,7 @@
           <input
             v-model="orderSearch"
             type="text"
-            placeholder="Hľadať objednávky (ID, email, meno)..."
+            :placeholder="$t('admin.orders.search_placeholder')"
             class="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
@@ -54,37 +56,37 @@
                 <th
                   class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                 >
-                  ID
+                  {{ $t("admin.table.id") }}
                 </th>
                 <th
                   class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                 >
-                  Referencia
+                  {{ $t("admin.table.reference") }}
                 </th>
                 <th
                   class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                 >
-                  Zákazník
+                  {{ $t("admin.table.customer") }}
                 </th>
                 <th
                   class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                 >
-                  Produkty
+                  {{ $t("admin.table.products") }}
                 </th>
                 <th
                   class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                 >
-                  Celkom
+                  {{ $t("admin.table.total") }}
                 </th>
                 <th
                   class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                 >
-                  Stav
+                  {{ $t("admin.table.status") }}
                 </th>
                 <th
                   class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                 >
-                  Akcie
+                  {{ $t("admin.table.actions") }}
                 </th>
               </tr>
             </thead>
@@ -131,13 +133,13 @@
                     @click="viewOrder(order)"
                     class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
                   >
-                    Zobraziť
+                    {{ $t("admin.actions.view") }}
                   </button>
                   <button
                     @click="deleteOrder(order.id)"
                     class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                   >
-                    Vymazať
+                    {{ $t("admin.actions.delete") }}
                   </button>
                 </td>
               </tr>
@@ -153,7 +155,7 @@
           <input
             v-model="userSearch"
             type="text"
-            placeholder="Hľadať používateľov (email, meno)..."
+            :placeholder="$t('admin.users.search_placeholder')"
             class="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
@@ -164,14 +166,14 @@
           class="bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 rounded-lg p-4 mb-4"
         >
           <p class="text-red-800 dark:text-red-200 mb-3">
-            <strong>Chyba:</strong> {{ usersError }}
+            <strong>{{ $t("admin.error_label") }}:</strong> {{ usersError }}
           </p>
           <button
             @click="fetchUsers"
             :disabled="usersLoading"
             class="px-4 py-2 btn-danger text-sm disabled:opacity-50"
           >
-            {{ usersLoading ? "Načítava sa..." : "Skúsiť znovu" }}
+            {{ usersLoading ? $t("admin.loading") : $t("admin.retry") }}
           </button>
         </div>
 
@@ -181,11 +183,11 @@
           class="bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4"
         >
           <p class="text-yellow-800 dark:text-yellow-200 mb-3">
-            <strong>Poznámka:</strong> Žiadni používatelia sa nenachádzajú. Skontrolujte,
-            že ste prihlásený/á a že máte oprávnenia na prístup k administrácii.
+            <strong>{{ $t("admin.note_label") }}</strong>
+            {{ $t("admin.users.empty_desc") }}
           </p>
           <button @click="fetchUsers" class="px-4 py-2 btn-warning text-sm">
-            Skúsiť znovu
+            {{ $t("admin.retry") }}
           </button>
         </div>
 
@@ -211,19 +213,25 @@
             </div>
             <div class="space-y-2 mb-4">
               <div class="flex justify-between text-sm">
-                <span class="text-gray-600 dark:text-gray-400">Objednávky:</span>
+                <span class="text-gray-600 dark:text-gray-400"
+                  >{{ $t("admin.users.orders_label") }}:</span
+                >
                 <span class="font-medium text-gray-900 dark:text-white">{{
                   user.orders
                 }}</span>
               </div>
               <div class="flex justify-between text-sm">
-                <span class="text-gray-600 dark:text-gray-400">Celková suma:</span>
+                <span class="text-gray-600 dark:text-gray-400"
+                  >{{ $t("admin.orders.total_amount_label") }}:</span
+                >
                 <span class="font-medium text-gray-900 dark:text-white"
                   >{{ user.totalSpent }} €</span
                 >
               </div>
               <div class="flex justify-between text-sm">
-                <span class="text-gray-600 dark:text-gray-400">Registrovaný:</span>
+                <span class="text-gray-600 dark:text-gray-400"
+                  >{{ $t("admin.users.registered_label") }}:</span
+                >
                 <span class="font-medium text-gray-900 dark:text-white">{{
                   user.registered
                 }}</span>
@@ -236,7 +244,7 @@
                 :disabled="currentUser.role === 'admin' && user.role === 'owner'"
                 :title="
                   currentUser.role === 'admin' && user.role === 'owner'
-                    ? 'Nemôžete upravovať Owner účet'
+                    ? $t('admin.messages.cannot_edit_owner')
                     : ''
                 "
                 :class="{
@@ -244,7 +252,7 @@
                     currentUser.role === 'admin' && user.role === 'owner',
                 }"
               >
-                Upraviť
+                {{ $t("admin.actions.edit") }}
               </button>
               <button
                 @click="resetUserPassword(user.id)"
@@ -252,7 +260,7 @@
                 :disabled="currentUser.role === 'admin' && user.role === 'owner'"
                 :title="
                   currentUser.role === 'admin' && user.role === 'owner'
-                    ? 'Nemôžete resetovať heslo Owner účtu'
+                    ? $t('admin.users.cannot_reset_owner_password')
                     : ''
                 "
                 :class="{
@@ -260,7 +268,7 @@
                     currentUser.role === 'admin' && user.role === 'owner',
                 }"
               >
-                Reset hesla
+                {{ $t("admin.actions.reset_password") }}
               </button>
               <button
                 @click="deleteUser(user.id)"
@@ -268,7 +276,7 @@
                 :disabled="currentUser.role === 'admin' && user.role === 'owner'"
                 :title="
                   currentUser.role === 'admin' && user.role === 'owner'
-                    ? 'Nemôžete vymazať Owner účet'
+                    ? $t('admin.messages.cannot_delete_owner')
                     : ''
                 "
                 :class="{
@@ -276,7 +284,7 @@
                     currentUser.role === 'admin' && user.role === 'owner',
                 }"
               >
-                Vymazať
+                {{ $t("admin.actions.delete") }}
               </button>
             </div>
           </div>
@@ -290,7 +298,7 @@
           <input
             v-model="productSearch"
             type="text"
-            placeholder="Hľadať produkty..."
+            :placeholder="$t('admin.products.search_placeholder')"
             class="flex-1 mr-4 px-4 py-2 bg-white dark:bg-gray-800 text-gray-800 dark:text-white rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
           <button
@@ -300,7 +308,7 @@
             "
             class="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium hover:shadow-lg transition-all"
           >
-            + Pridať produkt
+            {{ "+ " + $t("admin.products.add_product") }}
           </button>
         </div>
 
@@ -322,13 +330,13 @@
                   @click="editProduct(product)"
                   class="flex-1 px-4 py-2 btn-primary text-sm rounded-lg"
                 >
-                  Upraviť
+                  {{ $t("admin.actions.edit") }}
                 </button>
                 <button
                   @click="deleteProduct(product.id)"
                   class="flex-1 px-4 py-2 btn-danger text-sm rounded-lg"
                 >
-                  Vymazať
+                  {{ $t("admin.actions.delete") }}
                 </button>
               </div>
             </div>
@@ -403,7 +411,8 @@
                     class="text-sm mt-2"
                     :class="stat.trend > 0 ? 'text-green-500' : 'text-red-500'"
                   >
-                    {{ stat.trend > 0 ? "+" : "" }}{{ stat.trend }}% vs minulý mesiac
+                    {{ stat.trend > 0 ? "+" : "" }}{{ stat.trend }}%
+                    {{ $t("admin.stats.vs_last_month") }}
                   </p>
                 </div>
                 <div
@@ -419,7 +428,7 @@
           <!-- Recent Activity -->
           <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
             <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
-              Posledná aktivita
+              {{ $t("admin.recent_activity") }}
             </h3>
             <div class="space-y-4">
               <div
@@ -442,7 +451,7 @@
                   </div>
                   <div>
                     <p class="text-sm font-medium text-gray-900 dark:text-white">
-                      {{ activity.title }}
+                      {{ formatActivityTitle(activity) }}
                     </p>
                     <p class="text-xs text-gray-500 dark:text-gray-400">
                       {{ formatActivityTime(activity.created_at) }}
@@ -470,7 +479,7 @@
       >
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-            Objednávka #{{ selectedOrder.id }}
+            {{ $t("admin.order.title", { id: selectedOrder.id }) }}
           </h2>
           <button
             @click="
@@ -480,7 +489,7 @@
             "
             class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium"
           >
-            {{ editingOrder ? "Zrušiť" : "Upraviť" }}
+            {{ editingOrder ? $t("admin.actions.cancel") : $t("admin.actions.edit") }}
           </button>
         </div>
 
@@ -495,7 +504,9 @@
           <!-- View Mode -->
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <p class="text-sm text-gray-600 dark:text-gray-400">Zákazník</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {{ $t("admin.table.customer") }}
+              </p>
               <p class="text-lg font-medium text-gray-900 dark:text-white">
                 {{ selectedOrder.customerName }}
               </p>
@@ -504,7 +515,9 @@
               </p>
             </div>
             <div>
-              <p class="text-sm text-gray-600 dark:text-gray-400">Referencie</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {{ $t("admin.orders.reference_label") }}
+              </p>
               <p class="text-lg font-medium text-gray-900 dark:text-white">
                 {{ selectedOrder.reference }}
               </p>
@@ -516,13 +529,17 @@
 
           <div class="grid grid-cols-3 gap-4">
             <div>
-              <p class="text-sm text-gray-600 dark:text-gray-400">Celková suma</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {{ $t("admin.orders.total_amount_label") }}
+              </p>
               <p class="text-2xl font-bold text-gray-900 dark:text-white">
                 {{ selectedOrder.total }} €
               </p>
             </div>
             <div>
-              <p class="text-sm text-gray-600 dark:text-gray-400">Stav</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {{ $t("admin.orders.status_label") }}
+              </p>
               <span
                 class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
                 :class="getStatusClass(selectedOrder.status)"
@@ -531,7 +548,9 @@
               </span>
             </div>
             <div>
-              <p class="text-sm text-gray-600 dark:text-gray-400">Počet položiek</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {{ $t("admin.orders.items_count_label") }}
+              </p>
               <p class="text-2xl font-bold text-gray-900 dark:text-white">
                 {{ formatItems(selectedOrder.items) }}
               </p>
@@ -540,31 +559,39 @@
 
           <div v-if="selectedOrder.address" class="border-t pt-4">
             <p class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
-              Doručovacia adresa
+              {{ $t("admin.orders.delivery_address") }}
             </p>
             <div class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
               <p>{{ selectedOrder.address.fullName }}</p>
               <p>{{ selectedOrder.address.street }}</p>
               <p>{{ selectedOrder.address.zip }} {{ selectedOrder.address.city }}</p>
               <p>{{ selectedOrder.address.country }}</p>
-              <p class="pt-2">Telefón: {{ selectedOrder.address.phone }}</p>
-              <p>Email: {{ selectedOrder.address.email }}</p>
+              <p class="pt-2">
+                {{ $t("admin.orders.phone_label") }} {{ selectedOrder.address.phone }}
+              </p>
+              <p>
+                {{ $t("admin.orders.email_label") }} {{ selectedOrder.address.email }}
+              </p>
             </div>
           </div>
 
           <div class="border-t pt-4">
             <p class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
-              Metódy
+              {{ $t("admin.orders.methods_section") }}
             </p>
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <span class="text-xs text-gray-600 dark:text-gray-400">Doručenie:</span>
+                <span class="text-xs text-gray-600 dark:text-gray-400">{{
+                  $t("admin.orders.delivery_label")
+                }}</span>
                 <p class="text-sm text-gray-900 dark:text-white">
                   {{ selectedOrder.delivery_method }}
                 </p>
               </div>
               <div>
-                <span class="text-xs text-gray-600 dark:text-gray-400">Platba:</span>
+                <span class="text-xs text-gray-600 dark:text-gray-400">{{
+                  $t("admin.orders.payment_label")
+                }}</span>
                 <p class="text-sm text-gray-900 dark:text-white">
                   {{ selectedOrder.payment_method }}
                 </p>
@@ -574,23 +601,23 @@
 
           <div class="border-t pt-4">
             <p class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-3">
-              Položky objednávky
+              {{ $t("admin.orders.items_title") }}
             </p>
             <div class="overflow-x-auto">
               <table class="w-full text-sm">
                 <thead class="bg-gray-50 dark:bg-gray-700">
                   <tr>
                     <th class="px-4 py-2 text-left text-gray-600 dark:text-gray-400">
-                      Produkt
+                      {{ $t("admin.order.product") }}
                     </th>
                     <th class="px-4 py-2 text-center text-gray-600 dark:text-gray-400">
-                      Množstvo
+                      {{ $t("admin.order.quantity") }}
                     </th>
                     <th class="px-4 py-2 text-right text-gray-600 dark:text-gray-400">
-                      Cena
+                      {{ $t("admin.order.price") }}
                     </th>
                     <th class="px-4 py-2 text-right text-gray-600 dark:text-gray-400">
-                      Spolu
+                      {{ $t("admin.order.total") }}
                     </th>
                   </tr>
                 </thead>
@@ -623,7 +650,7 @@
             <div>
               <label
                 class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                >Zákazník</label
+                >{{ $t("admin.table.customer") }}</label
               >
               <input
                 v-model="editingOrder.customerName"
@@ -634,7 +661,7 @@
             <div>
               <label
                 class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                >Email</label
+                >{{ $t("admin.orders.email_input_label") }}</label
               >
               <input
                 v-model="editingOrder.email"
@@ -648,7 +675,7 @@
             <div>
               <label
                 class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                >Doručenie</label
+                >{{ $t("admin.orders.delivery") }}</label
               >
               <select
                 v-model="editingOrder.delivery_method"
@@ -662,23 +689,21 @@
             <div>
               <label
                 class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                >Stav</label
+                >{{ $t("admin.orders.status_label") }}</label
               >
               <select
                 v-model="editingOrder.status"
                 class="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg border border-gray-300 dark:border-gray-600"
               >
-                <option value="čakajúce">čakajúce</option>
-                <option value="Spracováva sa">Spracováva sa</option>
-                <option value="V preprave">V preprave</option>
-                <option value="Doručené">Doručené</option>
-                <option value="Zrušené">Zrušené</option>
+                <option v-for="opt in statusOptions" :key="opt.value" :value="opt.value">
+                  {{ opt.display }}
+                </option>
               </select>
             </div>
             <div>
               <label
                 class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                >Platba</label
+                >{{ $t("admin.orders.payment") }}</label
               >
               <select
                 v-model="editingOrder.payment_method"
@@ -693,13 +718,13 @@
 
           <div v-if="editingOrder.address" class="border-t pt-4">
             <p class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-3">
-              Doručovacia adresa
+              {{ $t("admin.orders.delivery_address") }}
             </p>
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label
                   class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"
-                  >Meno</label
+                  >{{ $t("admin.orders.address_name") }}</label
                 >
                 <input
                   v-model="editingOrder.address.fullName"
@@ -710,7 +735,7 @@
               <div>
                 <label
                   class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"
-                  >Ulica</label
+                  >{{ $t("admin.orders.address_street") }}</label
                 >
                 <input
                   v-model="editingOrder.address.street"
@@ -721,7 +746,7 @@
               <div>
                 <label
                   class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"
-                  >PSČ</label
+                  >{{ $t("admin.orders.address_zip") }}</label
                 >
                 <input
                   v-model="editingOrder.address.zip"
@@ -732,7 +757,7 @@
               <div>
                 <label
                   class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"
-                  >Mesto</label
+                  >{{ $t("admin.orders.address_city") }}</label
                 >
                 <input
                   v-model="editingOrder.address.city"
@@ -743,7 +768,7 @@
               <div>
                 <label
                   class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"
-                  >Krajina</label
+                  >{{ $t("admin.orders.address_country") }}</label
                 >
                 <select
                   v-model="editingOrder.address.country"
@@ -757,7 +782,7 @@
               <div>
                 <label
                   class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"
-                  >Telefón</label
+                  >{{ $t("admin.orders.address_phone") }}</label
                 >
                 <input
                   v-model="editingOrder.address.phone"
@@ -773,13 +798,17 @@
           <div class="border-t pt-4">
             <div class="flex justify-between items-center mb-4">
               <p class="text-sm font-semibold text-gray-600 dark:text-gray-400">
-                Položky objednávky
+                {{ $t("admin.orders.items_title") }}
               </p>
               <button
                 @click="showAddItemForm = !showAddItemForm"
                 class="px-3 py-1 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
               >
-                {{ showAddItemForm ? "Skryť" : "+ Pridať položku" }}
+                {{
+                  showAddItemForm
+                    ? $t("admin.orders.hide")
+                    : "+ " + $t("admin.orders.add_item")
+                }}
               </button>
             </div>
 
@@ -790,7 +819,7 @@
               >
                 <div class="flex justify-between items-center mb-4">
                   <h3 class="text-lg font-bold text-gray-900 dark:text-white">
-                    Pridať novú položku
+                    {{ $t("admin.orders.add_new_item") }}
                   </h3>
                   <button
                     @click="
@@ -808,12 +837,12 @@
                     <label
                       class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
                     >
-                      Produkt
+                      {{ $t("admin.order.product") }}
                     </label>
                     <input
                       v-model="productSearchQuery"
                       type="text"
-                      placeholder="Hľadať produkt..."
+                      :placeholder="$t('admin.products.search_placeholder')"
                       class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                     />
                     <div
@@ -858,7 +887,7 @@
                         v-if="filteredProductsForModal.length === 0"
                         class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400"
                       >
-                        Žiadne produkty nenájdené
+                        {{ $t("admin.orders.no_products") }}
                       </div>
                     </div>
                   </div>
@@ -868,7 +897,7 @@
                       <label
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
                       >
-                        Množstvo
+                        {{ $t("admin.orders.quantity_label") }}
                       </label>
                       <input
                         v-model.number="newOrderItem.quantity"
@@ -877,11 +906,13 @@
                         class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
+
+                    <!--
                     <div>
                       <label
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
                       >
-                        Cena €
+                        {{ $t("admin.orders.price_currency") }}
                       </label>
                       <input
                         v-model.number="newOrderItem.price"
@@ -891,14 +922,14 @@
                         class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
+                    -->
                   </div>
-
                   <div class="flex gap-2 pt-2">
                     <button
                       @click="addItemToOrder"
                       class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                     >
-                      Pridať
+                      {{ $t("admin.orders.add_item") }}
                     </button>
                     <button
                       @click="
@@ -907,7 +938,7 @@
                       "
                       class="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg font-medium transition-colors"
                     >
-                      Zrušiť
+                      {{ $t("admin.orders.cancel_action") }}
                     </button>
                   </div>
                 </div>
@@ -919,16 +950,16 @@
                 <thead class="bg-gray-50 dark:bg-gray-700">
                   <tr>
                     <th class="px-4 py-2 text-left text-gray-600 dark:text-gray-400">
-                      Produkt
+                      {{ $t("admin.orders.product") }}
                     </th>
                     <th class="px-4 py-2 text-center text-gray-600 dark:text-gray-400">
-                      Množstvo
+                      {{ $t("admin.orders.quantity_label") }}
                     </th>
                     <th class="px-4 py-2 text-right text-gray-600 dark:text-gray-400">
-                      Cena
+                      {{ $t("admin.table.price") }}
                     </th>
                     <th class="px-4 py-2 text-right text-gray-600 dark:text-gray-400">
-                      Akcia
+                      {{ $t("admin.table.actions") }}
                     </th>
                   </tr>
                 </thead>
@@ -964,7 +995,7 @@
                         "
                         class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 text-sm hover:underline"
                       >
-                        Odstrániť
+                        {{ $t("admin.actions.remove") }}
                       </button>
                     </td>
                   </tr>
@@ -975,7 +1006,7 @@
 
           <div class="border-t pt-4">
             <p class="text-lg font-bold text-gray-900 dark:text-white">
-              Celkem:
+              Celkom:
               {{
                 editingOrder.order_items
                   .reduce((sum, item) => sum + item.quantity * item.price, 0)
@@ -991,13 +1022,15 @@
               :disabled="orderSaving"
               class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium disabled:opacity-50"
             >
-              {{ orderSaving ? "Ukladám..." : "Uložiť zmeny" }}
+              {{
+                orderSaving ? $t("admin.orders.saving") : $t("admin.orders.save_changes")
+              }}
             </button>
             <button
               @click="editingOrder = null"
               class="flex-1 px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-900 dark:text-white rounded-lg hover:bg-gray-400 dark:hover:bg-gray-700 font-medium"
             >
-              Zrušiť
+              {{ $t("admin.orders.cancel_action") }}
             </button>
           </div>
         </div>
@@ -1009,7 +1042,7 @@
           "
           class="mt-6 w-full px-4 py-2 btn-primary text-white rounded-lg font-medium hover:shadow-lg transition-all"
         >
-          Zavrieť
+          {{ $t("admin.actions.close") }}
         </button>
       </div>
     </div>
@@ -1025,7 +1058,7 @@
       >
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-            Úprava používateľa
+            {{ $t("admin.users.edit") }}
           </h2>
           <button
             type="button"
@@ -1048,13 +1081,13 @@
             <label
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Meno
+              {{ $t("profile.name_label") }}
             </label>
             <input
               v-model="editingUser.name"
               type="text"
               required
-              placeholder="Meno a priezvisko"
+              :placeholder="$t('auth.register.name_placeholder')"
               class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
             />
           </div>
@@ -1064,7 +1097,7 @@
             <label
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Email
+              {{ $t("profile.email_label") }}
             </label>
             <input
               v-model="editingUser.email"
@@ -1080,7 +1113,7 @@
             <label
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Telefón
+              {{ $t("profile.phone_label") }}
             </label>
             <input
               v-model="editingUser.phone"
@@ -1095,7 +1128,7 @@
             <label
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Rola
+              {{ $t("admin.users.role") }}
             </label>
             <select
               v-model="editingUser.role"
@@ -1112,12 +1145,12 @@
             <label
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Nastaviť heslo
+              {{ $t("admin.users.set_password") }}
             </label>
             <input
               v-model="editingUser.password"
               type="password"
-              placeholder="Zadajte nové heslo"
+              :placeholder="$t('admin.users.set_password')"
               class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
             />
             <div class="flex gap-3 mt-3">
@@ -1127,7 +1160,11 @@
                 :disabled="editingSaving"
                 class="flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
               >
-                {{ editingSaving ? "Ukladá sa..." : "Nastaviť heslo" }}
+                {{
+                  editingSaving
+                    ? $t("admin.orders.saving")
+                    : $t("admin.users.set_password")
+                }}
               </button>
 
               <button
@@ -1135,7 +1172,7 @@
                 @click="generateRandomPassword"
                 class="flex-1 px-4 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-medium transition-colors"
               >
-                Vygenerovať heslo
+                {{ $t("admin.users.generate_password") }}
               </button>
             </div>
           </div>
@@ -1144,7 +1181,7 @@
             <label
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Generovať heslo
+              {{ $t("admin.users.generate_password") }}
             </label>
             <div class="flex gap-3 mt-3">
               <button
@@ -1152,7 +1189,7 @@
                 @click="generateRandomPassword"
                 class="flex-1 px-4 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-medium transition-colors"
               >
-                Vygenerovať heslo
+                {{ $t("admin.users.generate_password") }}
               </button>
             </div>
           </div>
@@ -1163,7 +1200,7 @@
             class="bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded-lg p-4 mt-3"
           >
             <p class="text-sm text-green-700 dark:text-green-200 font-medium mb-2">
-              Heslo vygenerované a uložené:
+              {{ $t("admin.users.password_generated") }}
             </p>
             <p class="text-lg font-mono text-green-900 dark:text-green-100 break-all">
               {{ generatedPassword }}
@@ -1185,14 +1222,18 @@
               :disabled="editingSaving"
               class="flex-1 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50"
             >
-              {{ editingSaving ? "Ukladá sa..." : "Uložiť zmeny" }}
+              {{
+                editingSaving
+                  ? $t("admin.orders.saving")
+                  : $t("admin.orders.save_changes")
+              }}
             </button>
             <button
               type="button"
               @click="editingUser = null"
               class="flex-1 px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-white rounded-lg font-medium hover:shadow-lg transition-all"
             >
-              Zrušiť
+              {{ $t("admin.orders.cancel_action") }}
             </button>
           </div>
         </form>
@@ -1210,23 +1251,23 @@
         @click.stop
       >
         <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-          Potvrdiť vygenerovanie hesla
+          {{ $t("admin.users.confirm_generate_password") }}
         </h2>
         <p class="text-gray-600 dark:text-gray-400 mb-6">
-          Ste si istí, že chcete vygenerovať heslo pre tohto používateľa?
+          {{ $t("admin.confirm.generate_password") }}
         </p>
         <div class="flex gap-3">
           <button
             @click="confirmAndGeneratePassword"
             class="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
           >
-            Áno, vygenerovať
+            {{ $t("admin.users.confirm_yes") }}
           </button>
           <button
             @click="showPasswordConfirmation = false"
             class="flex-1 px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-white rounded-lg font-medium transition-colors"
           >
-            Zrušiť
+            {{ $t("admin.orders.cancel_action") }}
           </button>
         </div>
       </div>
@@ -1239,12 +1280,16 @@
         class="fixed inset-0 backdrop-blur-lg flex items-center justify-center z-50"
       >
         <div
-          class="modal-content bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+          class="modal-content bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto custom-scrollbar"
           @click.stop
         >
           <div class="flex justify-between items-center mb-8">
             <h2 class="text-3xl font-bold text-gray-900 dark:text-white">
-              {{ editingProduct ? "Upraviť produkt" : "Pridať nový produkt" }}
+              {{
+                editingProduct
+                  ? $t("admin.products.edit_product_title")
+                  : $t("admin.products.add_product_title")
+              }}
             </h2>
             <button
               type="button"
@@ -1270,12 +1315,12 @@
               <label
                 class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
               >
-                Názov
+                {{ $t("admin.products.name") }}
               </label>
               <input
                 v-model="currentProduct.name"
                 type="text"
-                placeholder="Názov produktu"
+                :placeholder="$t('admin.products.product_name_placeholder')"
                 required
                 class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
@@ -1286,12 +1331,12 @@
               <label
                 class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
               >
-                Značka
+                {{ $t("admin.products.brand") }}
               </label>
               <input
                 v-model="currentProduct.brand"
                 type="text"
-                placeholder="Značka produktu"
+                :placeholder="$t('admin.products.product_brand_placeholder')"
                 required
                 class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
@@ -1302,14 +1347,14 @@
               <label
                 class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
               >
-                Kategória
+                {{ $t("admin.products.category") }}
               </label>
               <select
                 v-model="currentProduct.category"
                 required
                 class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               >
-                <option value="">-- Vyberte kategóriu --</option>
+                <option value="">{{ $t("admin.products.select_category") }}</option>
                 <option v-for="cat in uniqueCategories" :key="cat" :value="cat">
                   {{ cat }}
                 </option>
@@ -1319,7 +1364,7 @@
             <!-- Pricing Section -->
             <div class="border-t border-gray-300 dark:border-gray-600 pt-6 mt-6">
               <h3 class="text-base font-bold text-gray-900 dark:text-white mb-5">
-                Ceny a zľavy
+                {{ $t("admin.products.prices_discounts") }}
               </h3>
 
               <!-- Current Status Summary -->
@@ -1333,14 +1378,16 @@
                 >
                   <div>
                     <p class="text-blue-600 dark:text-blue-300 font-semibold">
-                      Aktuálna cena
+                      {{ $t("admin.products.current_price") }}
                     </p>
                     <p class="text-lg font-bold text-blue-900 dark:text-blue-100">
                       {{ originalProduct.oldPrice }}€
                     </p>
                   </div>
                   <div>
-                    <p class="text-blue-600 dark:text-blue-300 font-semibold">Zľava</p>
+                    <p class="text-blue-600 dark:text-blue-300 font-semibold">
+                      {{ $t("common.discount") }}
+                    </p>
                     <p class="text-lg font-bold text-blue-900 dark:text-blue-100">
                       {{ originalProduct.discount_value
                       }}{{ originalProduct.discount_type === "percent" ? "%" : "€" }}
@@ -1348,7 +1395,7 @@
                   </div>
                   <div>
                     <p class="text-blue-600 dark:text-blue-300 font-semibold">
-                      Finálna cena
+                      {{ $t("admin.products.final_price") }}
                     </p>
                     <p class="text-lg font-bold text-blue-900 dark:text-blue-100">
                       {{ originalProduct.price }}€
@@ -1358,7 +1405,7 @@
                 <div v-else class="flex items-center justify-between">
                   <div>
                     <p class="text-blue-600 dark:text-blue-300 font-semibold mb-2">
-                      Aktuálna cena
+                      {{ $t("admin.products.current_price") }}
                     </p>
                     <p class="text-2xl font-bold text-blue-900 dark:text-blue-100">
                       {{ originalProduct.oldPrice }}€
@@ -1368,7 +1415,7 @@
                     class="inline-flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900 border border-green-300 dark:border-green-700 rounded-lg"
                   >
                     <span class="text-green-700 dark:text-green-200 font-semibold"
-                      >✓ Bez zľavy</span
+                      >✓ {{ $t("admin.products.no_discount") }}</span
                     >
                   </div>
                 </div>
@@ -1379,7 +1426,7 @@
                 <label
                   class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
                 >
-                  Aktuálna cena (€) *
+                  {{ $t("admin.products.current_price") }} (€) *
                 </label>
                 <input
                   v-model.number="currentProduct.oldPrice"
@@ -1397,21 +1444,21 @@
                   <label
                     class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
                   >
-                    Typ zľavy
+                    {{ $t("admin.products.discount_type") }}
                   </label>
                   <select
                     v-model="currentProduct.discount_type"
                     class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   >
-                    <option value="percent">Percento (%)</option>
-                    <option value="fixed">Fixná suma (€)</option>
+                    <option value="percent">{{ $t("admin.products.percent") }}</option>
+                    <option value="fixed">{{ $t("admin.products.fixed_amount") }}</option>
                   </select>
                 </div>
                 <div>
                   <label
                     class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
                   >
-                    Veľkosť zľavy
+                    {{ $t("admin.products.discount_amount") }}
                     <span
                       v-if="currentProduct.discount_value > 0"
                       class="text-indigo-600 dark:text-indigo-400 font-bold"
@@ -1435,7 +1482,7 @@
                   <label
                     class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
                   >
-                    Finálna cena
+                    {{ $t("admin.products.final_price") }}
                   </label>
                   <div
                     class="w-full px-4 py-3 border border-indigo-300 dark:border-indigo-600 rounded-lg bg-indigo-50 dark:bg-indigo-900 text-indigo-900 dark:text-indigo-100 text-lg font-bold"
@@ -1457,7 +1504,7 @@
                 @click="removeDiscount"
                 class="text-sm font-medium px-4 py-2 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded-lg hover:bg-red-200 dark:hover:bg-red-800 transition-colors"
               >
-                Odstrániť zľavu
+                {{ $t("admin.products.remove_discount") }}
               </button>
             </div>
 
@@ -1466,11 +1513,12 @@
               <label
                 class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
               >
-                Sklad (ks) *
+                {{ $t("admin.products.stock") }} *
               </label>
               <input
                 v-model.number="currentProduct.stock"
                 type="number"
+                min="0"
                 placeholder="0"
                 required
                 class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -1482,7 +1530,7 @@
               <label
                 class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
               >
-                URL obrázka
+                {{ $t("admin.products.image_url") }}
               </label>
               <input
                 v-model="currentProduct.image"
@@ -1497,11 +1545,11 @@
               <label
                 class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
               >
-                Popis
+                {{ $t("admin.products.description") }}
               </label>
               <textarea
                 v-model="currentProduct.description"
-                placeholder="Podrobný popis produktu..."
+                :placeholder="$t('admin.products.description_placeholder')"
                 class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 rows="4"
               ></textarea>
@@ -1518,10 +1566,10 @@
               >
                 {{
                   productSaving
-                    ? "Ukladá sa..."
+                    ? $t("admin.products.saving")
                     : editingProduct
-                    ? "Uložiť zmeny"
-                    : "Pridať produkt"
+                    ? $t("admin.orders.save_changes")
+                    : $t("admin.products.add_product")
                 }}
               </button>
               <button
@@ -1532,7 +1580,7 @@
                 "
                 class="flex-1 px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg font-semibold hover:shadow-lg transition-all"
               >
-                Zrušiť
+                {{ $t("admin.orders.cancel_action") }}
               </button>
             </div>
           </form>
@@ -1593,39 +1641,30 @@ export default {
       originalProduct: null,
       productSaving: false,
       currentUser: JSON.parse(localStorage.getItem("user") || "{}"),
-      deliveryOptions: [
-        "Kuriér - Slovenská pošta",
-        "Packeta - výdajné miesto",
-        "Osobný odber",
+      deliveryOptionsKeys: ["delivery_option_1", "delivery_option_3"],
+      paymentOptionsKeys: [
+        "payment_option_1",
+        "payment_option_2",
+        "payment_option_3",
+        "payment_option_4",
       ],
-      paymentOptions: ["Platba kartou", "Dobierka", "Bankový prevod", "PayPal"],
-      countryOptions: [
-        { code: "SK", name: "Slovensko" },
-        { code: "CZ", name: "Česká republika" },
-        { code: "PL", name: "Poľsko" },
-        { code: "HU", name: "Maďarsko" },
-        { code: "AT", name: "Rakúsko" },
-        { code: "DE", name: "Nemecko" },
+      countryOptionsCodes: [
+        { code: "SK", key: "slovakia" },
+        { code: "CZ", key: "czechia" },
+        { code: "PL", key: "poland" },
+        { code: "HU", key: "hungary" },
+        { code: "AT", key: "austria" },
+        { code: "DE", key: "germany" },
       ],
+      statusValueMap: {
+        čakajúce: "status_pending",
+        "Spracováva sa": "status_processing",
+        "V preprave": "status_shipped",
+        Doručené: "status_delivered",
+        Zrušené: "status_cancelled",
+      },
 
-      allTabs: [
-        { id: "stats", label: "Štatistiky", description: "Prehľad výkonu vášho obchodu" },
-        {
-          id: "orders",
-          label: "Objednávky",
-          description: "Spravujte objednávky zákazníkov",
-        },
-        {
-          id: "users",
-          label: "Používatelia",
-          description: "Spravujte používateľské účty",
-        },
-        {
-          id: "products",
-          label: "Produkty",
-          description: "Spravujte produkty v obchode",
-        },
-      ],
+      allTabs: [{ id: "stats" }, { id: "orders" }, { id: "users" }, { id: "products" }],
 
       stats: [],
       recentActivity: [],
@@ -1707,6 +1746,24 @@ export default {
           (product.category || "").toLowerCase().includes(search)
       );
     },
+    deliveryOptions() {
+      return this.deliveryOptionsKeys.map((key) => this.$t(`admin.orders.${key}`));
+    },
+    paymentOptions() {
+      return this.paymentOptionsKeys.map((key) => this.$t(`admin.orders.${key}`));
+    },
+    countryOptions() {
+      return this.countryOptionsCodes.map((item) => ({
+        code: item.code,
+        name: this.$t(`admin.countries.${item.key}`),
+      }));
+    },
+    statusOptions() {
+      return Object.keys(this.statusValueMap).map((value) => ({
+        value,
+        display: this.$t(`admin.orders.${this.statusValueMap[value]}`),
+      }));
+    },
   },
 
   watch: {
@@ -1787,26 +1844,44 @@ export default {
       this._preventListenersAdded = false;
     },
     formatActivityTime(dateString) {
-      if (!dateString) return "pred chvíľou";
+      if (!dateString) return this.$t("admin.activity.just_now");
 
       const activityDate = new Date(dateString);
       const now = new Date();
       const diffSeconds = Math.floor((now - activityDate) / 1000);
 
       if (diffSeconds < 60) {
-        return "pred chvíľou";
+        return this.$t("admin.activity.just_now");
       } else if (diffSeconds < 3600) {
         const minutes = Math.floor(diffSeconds / 60);
-        return `pred ${minutes} ${minutes === 1 ? "min" : "min"}`;
+        return this.$t("admin.activity.minutes_ago", { count: minutes });
       } else if (diffSeconds < 86400) {
         const hours = Math.floor(diffSeconds / 3600);
-        return `pred ${hours} ${hours === 1 ? "hod" : "hod"}`;
+        return this.$t("admin.activity.hours_ago", { count: hours });
       } else if (diffSeconds < 604800) {
         const days = Math.floor(diffSeconds / 86400);
-        return `pred ${days} ${days === 1 ? "deňom" : "dňami"}`;
+        return this.$t("admin.activity.days_ago", { count: days });
       } else {
-        return activityDate.toLocaleDateString("sk-SK");
+        return activityDate.toLocaleDateString(
+          this.$i18n.locale === "sk" ? "sk-SK" : "en-US"
+        );
       }
+    },
+    formatActivityTitle(activity) {
+      if (activity.type === "order") {
+        // Extract name after "od " (Slovak: "од ") or any language variant
+        // Activity title format: "Nová objednávka od [name]"
+        const match = activity.title.match(/(?:od|от)\s+(.+)$/i);
+        const name = match ? match[1] : activity.title;
+        return this.$t("admin.activity.new_order") + " " + name;
+      } else if (activity.type === "registration") {
+        // Extract name after ": "
+        // Activity title format: "Nová registrácia: [name]"
+        const match = activity.title.match(/:\s*(.+)$/);
+        const name = match ? match[1] : activity.title;
+        return this.$t("admin.activity.new_registration") + ": " + name;
+      }
+      return activity.title;
     },
     getStatusClass(status) {
       const classes = {
@@ -1823,6 +1898,10 @@ export default {
     },
     formatStatus(status) {
       if (!status) return "";
+      const key = this.statusValueMap[status];
+      if (key) {
+        return this.$t(`admin.orders.${key}`);
+      }
       try {
         return status.charAt(0).toUpperCase() + status.slice(1);
       } catch (e) {
@@ -1858,9 +1937,9 @@ export default {
     },
     formatItems(count) {
       const n = Number(count) || 0;
-      if (n === 1) return "1 položka";
-      if (n >= 2 && n <= 4) return n + " položky";
-      return n + " položiek";
+      if (n === 1) return "1 " + this.$t("admin.orders.items_one");
+      if (n >= 2 && n <= 4) return n + " " + this.$t("admin.orders.items_few");
+      return n + " " + this.$t("admin.orders.items_many");
     },
     viewOrder(order) {
       this.selectedOrder = order;
@@ -1899,12 +1978,12 @@ export default {
           }
           this.selectedOrder = updatedOrder;
           this.editingOrder = null;
-          alert("Objednávka bola aktualizovaná!");
+          alert(this.$t("admin.messages.order_updated"));
         })
         .catch((error) => {
           console.error("Error:", error);
           this.orderError =
-            error.response?.data?.message || "Chyba pri ukladaní objednávky";
+            error.response?.data?.message || this.$t("admin.messages.order_save_error");
         })
         .finally(() => {
           this.orderSaving = false;
@@ -1917,11 +1996,11 @@ export default {
     addItemToOrder() {
       // Validate
       if (!this.newOrderItem.product_id) {
-        alert("Prosím vyberte produkt");
+        alert(this.$t("admin.messages.select_product"));
         return;
       }
       if (this.newOrderItem.quantity < 1) {
-        alert("Množstvo musí byť aspoň 1");
+        alert(this.$t("admin.messages.min_quantity"));
         return;
       }
 
@@ -1957,64 +2036,62 @@ export default {
       this.showAddItemForm = false;
     },
     async deleteOrder(id) {
-      if (await window.appConfirm("Naozaj chcete vymazať túto objednávku?")) {
+      if (await window.appConfirm(this.$t("admin.confirm.delete_order"))) {
         api
           .delete(`api/admin/orders/${id}`)
           .then(() => {
             this.orders = this.orders.filter((order) => order.id !== id);
-            alert("Objednávka vymazaná!");
+            alert(this.$t("admin.messages.order_deleted"));
           })
           .catch((error) => {
             console.error("Error:", error);
-            alert("Chyba pri vymazávaní objednávky");
+            alert(this.$t("admin.messages.delete_order_failed"));
           });
       }
     },
     async deleteUser(id) {
       const target = this.users.find((u) => u.id === id);
       if (this.currentUser?.role === "admin" && target?.role === "owner") {
-        alert("Nemôžete vymazať Owner účet.");
+        alert(this.$t("admin.messages.cannot_delete_owner"));
         return;
       }
 
-      if (await window.appConfirm("Naozaj chcete vymazať tento účet?")) {
+      if (await window.appConfirm(this.$t("admin.confirm.delete_user"))) {
         api
           .delete(`api/admin/users/${id}`)
           .then(() => {
             this.users = this.users.filter((user) => user.id !== id);
-            alert("Používateľ vymazaný!");
+            alert(this.$t("admin.messages.user_deleted"));
           })
           .catch((error) => {
             console.error("Error:", error);
-            alert("Chyba pri vymazávaní používateľa");
+            alert(this.$t("admin.messages.delete_user_failed"));
           });
       }
     },
     async resetUserPassword(id) {
       const target = this.users.find((u) => u.id === id);
       if (this.currentUser?.role === "admin" && target?.role === "owner") {
-        alert("Nemôžete resetovať heslo Owner účtu.");
+        alert(this.$t("admin.messages.cannot_reset_owner"));
         return;
       }
 
-      if (await window.appConfirm("Naozaj chcete resetovať heslo tohto používateľa?")) {
+      if (await window.appConfirm(this.$t("admin.confirm.reset_user_password"))) {
         api
           .post(`api/admin/users/${id}/reset-password`, { send_notification: false })
           .then((response) => {
-            alert(
-              response.data.message || "Reset hesla bol odoslaný na email používateľa!"
-            );
+            alert(response.data.message || this.$t("admin.messages.reset_sent"));
           })
           .catch((error) => {
             console.error("Error:", error);
-            alert("Chyba pri resetovaní hesla");
+            alert(this.$t("admin.messages.reset_failed"));
           });
       }
     },
     editUser(user) {
       // Prevent admins from editing owner accounts
       if (this.currentUser?.role === "admin" && user?.role === "owner") {
-        alert("Nemôžete upravovať Owner účet.");
+        alert(this.$t("admin.messages.cannot_edit_owner"));
         return;
       }
 
@@ -2081,13 +2158,14 @@ export default {
         const errorMsg =
           error.response?.data?.message || error.response?.data?.errors || error.message;
         console.error("Full error:", errorMsg);
-        this.editError = "Chyba pri nastavovaní hesla: " + JSON.stringify(errorMsg);
+        this.editError =
+          this.$t("admin.messages.password_set_error") + ": " + JSON.stringify(errorMsg);
       }
     },
     async saveUserPassword() {
       if (!this.editingUser || !this.editingUser.id) return;
       if (!this.editingUser.password) {
-        this.editError = "Zadajte nové heslo.";
+        this.editError = this.$t("admin.messages.enter_new_password");
         return;
       }
       this.editingSaving = true;
@@ -2098,7 +2176,7 @@ export default {
           { password: this.editingUser.password, send_notification: false }
         );
         console.log("Password set response:", response.data);
-        alert("Heslo bolo nastavené.");
+        alert(this.$t("admin.messages.password_set"));
         this.editingUser.password = "";
         this.editingUser = null;
         this.showGeneratedPassword = false;
@@ -2107,7 +2185,8 @@ export default {
         console.error("Error setting password:", error);
         const errorMsg =
           error.response?.data?.message || error.response?.data?.errors || error.message;
-        this.editError = "Chyba pri nastavovaní hesla: " + JSON.stringify(errorMsg);
+        this.editError =
+          this.$t("admin.messages.password_set_error") + ": " + JSON.stringify(errorMsg);
       } finally {
         this.editingSaving = false;
       }
@@ -2136,7 +2215,7 @@ export default {
         this.editingUser.role &&
         this.editingUser.role !== "owner"
       ) {
-        this.editError = "Nemôžete odstrániť svoje oprávnenie Owner.";
+        this.editError = this.$t("admin.messages.cannot_remove_owner_privilege");
         this.editingSaving = false;
         return;
       }
@@ -2165,11 +2244,12 @@ export default {
           }
           this.editingUser = null;
           this.showGeneratedPassword = false;
-          alert("Zmeny boli uložené!");
+          alert(this.$t("admin.messages.changes_saved"));
         })
         .catch((error) => {
           console.error("Error:", error);
-          this.editError = error.response?.data?.message || "Chyba pri ukládaní zmien";
+          this.editError =
+            error.response?.data?.message || this.$t("admin.messages.user_save_error");
         })
         .finally(() => {
           this.editingSaving = false;
@@ -2186,28 +2266,28 @@ export default {
           // Build stats array with real data
           this.stats = [
             {
-              label: "Celkový predaj",
+              label: this.$t("admin.stats.total_revenue"),
               value: data.totalRevenue.toLocaleString("sk-SK") + " €",
               trend: data.revenueTrend,
               icon: "💰",
               color: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
             },
             {
-              label: "Objednávky",
+              label: this.$t("admin.stats.total_orders"),
               value: data.totalOrders.toString(),
               trend: data.ordersTrend,
               icon: "📦",
               color: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
             },
             {
-              label: "Zákazníci",
+              label: this.$t("admin.stats.total_users"),
               value: data.totalUsers.toString(),
               trend: data.usersTrend,
               icon: "👥",
               color: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
             },
             {
-              label: "Priem. objednávka",
+              label: this.$t("admin.stats.avg_order_value"),
               value: data.avgOrderValue.toLocaleString("sk-SK") + " €",
               trend: data.avgOrderTrend,
               icon: "📊",
@@ -2250,11 +2330,15 @@ export default {
           if (error.response) {
             console.error("Response status:", error.response.status);
             console.error("Response data:", error.response.data);
-            this.usersError = `Chyba ${error.response.status}: ${
-              error.response.data?.message || "Nepodarilo sa načítať používateľov"
+            this.usersError = `${this.$t("admin.error_label")} ${
+              error.response.status
+            }: ${
+              error.response.data?.message ||
+              this.$t("admin.messages.users_loading_error")
             }`;
           } else {
-            this.usersError = error.message || "Chyba pri načítavaní používateľov";
+            this.usersError =
+              error.message || this.$t("admin.messages.users_loading_error");
           }
         })
         .finally(() => {
@@ -2270,7 +2354,7 @@ export default {
         })
         .catch((error) => {
           console.error("Error fetching orders:", error);
-          alert("Chyba pri načítavaní objednávok");
+          alert(this.$t("admin.messages.orders_loading_error"));
         });
     },
     async loadProducts() {
@@ -2303,9 +2387,22 @@ export default {
         reviews: typeof product.reviews !== "undefined" ? product.reviews : 0,
         specs: product.specs || null,
         discount_type: product.discount_type || "percent",
-        discount_value:
-          typeof product.discount_value !== "undefined" ? product.discount_value : 0,
+        discount_value: product.discount_value ? parseFloat(product.discount_value) : 0,
       };
+
+      // If discount_value is 0 or null but oldPrice differs from price, calculate discount from price difference
+      if (
+        (!productData.discount_value || productData.discount_value === 0) &&
+        productData.oldPrice &&
+        productData.price &&
+        productData.oldPrice !== productData.price
+      ) {
+        const priceDiff = productData.oldPrice - productData.price;
+        productData.discount_value = parseFloat(
+          ((priceDiff / productData.oldPrice) * 100).toFixed(2)
+        );
+        productData.discount_type = "percent";
+      }
 
       // Store original state for the blue box (won't change as user edits)
       this.originalProduct = JSON.parse(JSON.stringify(productData));
@@ -2369,12 +2466,12 @@ export default {
           if (index !== -1) {
             this.products.splice(index, 1, updated);
           }
-          alert("Produkt bol aktualizovaný!");
+          alert(this.$t("admin.messages.product_updated"));
         } else {
           // Create new product
           const response = await api.post("api/admin/products", payload);
           this.products.push(response.data.product);
-          alert("Produkt bol vytvorený!");
+          alert(this.$t("admin.messages.product_created"));
         }
         this.editingProduct = null;
         this.showAddProduct = false;
@@ -2391,20 +2488,20 @@ export default {
         };
       } catch (error) {
         console.error("Error saving product:", error);
-        alert("Chyba pri ukladaní produktu");
+        alert(this.$t("admin.messages.product_save_error"));
       } finally {
         this.productSaving = false;
       }
     },
     async deleteProduct(id) {
-      if (await window.appConfirm("Naozaj chcete vymazať tento produkt?")) {
+      if (await window.appConfirm(this.$t("admin.confirm.delete_product"))) {
         try {
           await api.delete(`api/admin/products/${id}`);
           this.products = this.products.filter((product) => product.id !== id);
-          alert("Produkt vymazaný!");
+          alert(this.$t("admin.messages.product_deleted"));
         } catch (error) {
           console.error("Error deleting product:", error);
-          alert("Chyba pri vymazávaní produktu");
+          alert(this.$t("admin.messages.product_delete_error"));
         }
       }
     },
@@ -2500,7 +2597,19 @@ export default {
   },
   watch: {
     editingOrder(newVal) {
-      if (!newVal) return;
+      if (!newVal) {
+        // Reset country codes when exiting edit mode
+        this.countryOptionsCodes = [
+          { code: "SK", key: "slovakia" },
+          { code: "CZ", key: "czechia" },
+          { code: "PL", key: "poland" },
+          { code: "HU", key: "hungary" },
+          { code: "AT", key: "austria" },
+          { code: "DE", key: "germany" },
+        ];
+        return;
+      }
+
       // Ensure address exists
       if (!newVal.address) newVal.address = {};
 
@@ -2509,26 +2618,35 @@ export default {
         newVal.address.phone = this.formatPhone(newVal.address.phone);
       }
 
-      // Ensure delivery method is present in options
-      if (
-        newVal.delivery_method &&
-        !this.deliveryOptions.includes(newVal.delivery_method)
-      ) {
-        this.deliveryOptions.unshift(newVal.delivery_method);
-      }
+      // Use $nextTick to ensure computed properties are ready
+      this.$nextTick(() => {
+        // If country is empty or not in current language options, use first option
+        const countryNames = this.countryOptions.map((c) => c.name);
+        if (!newVal.address.country || !countryNames.includes(newVal.address.country)) {
+          if (this.countryOptions.length > 0) {
+            newVal.address.country = this.countryOptions[0]?.name || "";
+          }
+        }
 
-      // Ensure payment method present
-      if (newVal.payment_method && !this.paymentOptions.includes(newVal.payment_method)) {
-        this.paymentOptions.unshift(newVal.payment_method);
-      }
-
-      // Ensure country present in options
-      const country = newVal.address.country;
-      if (!country) {
-        newVal.address.country = this.countryOptions[0]?.name || "";
-      } else if (!this.countryOptions.find((c) => c.name === country)) {
-        this.countryOptions.unshift({ code: "", name: country });
-      }
+        // If delivery method is empty or not in current language options, use first option
+        if (
+          !newVal.delivery_method ||
+          !this.deliveryOptions.includes(newVal.delivery_method)
+        ) {
+          if (this.deliveryOptions.length > 0) {
+            newVal.delivery_method = this.deliveryOptions[0];
+          }
+        }
+        // If payment method is empty or not in current language options, use first option
+        if (
+          !newVal.payment_method ||
+          !this.paymentOptions.includes(newVal.payment_method)
+        ) {
+          if (this.paymentOptions.length > 0) {
+            newVal.payment_method = this.paymentOptions[0];
+          }
+        }
+      });
     },
   },
 };

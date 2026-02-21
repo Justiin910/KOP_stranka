@@ -21,6 +21,7 @@ import ProductView from '@/views/ProductView.vue'
 import AdminView from '@/views/AdminView.vue'
 import ProductsGridView from '@/views/ProductsGridView.vue'
 import NewPasswordView from '@/views/NewPasswordView.vue'
+import MegaSalePage from '@/views/MegaSalePage.vue'
 
 
 const router = createRouter({
@@ -30,6 +31,11 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
+    },
+    {
+      path: '/mega-sale',
+      name: 'megaSale',
+      component: MegaSalePage,
     },
     {
       path: '/profile',

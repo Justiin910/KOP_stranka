@@ -32,7 +32,7 @@
           @click.stop
         >
           <h3 class="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
-            Potvrdenie
+            {{ t('common.confirm_title') }}
           </h3>
           <p class="text-gray-700 dark:text-gray-300 mb-4">
             {{ ui.confirmState.message }}
@@ -42,13 +42,13 @@
               @click="ui.resolveConfirm(false)"
               class="px-4 py-2 rounded bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
             >
-              Zrušiť
+              {{ t('common.cancel') }}
             </button>
             <button
               @click="ui.resolveConfirm(true)"
               class="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700 transition-colors"
             >
-              Áno
+              {{ t('common.confirm_yes') }}
             </button>
           </div>
         </div>
@@ -59,7 +59,10 @@
 
 <script setup lang="ts">
 import { useUiStore } from "@/stores/uiStore";
+import { useI18n } from "vue-i18n";
+
 const ui = useUiStore();
+const { t } = useI18n();
 </script>
 
 <style scoped>

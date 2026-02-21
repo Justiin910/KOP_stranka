@@ -9,6 +9,7 @@ import router from './router'
 import { createI18n } from 'vue-i18n'
 import sk from './locales/sk.json'
 import en from './locales/en.json'
+import { setLocale } from './api'
 
 
 const app = createApp(App)
@@ -35,6 +36,9 @@ const i18n = createI18n({
 	messages: { sk, en }
 })
 app.use(i18n)
+
+// Set API locale so backend responses are in correct language
+setLocale(savedLang)
 
 // Preload server favorites once on app start when logged in to ensure
 // product cards can reflect favorite status immediately after refresh.

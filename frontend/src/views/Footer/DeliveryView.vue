@@ -136,7 +136,7 @@
             <p>
               {{ $t("pages.delivery.tracking_status") }}
               <router-link
-                to="/orders/status"
+                to="/orders"
                 class="text-indigo-600 dark:text-indigo-400 hover:underline font-semibold"
                 >{{ $t("pages.delivery.tracking_status_link") }}</router-link
               >.

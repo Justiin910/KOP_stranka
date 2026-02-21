@@ -27,7 +27,7 @@
   ,
   "home": {
     "hero": {
-      "title": "Vianočné darčeky 2025",
+      "title": "Mega výpredaj roka",
       "subtitle": "Najlepšie technológie za skvelé ceny",
       "cta": "Pozrieť ponuku"
     },
@@ -35,21 +35,24 @@
       "heading": "Novinky a udalosti",
       "event1": {
         "tag": "UDALOSŤ",
-        "title": "Nové telefóny Google Pixel 9",
+        "title": "Nové telefóny Google Pixel 10",
         "desc": "Objavte najnovšiu generáciu smartfónov s AI funkciami a vylepšeným fotoaparátom.",
-        "cta": "Zistiť viac →"
+        "cta": "Zistiť viac →",
+        "url": "https://store.google.com/us/product/pixel_10"
       },
       "event2": {
         "tag": "NOVINKA",
         "title": "Apple AirPods Pro (3. gen)",
         "desc": "Luxusné bezdrôtové slúchadlá s adaptívnym zvukom a vylepšeným ANC.",
-        "cta": "Predĺžený predpredaj →"
+        "cta": "Zistiť viac →",
+        "url": "https://www.apple.com/airpods-pro/"
       },
       "event3": {
-        "tag": "Gaming",
-        "title": "Gaming week - Až -30%",
-        "desc": "Herné konzoly, príslušenstvo a PC komponenty za bezkonkurenčné ceny.",
-        "cta": "Do akcie →"
+        "tag": "NOVINKA",
+        "title": "Steam Machine - Nový herný systém",
+        "desc": "Revolúnčná PC konzola od Valve s najnovejšimi hrámi.",
+        "cta": "Zistiť viac →",
+        "url": "https://store.steampowered.com/sale/steammachine"
       }
     },
     "banners": {
@@ -68,7 +71,8 @@
       "title": "Odporúčame pre vás"
     },
     "mega_sale": {
-      "title": "Mega výpredaj roka"
+      "title": "Mega výpredaj roka",
+      "show_all": "Zobraziť všetky →"
     },
     "bottom": {
       "fast_delivery": {
@@ -88,12 +92,38 @@
   "product": {
     "in_stock": "✓ Skladom ({count})",
     "out_of_stock": "✗ Vypredané",
-    "add_to_cart": "Do košíka"
-    ,
+    "add_to_cart": "Do košíka",
     "confirm_delete_title": "Potvrdiť zmazanie",
-    "review_delete_confirm": "Naozaj chcete vymazať svoju recenziu?"
-  }
-  ,
+    "review_delete_confirm": "Naozaj chcete vymazať svoju recenziu?",
+    "loading": "Načítavam produkt...",
+    "back_home": "Späť na domov",
+    "product_code": "Kód produktu:",
+    "in_stock_units": "Na sklade - {count}",
+    "reviews_count": "({count} recenzií)",
+    "specs": "Parametre",
+    "no_specs": "Žiadne parametre.",
+    "write_review": "Napísať recenziu",
+    "login_to_review": "Pre písanie recenzií sa, prosím,",
+    "login_link": "prihláste",
+    "rating_label": "Hodnotenie",
+    "rating_out_of": "z 5",
+    "comment_label": "Váš komentár",
+    "comment_placeholder": "Napíšte svoju recenziu...",
+    "submit_review": "Odoslať recenziu",
+    "submitting": "Odosielám...",
+    "latest_reviews": "Najnovšie recenzie",
+    "anonymous_user": "Používateľ",
+    "edit": "Upraviť",
+    "delete": "Vymazať",
+    "save_changes": "Uložiť zmeny",
+    "saving": "Ukladám...",
+    "cancel": "Zrušiť",
+    "reviewed_on": "dňa {date}",
+    "select_rating": "Vyberte hodnotenie",
+    "review_deleted": "Recenzia bola vymazaná!",
+    "review_delete_failed": "Chyba pri vymazaní recenzie",
+    "monthly_price": "alebo od {price} € mesačne"
+  },
   "products": {
     "items": "{count} položiek",
     "all": "Všetky",
@@ -148,9 +178,12 @@
   }
   ,
   "common": {
+    "confirm_title": "Potvrdenie",
     "cancel": "Zrušiť",
+    "confirm_yes": "Áno",
     "delete": "Vymazať",
-    "deleting": "Maže sa..."
+    "deleting": "Maže sa...",
+    "discount": "Zľava"
   }
   ,
   "favorites": {
@@ -245,6 +278,213 @@
     "verification_failed": "Nepodarilo sa odoslať overenie."
   }
   ,
+  "admin": {
+    "tabs": {
+      "stats": "Štatistiky",
+      "orders": "Objednávky",
+      "users": "Používatelia",
+      "products": "Produkty"
+    },
+    "descriptions": {
+      "stats": "Prehľad výkonu vášho obchodu",
+      "orders": "Spravujte objednávky zákazníkov",
+      "users": "Spravujte používateľské účty",
+      "products": "Spravujte produkty v obchode"
+    },
+    "orders": {
+      "search_placeholder": "Hľadať objednávky (ID, email, meno)...",
+      "delivery": "Doručenie",
+      "payment": "Platba",
+      "delivery_address": "Doručovacia adresa",
+      "street": "Ulica",
+      "zip": "PSČ",
+      "country": "Krajina",
+      "phone": "Telefón",
+      "hide": "Skryť",
+      "add_item": "Pridať položku",
+      "add_new_item": "Pridať novú položku",
+      "no_products": "Žiadne produkty nenájdené",
+      "save_changes": "Uložiť zmeny",
+      "price_currency": "Cena €",
+      "saving": "Ukladám...",
+      "cancel_action": "Zrušiť",
+      "status_pending": "Čakajúce",
+      "status_processing": "Spracováva sa",
+      "status_shipped": "V preprave",
+      "status_delivered": "Doručené",
+      "status_cancelled": "Zrušené",
+      "delivery_label": "Doručenie:",
+      "payment_label": "Platba:",
+      "methods_section": "Metódy",
+      "items_title": "Položky objednávky",
+      "phone_label": "Telefón:",
+      "email_label": "Email:",
+      "address_name": "Meno",
+      "address_street": "Ulica",
+      "address_zip": "PSČ",
+      "address_city": "Mesto",
+      "address_country": "Krajina",
+      "address_phone": "Telefón",
+      "status_label": "Stav",
+      "email_input_label": "Email",
+      "quantity_label": "Množstvo",
+      "product": "Produkt",
+      "delivery_option_1": "Kuriér - Slovenská pošta",
+      "delivery_option_2": "Packeta - výdajné miesto",
+      "delivery_option_3": "Osobný odber",
+      "payment_option_1": "Platba kartou",
+      "payment_option_2": "Dobierka",
+      "payment_option_3": "Bankový prevod",
+      "payment_option_4": "PayPal",
+      "customer_label": "Zákazník",
+      "reference_label": "Referencie",
+      "total_amount_label": "Celková suma",
+      "items_count_label": "Počet položiek",
+      "items_one": "položka",
+      "items_few": "položky",
+      "items_many": "položiek"
+    },
+    "countries": {
+      "slovakia": "Slovensko",
+      "czechia": "Česká republika",
+      "poland": "Poľsko",
+      "hungary": "Maďarsko",
+      "austria": "Rakúsko",
+      "germany": "Nemecko"
+    },
+    "table": {
+      "id": "ID",
+      "reference": "Referencia",
+      "customer": "Zákazník",
+      "products": "Produkty",
+      "total": "Celkom",
+      "status": "Stav",
+      "actions": "Akcie",
+      "price": "Cena",
+      "items_count": "Položky"
+    },
+    "actions": {
+      "view": "Zobraziť",
+      "edit": "Upraviť",
+      "delete": "Vymazať",
+      "reset_password": "Reset hesla",
+      "cancel": "Zrušiť",
+      "close": "Zavrieť",
+      "remove": "Odstrániť"
+    },
+    "stats": {
+      "vs_last_month": "vs minulý mesiac",
+      "total_revenue": "Celkový predaj",
+      "total_orders": "Objednávky",
+      "total_users": "Zákazníci",
+      "avg_order_value": "Priem. objednávka"
+    },
+    "recent_activity": "Posledná aktivita",
+    "activity": {
+      "new_order": "Nová objednávka od",
+      "new_registration": "Nová registrácia",
+      "just_now": "pred chvíľou",
+      "minutes_ago": "pred {count} min",
+      "hours_ago": "pred {count} hod",
+      "days_ago": "pred {count} dňami"
+    },
+    "order": {
+      "title": "Objednávka #{id}",
+      "customer": "Zákazník",
+      "reference": "Referencie",
+      "total_amount": "Celková suma",
+      "status": "Stav",
+      "items_count": "Počet položiek",
+      "items_title": "Položky objednávky",
+      "product": "Produkt",
+      "quantity": "Množstvo",
+      "price": "Cena",
+      "total": "Spolu"
+    },
+    "error_label": "Chyba",
+    "loading": "Načítava sa...",
+    "retry": "Skúsiť znovu",
+    "note_label": "Poznámka:",
+    "users": {
+      "empty_desc": "Žiadni používatelia sa nenachádzajú. Skontrolujte, že ste prihlásený/á a že máte oprávnenia na prístup k administrácii.",
+      "edit": "Úprava používateľa",
+      "role": "Rola",
+      "set_password": "Nastaviť heslo",
+      "generate_password": "Vygenerovať heslo",
+      "password_generated": "Heslo vygenerované a uložené:",
+      "confirm_generate_password": "Potvrdiť vygenerovanie hesla",
+      "confirm_generate_desc": "Ste si istí, že chcete vygenerovať heslo pre tohto používateľa?",
+      "confirm_yes": "Áno, vygenerovať",
+      "search_placeholder": "Hľadať používateľov (email, meno)...",
+      "cannot_reset_owner_password": "Nemôžete resetovať heslo Owner účtu",
+      "orders_label": "Objednávky"
+    },
+    "products": {
+      "search_placeholder": "Hľadať produkty...",
+      "add_product": "Pridať produkt",
+      "edit_product": "Upraviť produkt",
+      "add_new_product": "Pridať nový produkt",
+      "name": "Názov",
+      "brand": "Značka",
+      "price": "Cena",
+      "stock": "Skladové záväzy",
+      "category": "Kategória",
+      "select_category": "-- Vyberte kategóriu --",
+      "current_price": "Aktuálna cena",
+      "prices_discounts": "Ceny a zľavy",
+      "final_price": "Finálna cena",
+      "saving": "Ukladá sa...",
+      "product_name_placeholder": "Názov produktu",
+      "product_brand_placeholder": "Značka produktu",
+      "description_placeholder": "Podrobný popis produktu...",
+      "edit_product_title": "Upraviť produkt",
+      "add_product_title": "Pridať nový produkt",
+      "remove_discount": "Odstrániť zľavu",
+      "image_url": "URL obrázka",
+      "description": "Popis",
+      "discount_type": "Typ zľavy",
+      "discount_amount": "Veľkosť zľavy",
+      "percent": "Percento (%)",
+      "fixed_amount": "Fixná suma (€)",
+      "no_discount": "Bez zľavy"
+    },
+    "confirm": {
+      "delete_order": "Naozaj chcete vymazať túto objednávku?",
+      "delete_user": "Naozaj chcete vymazať tento účet?",
+      "reset_user_password": "Naozaj chcete resetovať heslo tohto používateľa?",
+      "delete_product": "Naozaj chcete vymazať tento produkt?",
+      "generate_password": "Ste si istí, že chcete vygenerovať heslo pre tohto používateľa?"
+    },
+    "messages": {
+      "order_deleted": "Objednávka vymazaná!",
+      "delete_order_failed": "Chyba pri vymazávaní objednávky",
+      "cannot_delete_owner": "Nemôžete vymazať Owner účet.",
+      "user_deleted": "Používateľ vymazaný!",
+      "delete_user_failed": "Chyba pri vymazávaní používateľa",
+      "cannot_reset_owner": "Nemôžete resetovať heslo Owner účtu.",
+      "reset_sent": "Reset hesla bol odoslaný na email používateľa!",
+      "reset_failed": "Chyba pri resetovaní hesla",
+      "product_deleted": "Produkt vymazaný!",
+      "delete_product_failed": "Chyba pri vymazávaní produktu",
+      "order_updated": "Objednávka bola aktualizovaná!",
+      "select_product": "Prosím vyberte produkt",
+      "min_quantity": "Množstvo musí byť aspoň 1",
+      "cannot_edit_owner": "Nemôžete upravovať Owner účet.",
+      "cannot_remove_owner_privilege": "Nemôžete odstrániť svoje oprávnenie Owner.",
+      "password_set": "Heslo bolo nastavené.",
+      "changes_saved": "Zmeny boli uložené!",
+      "product_updated": "Produkt bol aktualizovaný!",
+      "product_created": "Produkt bol vytvorený!",
+      "product_save_error": "Chyba pri ukladaní produktu",
+      "orders_loading_error": "Chyba pri načítavaní objednávok",
+      "user_save_error": "Chyba pri ukladaní používateľa",
+      "order_save_error": "Chyba pri ukladaní objednávky",
+      "password_set_error": "Chyba pri nastavovaní hesla",
+      "enter_new_password": "Prosím zadajte nové heslo",
+      "users_loading_error": "Chyba pri načítavaní používateľov"
+    }
+  },
+  
   "reset": {
     "title": "Obnovenie hesla",
     "intro": "Zadajte nové heslo pre váš účet",
@@ -330,7 +570,8 @@
       "send_failed": "Nepodarilo sa odoslať obnovovací email. Skúste znova.",
       "resend_failed": "Nepodarilo sa znovu odoslať email."
     }
-  },  "cart": {
+  },  
+  "cart": {
     "title": "Nákupný košík",
     "empty": "Váš košík je prázdny.",
     "steps": {
@@ -351,7 +592,9 @@
       "checkout": "Pokračovať",
       "continue_shopping": "Pokračovať v nákupe"
     }
-  },  "pages": {
+  },  
+  
+  "pages": {
     "delivery": {
       "back": "Späť",
       "title": "Doručenie",

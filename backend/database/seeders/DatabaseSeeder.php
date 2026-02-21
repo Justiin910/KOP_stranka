@@ -13,10 +13,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Call seeders to populate users, categories and products
-        $this->call(UserSeeder::class);
-        $this->call(CategorySeeder::class);
+        // Call seeders in proper order - users must come before reviews
         $this->call(ProductSeeder::class);
-            $this->call(OrderSeeder::class);
+        $this->call(CategorySeeder::class);
+        $this->call(UserSeeder::class);
+        $this->call(ProductReviewSeeder::class);
+        $this->call(OrderSeeder::class);
     }
 }

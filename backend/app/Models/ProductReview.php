@@ -18,6 +18,10 @@ class ProductReview extends Model
         'comment',
     ];
 
+    protected $casts = [
+        'rating' => 'float',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);

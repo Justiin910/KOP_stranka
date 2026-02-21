@@ -207,7 +207,7 @@
 <script>
 import Notification from "./NotificationsComponent.vue";
 import Profile from "./ProfileComponent.vue";
-import api, { setSessionToken } from "../api";
+import api, { setSessionToken, setLocale } from "../api";
 import { useCartStore } from "../stores/cartStore";
 
 export default {
@@ -398,6 +398,8 @@ export default {
     setLanguage(lang) {
       this.currentLanguage = lang;
       localStorage.setItem("language", lang);
+      // Notify backend of language change
+      setLocale(lang);
       this.showLanguageDropdown = false;
       // Emit language change event for i18n integration
       window.dispatchEvent(
