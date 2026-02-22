@@ -47,7 +47,7 @@ class ProductSeeder extends Seeder
                 'oldPrice' => 1399.99,
                 'image' => 'https://images.unsplash.com/photo-1610945264803-c22b62d2a7b6?w=600&q=80&auto=format&fit=crop',
                 'rating' => 0,
-                'reviews' => 0,
+                 'reviews' => 0,
                 'category' => 'phones',
                 'stock' => 8,
                 'monthlyPrice' => '32,50',
