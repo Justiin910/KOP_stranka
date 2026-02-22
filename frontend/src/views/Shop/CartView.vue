@@ -71,6 +71,19 @@
                   {{ item.description }}
                 </p>
 
+                <!-- Display Variant Options -->
+                <div v-if="item.variant_options && Object.keys(item.variant_options).length > 0" class="mt-3 space-y-1">
+                  <div v-for="(value, key) in item.variant_options" :key="key" class="text-sm text-gray-700 dark:text-gray-300">
+                    <span class="font-medium capitalize">{{ key }}:</span> {{ value }}
+                  </div>
+                  <button 
+                    @click="openEditVariantes(item)"
+                    class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-medium mt-2"
+                  >
+                    {{ $t('cart.items.edit_options') || 'Edit Options' }}
+                  </button>
+                </div>
+
                 <div class="flex items-center justify-between mt-4">
                   <div class="flex items-center gap-3">
                     <button
@@ -99,13 +112,13 @@
               </div>
               <div class="text-right">
                 <p class="text-xl font-bold text-gray-900 dark:text-white">
-                  {{ formatPrice(item.price * item.quantity) }} €
+                  {{ formatPrice((item.variant_price || item.price) * item.quantity) }} €
                 </p>
                 <p
                   v-if="item.quantity > 1"
                   class="text-sm text-gray-500 dark:text-gray-400"
                 >
-                  {{ formatPrice(item.price) }} {{ $t('cart.items.per_unit') }}
+                  {{ formatPrice(item.variant_price || item.price) }} {{ $t('cart.items.per_unit') }}
                 </p>
               </div>
             </div>
@@ -155,6 +168,46 @@
         </div>
       </div>
     </div>
+
+    <!-- Variant Edit Modal -->
+    <div v-if="editingItem" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">
+          {{ $t('cart.items.edit_options') || 'Edit Options' }}
+        </h3>
+        
+        <div v-if="editingItem.variant_options && Object.keys(editingItem.variant_options).length > 0" class="space-y-4 mb-6">
+          <div v-for="(value, key) in editingItem.variant_options" :key="key">
+            <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2 capitalize">
+              {{ key }}
+            </label>
+            <select 
+              v-model="editingVariants[key]"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+            >
+              <option v-for="option in editingItem.variants?.[key] || []" :key="option" :value="option">
+                {{ option }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <button 
+            @click="cancelEditVariantes"
+            class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+          >
+            {{ $t('common.cancel') || 'Cancel' }}
+          </button>
+          <button 
+            @click="saveEditVariantes"
+            class="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition"
+          >
+            {{ $t('common.save') || 'Save' }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -162,6 +215,7 @@
 import { defineComponent } from "vue";
 import { useRouter } from "vue-router";
 import { useCartStore } from "../../stores/cartStore";
+import api from "../../api";
 
 interface Step {
   label: string;
@@ -178,10 +232,14 @@ export default defineComponent({
   data(): {
     shipping: number;
     currentStep: number;
+    editingItem: any;
+    editingVariants: Record<string, string>;
   } {
     return {
       shipping: 4.99,
       currentStep: 0,
+      editingItem: null,
+      editingVariants: {},
     };
   },
   computed: {
@@ -210,6 +268,53 @@ export default defineComponent({
     },
     removeItem(itemId: number): void {
       this.cartStore.removeItem(itemId);
+    },
+    openEditVariantes(item: any): void {
+      this.editingItem = item;
+      this.editingVariants = { ...item.variant_options };
+      
+      // If variants are missing, fetch from product API
+      if (!item.variants && item.product_id) {
+        api.get(`/api/products/${item.product_id}`).then((response) => {
+          const product = response.data;
+          if (product.variants) {
+            // Parse variants if string
+            let parsedVariants = product.variants;
+            if (typeof parsedVariants === 'string') {
+              try {
+                parsedVariants = JSON.parse(parsedVariants);
+              } catch (e) {
+                console.warn('Failed to parse variants');
+                return;
+              }
+            }
+            // Update both the editing item and the actual item in cart
+            this.editingItem.variants = parsedVariants;
+            item.variants = parsedVariants;
+          }
+        }).catch((error) => {
+          console.error('Failed to fetch product variants:', error);
+        });
+      }
+    },
+    cancelEditVariantes(): void {
+      this.editingItem = null;
+      this.editingVariants = {};
+    },
+    async saveEditVariantes(): Promise<void> {
+      if (!this.editingItem) return;
+      
+      try {
+        await this.cartStore.updateCartItemVariants(
+          this.editingItem.id,
+          this.editingVariants
+        );
+        this.editingItem = null;
+        this.editingVariants = {};
+      } catch (error) {
+        console.error('Failed to update variants:', error);
+        alert('Chyba pri aktualizácii variantov');
+      }
     },
     proceedToCheckout(): void {
       this.router.push("/checkout/delivery");

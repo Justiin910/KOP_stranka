@@ -72,11 +72,36 @@ class OrderSeeder extends Seeder
                 $quantity = rand(1, 5);
                 $itemPrice = $product->price ?? rand(10, 200);
                 
+                // Prepare random variant options if product has variants
+                $variantOptions = null;
+                if (!empty($product->variants)) {
+                    $variants = $product->variants;
+                    if (is_string($variants)) {
+                        try {
+                            $variants = json_decode($variants, true);
+                        } catch (\Exception $e) {
+                            $variants = null;
+                        }
+                    }
+                    if (is_array($variants) && count($variants) > 0) {
+                        $variantOptionsArr = [];
+                        foreach ($variants as $type => $opts) {
+                            if (is_array($opts) && count($opts) > 0) {
+                                $variantOptionsArr[$type] = $opts[array_rand($opts)];
+                            }
+                        }
+                        if (count($variantOptionsArr) > 0) {
+                            $variantOptions = $variantOptionsArr;
+                        }
+                    }
+                }
+
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $product->id,
                     'quantity' => $quantity,
                     'price' => $itemPrice,
+                    'variant_options' => $variantOptions,
                 ]);
                 
                 $orderTotal += $quantity * $itemPrice;
@@ -125,11 +150,36 @@ class OrderSeeder extends Seeder
                 $quantity = rand(1, 5);
                 $itemPrice = $product->price ?? rand(10, 200);
                 
+                // Prepare random variant options if product has variants
+                $variantOptions = null;
+                if (!empty($product->variants)) {
+                    $variants = $product->variants;
+                    if (is_string($variants)) {
+                        try {
+                            $variants = json_decode($variants, true);
+                        } catch (\Exception $e) {
+                            $variants = null;
+                        }
+                    }
+                    if (is_array($variants) && count($variants) > 0) {
+                        $variantOptionsArr = [];
+                        foreach ($variants as $type => $opts) {
+                            if (is_array($opts) && count($opts) > 0) {
+                                $variantOptionsArr[$type] = $opts[array_rand($opts)];
+                            }
+                        }
+                        if (count($variantOptionsArr) > 0) {
+                            $variantOptions = $variantOptionsArr;
+                        }
+                    }
+                }
+
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $product->id,
                     'quantity' => $quantity,
                     'price' => $itemPrice,
+                    'variant_options' => $variantOptions,
                 ]);
                 
                 $orderTotal += $quantity * $itemPrice;

@@ -392,6 +392,8 @@ class AdminController extends Controller
             'description' => 'nullable|string',
             'discount_type' => 'nullable|in:percent,fixed',
             'discount_value' => 'nullable|numeric|min:0',
+            'variants' => 'nullable|json',
+            'variant_pricing' => 'nullable|json',
         ]);
 
         // Smart price handling: if discount is applied without oldPrice, use price as oldPrice
@@ -430,6 +432,8 @@ class AdminController extends Controller
             'description' => $validated['description'] ?? null,
             'discount_type' => $finalDiscountType,
             'discount_value' => $finalDiscountValue,
+            'variants' => $validated['variants'] ?? null,
+            'variant_pricing' => $validated['variant_pricing'] ?? null,
         ];
 
         $product = \App\Models\Product::create($data);
@@ -458,6 +462,8 @@ class AdminController extends Controller
             'description' => 'nullable|string',
             'discount_type' => 'nullable|in:percent,fixed',
             'discount_value' => 'nullable|numeric|min:0',
+            'variants' => 'nullable|json',
+            'variant_pricing' => 'nullable|json',
         ]);
 
         // Smart price handling: when discount is applied, calculate final price from oldPrice
@@ -497,6 +503,8 @@ class AdminController extends Controller
             'description' => $validated['description'] ?? $product->description,
             'discount_type' => $finalDiscountType,
             'discount_value' => $finalDiscountValue,
+            'variants' => $validated['variants'] ?? $product->variants,
+            'variant_pricing' => $validated['variant_pricing'] ?? $product->variant_pricing,
         ];
 
         $product->update($data);
@@ -570,6 +578,7 @@ class AdminController extends Controller
                             'product_name' => $item->product->title ?? 'Deleted Product',
                             'quantity' => $item->quantity,
                             'price' => (float)$item->price,
+                            'variant_options' => $item->variant_options ?? [],
                         ];
                     }),
                 ];
@@ -618,6 +627,7 @@ class AdminController extends Controller
             'items.*.product_id' => 'nullable|integer',
             'items.*.quantity' => 'nullable|integer|min:1',
             'items.*.price' => 'nullable|numeric|min:0',
+            'items.*.variant_options' => 'nullable|array',
         ]);
 
         // Update basic order info
@@ -646,6 +656,9 @@ class AdminController extends Controller
                     if ($item) {
                         $item->quantity = $itemData['quantity'] ?? $item->quantity;
                         $item->price = $itemData['price'] ?? $item->price;
+                        if (isset($itemData['variant_options'])) {
+                            $item->variant_options = count($itemData['variant_options']) > 0 ? $itemData['variant_options'] : null;
+                        }
                         $item->save();
                         $itemIds[] = $item->id;
                         $newTotal += $item->quantity * $item->price;
@@ -657,6 +670,7 @@ class AdminController extends Controller
                             'product_id' => $itemData['product_id'],
                             'quantity' => $itemData['quantity'],
                             'price' => $itemData['price'],
+                            'variant_options' => $itemData['variant_options'] ?? null,
                         ]);
                         $itemIds[] = $newItem->id;
                         $newTotal += $newItem->quantity * $newItem->price;
@@ -703,6 +717,7 @@ class AdminController extends Controller
                         'product_name' => $product ? $product->title : 'Deleted Product',
                         'quantity' => $item->quantity,
                         'price' => (float)$item->price,
+                        'variant_options' => $item->variant_options ?? [],
                     ];
                 }),
             ]

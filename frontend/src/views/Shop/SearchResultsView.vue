@@ -74,7 +74,7 @@ export default {
           id: product.id,
           product_id: product.id,
           name: product.title || product.name || product.slug,
-          price: product.price || 0,
+          price: (product.calculated_price ?? product.price) || 0,
           image: product.image || null,
           description: product.description || '',
           quantity: 1,

@@ -122,8 +122,13 @@
                   <h3 class="font-semibold text-gray-900 dark:text-white">
                     {{ item.title }}
                   </h3>
-                  <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    {{ parseFloat(item.price).toFixed(2) }} €
+                  <div v-if="item.variant_options && Object.keys(item.variant_options).length > 0" class="mt-2 space-y-1">
+                    <div v-for="(value, key) in item.variant_options" :key="key" class="text-sm text-gray-600 dark:text-gray-400">
+                      <span class="font-medium capitalize">{{ key }}:</span> {{ value }}
+                    </div>
+                  </div>
+                  <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    {{ parseFloat(item.variant_price ?? item.price).toFixed(2) }} €
                     {{ $t("pages.checkout.delivery.per_unit") }}
                   </p>
                 </div>
@@ -132,7 +137,7 @@
                     {{ item.quantity }}x
                   </p>
                   <p class="text-sm text-gray-500 dark:text-gray-400">
-                    {{ (parseFloat(item.price) * item.quantity).toFixed(2) }} €
+                    {{ (parseFloat(item.variant_price ?? item.price) * item.quantity).toFixed(2) }} €
                   </p>
                 </div>
               </div>
@@ -302,10 +307,17 @@
               <div
                 v-for="item in cartStore.cartItems"
                 :key="item.id"
-                class="flex justify-between text-sm text-gray-600 dark:text-gray-400"
+                class="text-sm text-gray-600 dark:text-gray-400"
               >
-                <span>{{ item.title }} x{{ item.quantity }}</span>
-                <span>{{ (item.price * item.quantity).toFixed(2) }} €</span>
+                <div class="flex justify-between">
+                  <span>{{ item.title }} x{{ item.quantity }}</span>
+                  <span>{{ ((item.variant_price ?? item.price) * item.quantity).toFixed(2) }} €</span>
+                </div>
+                <div v-if="item.variant_options && Object.keys(item.variant_options).length > 0" class="ml-2 mt-1 space-y-1 text-xs text-gray-500 dark:text-gray-500">
+                  <div v-for="(value, key) in item.variant_options" :key="key">
+                    <span class="capitalize">{{ key }}:</span> {{ value }}
+                  </div>
+                </div>
               </div>
             </div>
 

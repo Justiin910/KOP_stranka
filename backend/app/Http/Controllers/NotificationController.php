@@ -3,21 +3,32 @@
 namespace App\Http\Controllers;
 
 use App\Models\Notification;
+use App\Services\TranslationService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 class NotificationController extends Controller
 {
+    protected TranslationService $translationService;
+
+    public function __construct(TranslationService $translationService)
+    {
+        $this->translationService = $translationService;
+    }
+
     /**
      * Get all notifications for the authenticated user
      */
     public function index(Request $request): JsonResponse
     {
-        $notifications = Notification::where('user_id', $request->user()->id)
+        $user = $request->user();
+        $userLanguage = $user->language ?? 'sk'; // Default to Slovak
+
+        $notifications = Notification::where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->get()
-            ->map(function ($notification) {
-                return [
+            ->map(function ($notification) use ($userLanguage) {
+                $data = [
                     'id' => $notification->id,
                     'type' => $notification->type,
                     'title' => $notification->title,
@@ -26,6 +37,13 @@ class NotificationController extends Controller
                     'time' => $this->getFormattedTime($notification->created_at),
                     'created_at' => $notification->created_at,
                 ];
+
+                // Translate if user's language differs from stored language (Slovak)
+                if ($userLanguage !== 'sk') {
+                    $data = $this->translationService->translateNotification($data, $userLanguage);
+                }
+
+                return $data;
             });
 
         return response()->json([
@@ -116,8 +134,29 @@ class NotificationController extends Controller
     public function adminIndex(Request $request): JsonResponse
     {
         try {
+            $user = $request->user();
+            $userLanguage = $user->language ?? 'sk'; // Default to Slovak
+
             $notifications = Notification::orderBy('created_at', 'desc')
-                ->get();
+                ->get()
+                ->map(function ($notification) use ($userLanguage) {
+                    $data = [
+                        'id' => $notification->id,
+                        'type' => $notification->type,
+                        'title' => $notification->title,
+                        'message' => $notification->message,
+                        'read' => $notification->read,
+                        'time' => $this->getFormattedTime($notification->created_at),
+                        'created_at' => $notification->created_at,
+                    ];
+
+                    // Translate if user's language differs from stored language (Slovak)
+                    if ($userLanguage !== 'sk') {
+                        $data = $this->translationService->translateNotification($data, $userLanguage);
+                    }
+
+                    return $data;
+                });
 
             return response()->json([
                 'data' => $notifications,

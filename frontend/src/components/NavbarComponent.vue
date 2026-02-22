@@ -401,16 +401,36 @@ export default {
         this.favoritesCount = this.getLocalFavoritesCount();
       }
     },
-    setLanguage(lang) {
+    async setLanguage(lang) {
       this.currentLanguage = lang;
       localStorage.setItem("language", lang);
-      // Notify backend of language change
+      
+      // Notify frontend of language change
       setLocale(lang);
       this.showLanguageDropdown = false;
-      // Emit language change event for i18n integration
-      window.dispatchEvent(
-        new CustomEvent("language-changed", { detail: { language: lang } })
-      );
+
+      // Update language preference on backend if user is authenticated
+      const user = JSON.parse(localStorage.getItem("user") || "null");
+
+      if (user && user.id) {
+        try {
+          await api.put("api/user/language", { language: lang });
+          // Update user object in localStorage with new language
+          user.language = lang;
+          localStorage.setItem("user", JSON.stringify(user));
+          // After backend update completes, emit event to refetch notifications with new language
+          window.dispatchEvent(
+            new CustomEvent("language-changed", { detail: { language: lang } })
+          );
+        } catch (err) {
+          console.error("❌ Error updating language preference:", err);
+        }
+      } else {
+        // Not authenticated, emit event anyway for local i18n
+        window.dispatchEvent(
+          new CustomEvent("language-changed", { detail: { language: lang } })
+        );
+      }
     },
   },
   computed: {

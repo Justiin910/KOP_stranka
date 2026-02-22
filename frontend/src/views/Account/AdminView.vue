@@ -1035,6 +1035,9 @@
                     <th class="px-4 py-2 text-left text-gray-600 dark:text-gray-400">
                       {{ $t("admin.order.product") }}
                     </th>
+                    <th class="px-4 py-2 text-left text-gray-600 dark:text-gray-400">
+                      {{ $t("admin.orders.options_label") || "Options" }}
+                    </th>
                     <th class="px-4 py-2 text-center text-gray-600 dark:text-gray-400">
                       {{ $t("admin.order.quantity") }}
                     </th>
@@ -1050,6 +1053,23 @@
                   <tr v-for="item in selectedOrder.order_items" :key="item.id">
                     <td class="px-4 py-2 text-gray-900 dark:text-white">
                       {{ item.product_name }}
+                    </td>
+                    <td class="px-4 py-2 text-gray-700 dark:text-gray-300 text-sm">
+                      <div
+                        v-if="
+                          item.variant_options &&
+                          Object.keys(item.variant_options).length > 0
+                        "
+                        class="space-y-1"
+                      >
+                        <div v-for="(value, key) in item.variant_options" :key="key">
+                          <span class="font-medium capitalize">{{ key }}:</span>
+                          {{ value }}
+                        </div>
+                      </div>
+                      <span v-else class="text-gray-500 italic">{{
+                        $t("admin.orders.no_variants") || "No options"
+                      }}</span>
                     </td>
                     <td class="px-4 py-2 text-center text-gray-900 dark:text-white">
                       {{ item.quantity }}
@@ -1377,6 +1397,9 @@
                     <th class="px-4 py-2 text-left text-gray-600 dark:text-gray-400">
                       {{ $t("admin.orders.product") }}
                     </th>
+                    <th class="px-4 py-2 text-left text-gray-600 dark:text-gray-400">
+                      {{ $t("admin.orders.options_label") || "Options" }}
+                    </th>
                     <th class="px-4 py-2 text-center text-gray-600 dark:text-gray-400">
                       {{ $t("admin.orders.quantity_label") }}
                     </th>
@@ -1392,6 +1415,29 @@
                   <tr v-for="item in editingOrder.order_items" :key="item.id">
                     <td class="px-4 py-2 text-gray-900 dark:text-white">
                       {{ item.product_name }}
+                    </td>
+                    <td class="px-4 py-2 text-gray-700 dark:text-gray-300 text-sm">
+                      <div
+                        v-if="
+                          item.variant_options &&
+                          Object.keys(item.variant_options).length > 0
+                        "
+                        class="space-y-1"
+                      >
+                        <div v-for="(value, key) in item.variant_options" :key="key">
+                          <span class="font-medium capitalize">{{ key }}:</span>
+                          {{ value }}
+                        </div>
+                        <button
+                          @click="openEditVariant(item)"
+                          class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-medium mt-1"
+                        >
+                          {{ $t("admin.actions.edit") }}
+                        </button>
+                      </div>
+                      <span v-else class="text-gray-500 italic">{{
+                        $t("admin.orders.no_variants") || "No options"
+                      }}</span>
                     </td>
                     <td class="px-4 py-2 text-center">
                       <input
@@ -1469,6 +1515,68 @@
         >
           {{ $t("admin.actions.close") }}
         </button>
+      </div>
+    </div>
+
+    <!-- Modal for Edit Variant -->
+    <div
+      v-if="editingVariant"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">
+          {{ $t("admin.orders.edit_options_modal") || "Edit Options" }}
+        </h3>
+
+        <div
+          v-if="
+            editingVariant.variant_options &&
+            Object.keys(editingVariant.variant_options).length > 0
+          "
+          class="space-y-4 mb-6"
+        >
+          <div v-for="(value, key) in editingVariantData" :key="key">
+            <label
+              class="block text-sm font-medium text-gray-900 dark:text-white mb-2 capitalize"
+            >
+              {{ $t(`admin.variants.${key}`) || key }}
+            </label>
+            <select
+              v-model="editingVariantData[key]"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            >
+              <option value="" disabled>
+                {{
+                  $t("admin.variants.select", {
+                    name: $t(`admin.variants.${key}`) || key,
+                  }) || `Select ${key}`
+                }}
+              </option>
+              <option
+                v-for="option in getVariantOptions(key)"
+                :key="option"
+                :value="option"
+              >
+                {{ option }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <button
+            @click="closeEditVariant"
+            class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+          >
+            {{ $t("admin.actions.cancel") || $t("common.cancel") || "Cancel" }}
+          </button>
+          <button
+            @click="saveVariantChanges"
+            class="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition"
+          >
+            {{ $t("admin.actions.save") || $t("common.save") || "Save" }}
+          </button>
+        </div>
       </div>
     </div>
 
@@ -2022,6 +2130,122 @@
               ></textarea>
             </div>
 
+            <!-- Variant Types Section -->
+            <div
+              v-if="currentProduct.variants"
+              class="border-t border-gray-300 dark:border-gray-600 pt-6"
+            >
+              <h4 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+                {{ $t("admin.products.variants") || "Product Variants" }}
+              </h4>
+
+              <!-- Add Variant Type -->
+              <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <label
+                  class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
+                >
+                  {{
+                    $t("admin.products.add_variant_type") ||
+                    "Add Variant Type (e.g., Color, Size)"
+                  }}
+                </label>
+                <div class="flex gap-2">
+                  <input
+                    v-model="variantInputs.newType"
+                    type="text"
+                    :placeholder="
+                      $t('admin.products.variant_type_placeholder') || 'e.g., Color'
+                    "
+                    class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-600 text-gray-900 dark:text-white"
+                  />
+                  <button
+                    type="button"
+                    @click="addVariantType"
+                    class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                  >
+                    {{ $t("admin.actions.add") || "Add" }}
+                  </button>
+                </div>
+              </div>
+
+              <!-- Variant Types List -->
+              <div class="space-y-4">
+                <div
+                  v-for="(options, typeName) in currentProduct.variants"
+                  :key="typeName"
+                  class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                >
+                  <div class="flex justify-between items-center mb-3">
+                    <h5 class="font-semibold text-gray-800 dark:text-white">
+                      {{ typeName }}
+                    </h5>
+                    <button
+                      type="button"
+                      @click="removeVariantType(typeName)"
+                      class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                    >
+                      ✕ {{ $t("admin.actions.remove") || "Remove" }}
+                    </button>
+                  </div>
+
+                  <!-- Options for this type -->
+                  <div class="space-y-2 mb-3">
+                    <div
+                      v-for="option in options"
+                      :key="option"
+                      class="flex items-center gap-2"
+                    >
+                      <span
+                        class="flex-1 px-3 py-2 text-white bg-white dark:bg-gray-600 rounded border border-gray-300 dark:border-gray-500"
+                      >
+                        {{ option }}
+                      </span>
+                      <div class="flex items-center gap-2">
+                        <span class="text-sm text-gray-600 dark:text-gray-400">
+                          {{ $t("admin.products.price_modifier") || "Price +" }}
+                        </span>
+                        <input
+                          v-model.number="
+                            currentProduct.variant_pricing[typeName][option]
+                          "
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          class="w-20 px-2 py-1 border border-gray-300 dark:border-gray-500 rounded bg-white dark:bg-gray-600 text-gray-900 dark:text-white"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        @click="removeVariantOption(typeName, option)"
+                        class="text-red-600 hover:text-red-800 dark:text-red-400"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Add option for this type -->
+                  <div class="flex gap-2">
+                    <input
+                      v-model="variantInputs[typeName]"
+                      type="text"
+                      :placeholder="`${
+                        $t('admin.products.add_option') || 'Add option'
+                      } (e.g., Red)`"
+                      class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-600 text-gray-900 dark:text-white"
+                    />
+                    <button
+                      type="button"
+                      @click="addVariantOption(typeName)"
+                      class="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm"
+                    >
+                      {{ $t("admin.actions.add") || "Add" }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- Buttons -->
             <div
               class="flex gap-4 mt-8 pt-6 border-t border-gray-300 dark:border-gray-600"
@@ -2074,6 +2298,9 @@ export default {
       productSearch: "",
       selectedOrder: null,
       editingOrder: null,
+      editingVariant: null,
+      editingVariantData: {},
+      productVariants: {},
       showAddItemForm: false,
       productSearchQuery: "",
       newOrderItem: {
@@ -2104,7 +2331,10 @@ export default {
         description: "",
         discount_type: "percent",
         discount_value: 0,
+        variants: {},
+        variant_pricing: {},
       },
+      variantInputs: {},
       originalProduct: null,
       productSaving: false,
       currentUser: JSON.parse(localStorage.getItem("user") || "{}"),
@@ -2190,9 +2420,22 @@ export default {
 
     // Add click-outside handler for notification user dropdown
     document.addEventListener("click", this.handleClickOutsideNotificationDropdown);
+
+    // Listen for language changes and refetch notifications
+    this.languageChangeHandler = () => {
+      if (typeof this.fetchNotifications === "function") {
+        this.fetchNotifications().catch((error) => {
+          console.error("Error refetching notifications:", error);
+        });
+      }
+    };
+    window.addEventListener("language-changed", this.languageChangeHandler);
   },
   beforeUnmount() {
     document.removeEventListener("click", this.handleClickOutsideNotificationDropdown);
+    if (this.languageChangeHandler) {
+      window.removeEventListener("language-changed", this.languageChangeHandler);
+    }
   },
   computed: {
     tabs() {
@@ -2543,6 +2786,10 @@ export default {
             quantity: item.quantity,
             price: item.price,
           };
+          // Include variant_options if present
+          if (item.variant_options && Object.keys(item.variant_options).length > 0) {
+            itemData.variant_options = item.variant_options;
+          }
           // Only include id if it's an existing item (not a temporary one)
           if (item.id && typeof item.id === "number" && item.id < 1000000000) {
             itemData.id = item.id;
@@ -2572,6 +2819,56 @@ export default {
         .finally(() => {
           this.orderSaving = false;
         });
+    },
+    openEditVariant(item) {
+      this.editingVariant = item;
+      this.editingVariantData = JSON.parse(JSON.stringify(item.variant_options || {}));
+
+      // Load product variants for dropdown options
+      if (item.product_id && this.editingOrder) {
+        const product = this.products.find((p) => p.id === item.product_id);
+        if (product && product.variants) {
+          let variants = product.variants;
+          if (typeof variants === "string") {
+            try {
+              variants = JSON.parse(variants);
+            } catch (e) {
+              variants = {};
+            }
+          }
+          this.productVariants = variants || {};
+        }
+      }
+    },
+    closeEditVariant() {
+      this.editingVariant = null;
+      this.editingVariantData = {};
+      this.productVariants = {};
+    },
+    getVariantOptions(variantKey) {
+      const options = this.productVariants[variantKey];
+      if (Array.isArray(options)) {
+        return options;
+      }
+      return [];
+    },
+    async saveVariantChanges() {
+      if (!this.editingVariant || !this.editingOrder) {
+        return;
+      }
+
+      try {
+        // Update locally
+        this.editingVariant.variant_options = this.editingVariantData;
+
+        // Save to backend via saveOrderChanges
+        await this.saveOrderChanges();
+
+        this.closeEditVariant();
+      } catch (error) {
+        console.error("Failed to save variant changes:", error);
+        alert(this.$t("admin.messages.save_error") || "Error saving variant changes");
+      }
     },
     selectProduct(product) {
       this.newOrderItem.product_id = product.id;
@@ -2950,6 +3247,26 @@ export default {
       }
     },
     editProduct(product) {
+      // Parse variants if it's a JSON string
+      let variants = product.variants;
+      if (typeof variants === "string") {
+        try {
+          variants = JSON.parse(variants);
+        } catch (e) {
+          variants = null;
+        }
+      }
+
+      // Parse variant_pricing if it's a JSON string
+      let variant_pricing = product.variant_pricing;
+      if (typeof variant_pricing === "string") {
+        try {
+          variant_pricing = JSON.parse(variant_pricing);
+        } catch (e) {
+          variant_pricing = null;
+        }
+      }
+
       const productData = {
         name: product.name || product.title || "",
         title: product.title || product.name || "",
@@ -2972,6 +3289,8 @@ export default {
         specs: product.specs || null,
         discount_type: product.discount_type || "percent",
         discount_value: product.discount_value ? parseFloat(product.discount_value) : 0,
+        variants: variants || null,
+        variant_pricing: variant_pricing || null,
       };
 
       // If discount_value is 0 or null but oldPrice differs from price, calculate discount from price difference
@@ -2993,6 +3312,29 @@ export default {
 
       // Set editable form data
       this.currentProduct = productData;
+
+      // Initialize variantInputs for each variant type
+      this.variantInputs = {};
+      if (this.currentProduct.variants) {
+        Object.keys(this.currentProduct.variants).forEach((type) => {
+          this.variantInputs[type] = "";
+        });
+      }
+
+      // Ensure variant_pricing has all necessary structure
+      if (this.currentProduct.variants && this.currentProduct.variant_pricing) {
+        Object.keys(this.currentProduct.variants).forEach((type) => {
+          if (!this.currentProduct.variant_pricing[type]) {
+            this.currentProduct.variant_pricing[type] = {};
+          }
+          this.currentProduct.variants[type].forEach((option) => {
+            if (!this.currentProduct.variant_pricing[type][option]) {
+              this.currentProduct.variant_pricing[type][option] = 0;
+            }
+          });
+        });
+      }
+
       this.editingProduct = product;
       this.showAddProduct = false;
     },
@@ -3037,6 +3379,12 @@ export default {
           description: this.currentProduct.description,
           discount_type: finalDiscountValue > 0 ? finalDiscountType : null,
           discount_value: finalDiscountValue > 0 ? finalDiscountValue : null,
+          variants: this.currentProduct.variants
+            ? JSON.stringify(this.currentProduct.variants)
+            : null,
+          variant_pricing: this.currentProduct.variant_pricing
+            ? JSON.stringify(this.currentProduct.variant_pricing)
+            : null,
         };
 
         if (this.editingProduct) {
@@ -3061,6 +3409,7 @@ export default {
         this.showAddProduct = false;
         this.currentProduct = {
           name: "",
+          brand: "",
           category: "",
           price: 0,
           oldPrice: null,
@@ -3069,6 +3418,8 @@ export default {
           description: "",
           discount_type: "percent",
           discount_value: 0,
+          variants: null,
+          variant_pricing: null,
         };
       } catch (error) {
         console.error("Error saving product:", error);
@@ -3076,6 +3427,51 @@ export default {
       } finally {
         this.productSaving = false;
       }
+    },
+    addVariantType() {
+      const typeName = this.variantInputs.newType?.trim();
+      if (!typeName) {
+        alert(this.$t("admin.messages.variant_type_required"));
+        return;
+      }
+      if (this.currentProduct.variants[typeName]) {
+        alert(this.$t("admin.messages.variant_type_exists"));
+        return;
+      }
+      if (!this.currentProduct.variants) {
+        this.currentProduct.variants = {};
+      }
+      if (!this.currentProduct.variant_pricing) {
+        this.currentProduct.variant_pricing = {};
+      }
+      this.currentProduct.variants[typeName] = [];
+      this.currentProduct.variant_pricing[typeName] = {};
+      this.variantInputs.newType = "";
+    },
+    removeVariantType(typeName) {
+      delete this.currentProduct.variants[typeName];
+      delete this.currentProduct.variant_pricing[typeName];
+    },
+    addVariantOption(typeName) {
+      const optionName = this.variantInputs[typeName]?.trim();
+      if (!optionName) {
+        alert(this.$t("admin.messages.variant_option_required"));
+        return;
+      }
+      if (this.currentProduct.variants[typeName].includes(optionName)) {
+        alert(this.$t("admin.messages.variant_option_exists"));
+        return;
+      }
+      this.currentProduct.variants[typeName].push(optionName);
+      this.currentProduct.variant_pricing[typeName][optionName] = 0;
+      this.variantInputs[typeName] = "";
+    },
+    removeVariantOption(typeName, optionName) {
+      const index = this.currentProduct.variants[typeName].indexOf(optionName);
+      if (index > -1) {
+        this.currentProduct.variants[typeName].splice(index, 1);
+      }
+      delete this.currentProduct.variant_pricing[typeName][optionName];
     },
     async deleteProduct(id) {
       if (await window.appConfirm(this.$t("admin.confirm.delete_product"))) {
@@ -3101,6 +3497,8 @@ export default {
         description: "",
         discount_type: "percent",
         discount_value: 0,
+        variants: null,
+        variant_pricing: null,
       };
       this.originalProduct = null;
     },
@@ -3280,7 +3678,6 @@ export default {
     async fetchNotifications() {
       try {
         const response = await api.get("api/admin/notifications");
-        // Handle paginated response structure
         this.notifications = response.data.data || response.data || [];
       } catch (error) {
         console.error("Error fetching notifications:", error);

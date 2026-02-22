@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Notification;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -47,6 +48,24 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             "phone" => $request->phone,
             'password' => Hash::make($request->string('password')),
+        ]);
+
+        // Send sale/promotion notification (created first)
+        Notification::create([
+            'user_id' => $user->id,
+            'type' => 'promotion',
+            'title' => 'Výpredaj! 🎉',
+            'message' => 'Zľavy na vybrané položky až -30%! Pospešujte, ponuka platí len do vypredania!',
+            'read' => false,
+        ]);
+
+        // Send welcome notification (created second, so it appears first in DESC order)
+        Notification::create([
+            'user_id' => $user->id,
+            'type' => 'general',
+            'title' => 'Vítame vás!',
+            'message' => 'Ďakujeme za registráciu. Teší nás, že ste sa nám pripojili!',
+            'read' => false,
         ]);
 
         event(new Registered($user));

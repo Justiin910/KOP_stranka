@@ -116,7 +116,7 @@ export default {
         id: product.id,
         product_id: product.id,
         name: product.title,
-        price: product.price,
+        price: product.calculated_price ?? product.price,
         image: product.image,
         description: product.description,
         quantity: 1,
@@ -136,11 +136,11 @@ export default {
           break;
 
         case "cheapest":
-          this.products.sort((a, b) => a.price - b.price);
+          this.products.sort((a, b) => (a.calculated_price ?? a.price) - (b.calculated_price ?? b.price));
           break;
 
         case "expensive":
-          this.products.sort((a, b) => b.price - a.price);
+          this.products.sort((a, b) => (b.calculated_price ?? b.price) - (a.calculated_price ?? a.price));
           break;
 
         case "reviews":

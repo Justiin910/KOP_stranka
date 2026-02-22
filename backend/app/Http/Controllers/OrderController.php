@@ -26,6 +26,7 @@ class OrderController extends Controller
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.price' => 'required|numeric',
+            'items.*.variant_options' => 'nullable|array',
         ]);
 
         try {
@@ -74,6 +75,7 @@ class OrderController extends Controller
                         'product_id' => $item['product_id'],
                         'quantity' => $item['quantity'],
                         'price' => $item['price'],
+                        'variant_options' => $item['variant_options'] ?? null,
                     ]);
                 }
 
@@ -129,6 +131,7 @@ class OrderController extends Controller
                             'product_name' => $item->product?->title ?? 'Deleted Product',
                             'quantity' => $item->quantity,
                             'price' => (float)$item->price,
+                            'variant_options' => $item->variant_options ?? [],
                         ];
                     }),
                 ];
@@ -168,6 +171,7 @@ class OrderController extends Controller
                         'product_name' => $item->product?->title ?? 'Deleted Product',
                         'quantity' => $item->quantity,
                         'price' => (float)$item->price,
+                        'variant_options' => $item->variant_options ?? [],
                     ];
                 }),
             ],
@@ -230,6 +234,7 @@ class OrderController extends Controller
                         'product_title' => $item->product->title ?? 'Product',
                         'quantity' => $item->quantity,
                         'price' => $item->price,
+                        'variant_options' => $item->variant_options ?? null,
                     ];
                 })->toArray(),
                 'paymentMethod' => [

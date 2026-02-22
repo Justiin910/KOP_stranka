@@ -129,6 +129,7 @@
                 <thead>
                     <tr>
                         <th>Produkt</th>
+                        <th>Možnosti</th>
                         <th>Množstvo</th>
                         <th>Cena</th>
                         <th>Spolu</th>
@@ -138,6 +139,20 @@
                     @foreach($items as $item)
                     <tr>
                         <td>{{ $item['product_title'] ?? 'Produkt #' . $item['product_id'] }}</td>
+                        <td>
+                            @if(!empty($item['variant_options']))
+                                @php
+                                    $variantOptions = is_string($item['variant_options']) 
+                                        ? json_decode($item['variant_options'], true) 
+                                        : $item['variant_options'];
+                                    if ($variantOptions && is_array($variantOptions)) {
+                                        echo implode(', ', array_map(fn($k, $v) => ucfirst($k) . ': ' . $v, array_keys($variantOptions), $variantOptions));
+                                    }
+                                @endphp
+                            @else
+                                —
+                            @endif
+                        </td>
                         <td>{{ $item['quantity'] }}</td>
                         <td>{{ number_format($item['price'], 2) }} €</td>
                         <td>{{ number_format($item['price'] * $item['quantity'], 2) }} €</td>

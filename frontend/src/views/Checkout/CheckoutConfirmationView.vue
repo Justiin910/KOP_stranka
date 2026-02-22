@@ -158,6 +158,10 @@
             >
               <div class="flex-1">
                 <p class="font-medium text-gray-900 dark:text-white">{{ item.title }}</p>
+                <!-- Display variant options if available -->
+                <p v-if="item.variant_options && Object.keys(item.variant_options).length > 0" class="text-sm text-gray-600 dark:text-gray-400">
+                  {{ formatVariantOptions(item.variant_options) }}
+                </p>
                 <p class="text-sm text-gray-600 dark:text-gray-400">
                   {{ $t('pages.checkout.confirmation.quantity') }} {{ item.quantity }}
                 </p>
@@ -394,6 +398,31 @@ export default {
       } catch {
         return "Neznámy dátum";
       }
+    },
+
+    formatVariantOptions(variantOptions) {
+      if (!variantOptions || typeof variantOptions === 'string' && variantOptions === '{}') {
+        return '';
+      }
+      
+      // If it's a string, parse it
+      let options = variantOptions;
+      if (typeof variantOptions === 'string') {
+        try {
+          options = JSON.parse(variantOptions);
+        } catch {
+          return '';
+        }
+      }
+      
+      if (!options || Object.keys(options).length === 0) {
+        return '';
+      }
+      
+      // Format as "Key: value, Key: value"
+      return Object.entries(options)
+        .map(([key, value]) => `${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`)
+        .join(', ');
     },
 
   },

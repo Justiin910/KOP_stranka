@@ -63,12 +63,18 @@
               {{ product.title || product.name }}
             </h1>
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
-              {{ product.description }}
+              {{ translatedDescription || product.description }}
+            </p>
+            <p
+              v-if="!translatedDescription && product.description"
+              class="text-xs text-gray-500 dark:text-gray-400 mb-4"
+            >
+              Prekladá sa...
             </p>
 
             <div class="mb-6">
               <div class="text-4xl font-bold text-indigo-600">
-                {{ formatPrice(product.price) }} €
+                {{ formatPrice(calculateCurrentPrice()) }} €
               </div>
               <div
                 v-if="product.oldPrice"
@@ -107,13 +113,59 @@
               }}</span>
             </div>
 
+            <!-- VARIANTS SELECTION -->
+            <div
+              v-if="product.variants && Object.keys(product.variants).length > 0"
+              class="mb-8 space-y-4 border-t border-gray-200 dark:border-gray-800 pt-6"
+            >
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                {{ t("product.select_options") || "Select Options" }}
+              </h3>
+              <div
+                v-for="(options, variantKey) in product.variants"
+                :key="variantKey"
+                class="space-y-2"
+              >
+                <label
+                  class="block text-sm font-medium text-gray-900 dark:text-white capitalize"
+                >
+                  {{ variantKey }}
+                </label>
+                <div class="flex gap-2 flex-wrap">
+                  <button
+                    v-for="option in options"
+                    :key="option"
+                    @click="selectVariant(variantKey, option)"
+                    :class="[
+                      selectedVariants[variantKey] === option
+                        ? 'bg-indigo-600 text-white border-indigo-600'
+                        : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 hover:border-indigo-600 dark:hover:border-indigo-600',
+                    ]"
+                    class="px-4 py-2 border-2 rounded-lg font-medium transition-colors cursor-pointer"
+                  >
+                    {{ option }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <button
               @click="addToCart"
-              :disabled="product.stock === 0"
+              :disabled="
+                product.stock === 0 || (product.variants && !areAllVariantsSelected())
+              "
               class="w-full px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {{ t("product.add_to_cart") }}
             </button>
+            <p
+              v-if="product.variants && !areAllVariantsSelected()"
+              class="text-sm text-red-600 dark:text-red-400 mt-2"
+            >
+              {{
+                t("product.select_all_variants") || "Please select all available options"
+              }}
+            </p>
           </div>
         </div>
 
@@ -279,7 +331,15 @@
                     </div>
                   </div>
                 </div>
-                <p class="text-gray-700 dark:text-gray-300">{{ rev.comment }}</p>
+                <p class="text-gray-700 dark:text-gray-300 italic">
+                  {{ translatedComments[rev.id] || rev.comment }}
+                </p>
+                <p
+                  v-if="!translatedComments[rev.id]"
+                  class="text-xs text-gray-500 dark:text-gray-400 mt-1"
+                >
+                  Prekladá sa...
+                </p>
               </div>
 
               <div v-else>
@@ -455,7 +515,9 @@ export default {
         reviews: 0,
         stock: 0,
         specs: [],
+        variants: null,
       },
+      selectedVariants: {},
       loading: true,
       error: null,
       user: null,
@@ -477,6 +539,12 @@ export default {
       showDeleteModal: false,
       deleteTargetReviewId: null,
       deleteProcessing: false,
+      // Translation cache for comments
+      translatedComments: {},
+      translatingComments: {},
+      // Translation cache for product description
+      translatedDescription: "",
+      translatingDescription: false,
     };
   },
 
@@ -484,14 +552,90 @@ export default {
     await this.loadProduct();
   },
 
+  watch: {
+    "$i18n.locale"() {
+      // When user changes language, refresh all translations (description + reviews)
+      console.log("[ProductView] Language changed to:", this.$i18n?.locale);
+
+      // Clear and re-translate product description
+      if (this.product && this.product.description) {
+        this.translatedDescription = "";
+        this.translatingDescription = false;
+        console.log(
+          "[ProductView] Re-translating product description to new locale:",
+          this.$i18n?.locale
+        );
+        this.getTranslatedDescription(this.product.description);
+      }
+
+      // Clear and re-translate review comments
+      if (
+        this.product &&
+        this.product.latest_reviews &&
+        Array.isArray(this.product.latest_reviews)
+      ) {
+        this.translatedComments = {};
+        this.translatingComments = {};
+
+        this.$nextTick(() => {
+          this.product.latest_reviews.forEach((review) => {
+            if (review && review.id && review.comment) {
+              console.log(
+                "[ProductView] Re-translating review",
+                review.id,
+                "to new locale:",
+                this.$i18n?.locale
+              );
+              this.getTranslatedComment(review.id, review.comment);
+            }
+          });
+        });
+      }
+    },
+  },
+
   methods: {
     async loadProduct() {
       this.loading = true;
       this.error = null;
+      this.selectedVariants = {};
       try {
         const id = this.$route.params.slug;
         const response = await api.get(`/api/products/${id}`);
         this.product = response.data;
+
+        // Ensure variants is parsed if it comes as a string
+        if (this.product.variants && typeof this.product.variants === "string") {
+          try {
+            this.product.variants = JSON.parse(this.product.variants);
+          } catch (e) {
+            console.warn("Could not parse variants JSON:", e);
+            this.product.variants = null;
+          }
+        }
+
+        // Ensure variant_pricing is parsed if it comes as a string
+        if (
+          this.product.variant_pricing &&
+          typeof this.product.variant_pricing === "string"
+        ) {
+          try {
+            this.product.variant_pricing = JSON.parse(this.product.variant_pricing);
+          } catch (e) {
+            console.warn("Could not parse variant_pricing JSON:", e);
+            this.product.variant_pricing = null;
+          }
+        }
+
+        // Auto-select the first (lowest) option for each variant
+        if (this.product.variants) {
+          for (const [variantKey, options] of Object.entries(this.product.variants)) {
+            if (Array.isArray(options) && options.length > 0) {
+              this.selectedVariants[variantKey] = options[0];
+            }
+          }
+        }
+
         // try to load current user (if authenticated)
         try {
           const userResp = await api.get("/api/user");
@@ -516,24 +660,91 @@ export default {
           reviews: 0,
           stock: 0,
           specs: [],
+          variants: null,
         };
       } finally {
         this.loading = false;
+
+        // Translate product description
+        if (this.product && this.product.description) {
+          console.log(
+            "[ProductView] Starting product description translation, locale:",
+            this.$i18n?.locale
+          );
+          this.getTranslatedDescription(this.product.description);
+        }
+
+        // Translate all comments after product is loaded
+        if (
+          this.product &&
+          this.product.latest_reviews &&
+          Array.isArray(this.product.latest_reviews) &&
+          this.product.latest_reviews.length > 0
+        ) {
+          console.log(
+            "[ProductView] Starting review translation, locale:",
+            this.$i18n?.locale,
+            "reviews count:",
+            this.product.latest_reviews.length
+          );
+
+          this.$nextTick(() => {
+            this.product.latest_reviews.forEach((review) => {
+              if (review && review.id && review.comment) {
+                console.log("[ProductView] Queueing translation for review", review.id);
+                // Call without await to fire in background
+                this.getTranslatedComment(review.id, review.comment);
+              }
+            });
+          });
+        } else {
+          console.log("[ProductView] No reviews to translate", {
+            hasProduct: !!this.product,
+            hasLatestReviews: !!this.product?.latest_reviews,
+            isArray: Array.isArray(this.product?.latest_reviews),
+            length: this.product?.latest_reviews?.length,
+          });
+        }
       }
     },
     formatPrice(price) {
       return parseFloat(price).toFixed(2);
     },
+    selectVariant(variantKey, option) {
+      this.selectedVariants[variantKey] = option;
+    },
+    areAllVariantsSelected() {
+      if (!this.product.variants || Object.keys(this.product.variants).length === 0) {
+        return true;
+      }
+      for (let key in this.product.variants) {
+        if (!this.selectedVariants[key]) {
+          return false;
+        }
+      }
+      return true;
+    },
     addToCart() {
-      this.cartStore.addToCart({
+      const cartItem = {
         id: this.product.id,
         product_id: this.product.id,
-        name: this.product.title || this.product.name,
-        price: this.product.price,
+        title: this.product.title || this.product.name,
+        // Use calculated_price (discount-applied) so cart stores the actual charged price
+        price: this.product.calculated_price ?? this.product.price,
+        variant_price: this.calculateCurrentPrice(),
         image: this.product.image,
         description: this.product.description,
         quantity: 1,
-      });
+      };
+
+      // Add variant_options and variants data if any variants exist
+      if (this.product.variants && Object.keys(this.product.variants).length > 0) {
+        cartItem.variant_options = this.selectedVariants;
+        cartItem.variants = this.product.variants;
+      }
+
+      console.log("[ProductView] Adding to cart:", cartItem);
+      this.cartStore.addToCart(cartItem);
       alert(`${this.product.title || this.product.name} pridaný do košíka!`);
     },
     async submitReview() {
@@ -565,6 +776,14 @@ export default {
             );
           }
           this.product.latest_reviews.unshift(resp.data.review);
+          // Translate the new review comment
+          if (resp.data.review && resp.data.review.comment) {
+            console.log(
+              "[ProductView] New review submitted, queueing translation for review",
+              resp.data.review.id
+            );
+            this.getTranslatedComment(resp.data.review.id, resp.data.review.comment);
+          }
         }
         this.resetReview();
       } catch (e) {
@@ -649,6 +868,16 @@ export default {
           const idx = this.product.latest_reviews.findIndex((r) => r.id === reviewId);
           if (idx !== -1) {
             this.product.latest_reviews[idx] = resp.data.review;
+            // Clear cached translation for this review so it gets re-translated
+            delete this.translatedComments[reviewId];
+            // Translate the updated review comment
+            if (resp.data.review && resp.data.review.comment) {
+              console.log(
+                "[ProductView] Review updated, queueing re-translation for review",
+                resp.data.review.id
+              );
+              this.getTranslatedComment(resp.data.review.id, resp.data.review.comment);
+            }
           }
           // Update aggregates
           this.product.rating = resp.data.rating;
@@ -709,6 +938,154 @@ export default {
       if (this.user.id === review.user_id) return true;
       if (this.user.role === "admin" || this.user.role === "owner") return true;
       return false;
+    },
+    async getTranslatedDescription(descriptionText) {
+      // Don't translate if text is empty
+      if (!descriptionText || !descriptionText.trim()) {
+        this.translatedDescription = descriptionText;
+        return descriptionText;
+      }
+
+      // Check if already cached
+      if (this.translatedDescription && this.translatedDescription.trim()) {
+        return this.translatedDescription;
+      }
+
+      // Check if already translating
+      if (this.translatingDescription) {
+        return descriptionText; // Return original while translating
+      }
+
+      // Mark as translating
+      this.translatingDescription = true;
+
+      try {
+        // Get current interface language
+        const currentLocale = this.$i18n?.locale || "sk";
+
+        // Don't translate if current language is Slovak (source)
+        if (currentLocale === "sk") {
+          this.translatedDescription = descriptionText;
+          return descriptionText;
+        }
+
+        console.log("[ProductView] Translating description", {
+          from: "sk",
+          to: currentLocale,
+          text: descriptionText.substring(0, 50) + "...",
+        });
+
+        const response = await api.post("/api/translate", {
+          text: descriptionText,
+          targetLanguage: currentLocale,
+        });
+
+        if (response.data && response.data.translatedText) {
+          this.translatedDescription = response.data.translatedText;
+          console.log("[ProductView] Description translated successfully");
+          return this.translatedDescription;
+        }
+      } catch (error) {
+        console.error("[ProductView] Error translating description:", error);
+      } finally {
+        this.translatingDescription = false;
+      }
+
+      // Return original text on error or if translation failed
+      this.translatedDescription = descriptionText;
+      return descriptionText;
+    },
+    async getTranslatedComment(commentId, commentText) {
+      // Don't translate if text is empty
+      if (!commentText || !commentText.trim()) {
+        this.translatedComments[commentId] = commentText;
+        return commentText;
+      }
+
+      // Check if already cached
+      if (this.translatedComments[commentId]) {
+        return this.translatedComments[commentId];
+      }
+
+      // Check if already translating
+      if (this.translatingComments[commentId]) {
+        return commentText; // Return original while translating
+      }
+
+      // Mark as translating
+      this.translatingComments[commentId] = true;
+
+      try {
+        // Get current interface language
+        const currentLocale = this.$i18n?.locale || "sk";
+
+        // Don't translate if current language is Slovak (source)
+        if (currentLocale === "sk") {
+          this.translatedComments[commentId] = commentText;
+          return commentText;
+        }
+
+        console.log("[ProductView] Translating comment", {
+          commentId,
+          from: "sk",
+          to: currentLocale,
+          text: commentText.substring(0, 50) + "...",
+        });
+
+        const response = await api.post("/api/translate", {
+          text: commentText,
+          targetLanguage: currentLocale,
+        });
+
+        console.log("[ProductView] Translation response", {
+          commentId,
+          translatedText: response.data.translatedText
+            ? response.data.translatedText.substring(0, 50) + "..."
+            : "empty",
+        });
+
+        // Cache the translation
+        this.translatedComments[commentId] = response.data.translatedText || commentText;
+        return this.translatedComments[commentId];
+      } catch (error) {
+        console.warn("[ProductView] Translation API error:", error);
+        // Return original text on error
+        this.translatedComments[commentId] = commentText;
+        return commentText;
+      } finally {
+        this.translatingComments[commentId] = false;
+      }
+    },
+    calculateCurrentPrice() {
+      // Use Product.calculated_price (discount-applied) when available
+      let basePrice = parseFloat(this.product.calculated_price ?? this.product.price);
+      let modifier = 0;
+
+      // Check if product has variant_pricing and selected variants
+      if (this.product.variant_pricing && Object.keys(this.selectedVariants).length > 0) {
+        for (let variantType in this.selectedVariants) {
+          const selectedValue = this.selectedVariants[variantType];
+          if (
+            this.product.variant_pricing[variantType] &&
+            this.product.variant_pricing[variantType][selectedValue] !== undefined
+          ) {
+            modifier += parseFloat(
+              this.product.variant_pricing[variantType][selectedValue]
+            );
+          }
+        }
+      }
+
+      const finalPrice = basePrice + modifier;
+      console.log("[ProductView] calculateCurrentPrice:", {
+        basePrice,
+        selectedVariants: this.selectedVariants,
+        variant_pricing: this.product.variant_pricing,
+        modifier,
+        finalPrice,
+      });
+
+      return finalPrice;
     },
   },
 };

@@ -70,7 +70,7 @@
 
       <!-- Price -->
       <div class="flex items-baseline gap-2 mb-3 mt-auto">
-        <span class="text-lg font-bold text-white">{{ product.price }}€</span>
+        <span class="text-lg font-bold text-white">{{ (product.calculated_price ?? product.price) }}€</span>
         <span v-if="product.oldPrice" class="text-xs text-gray-500 line-through"
           >{{ product.oldPrice }}€</span
         >
@@ -219,16 +219,16 @@ export default {
           const exists = stored.some((p) => (typeof p === 'object' ? p.id === this.product.id : p === this.product.id));
           if (!exists) {
             const item = {
-              id: this.product.id,
-              title: this.product.title || this.product.name,
-              name: this.product.title || this.product.name,
-              description: this.product.description || this.product.short_description || '',
-              category: this.product.category || this.product.category_name || '',
-              price: this.product.price || this.product.current_price || 0,
-              originalPrice: this.product.oldPrice || this.product.original_price || null,
-              image: this.product.image || (this.product.images && this.product.images[0]) || '/placeholder-product.png',
-              inStock: typeof this.product.stock !== 'undefined' ? this.product.stock > 0 : (this.product.inStock ?? true),
-            };
+                  id: this.product.id,
+                  title: this.product.title || this.product.name,
+                  name: this.product.title || this.product.name,
+                  description: this.product.description || this.product.short_description || '',
+                  category: this.product.category || this.product.category_name || '',
+                  price: this.product.calculated_price ?? this.product.price ?? this.product.current_price ?? 0,
+                  originalPrice: this.product.oldPrice || this.product.original_price || null,
+                  image: this.product.image || (this.product.images && this.product.images[0]) || '/placeholder-product.png',
+                  inStock: typeof this.product.stock !== 'undefined' ? this.product.stock > 0 : (this.product.inStock ?? true),
+                };
             stored.push(item);
           }
         } else {
@@ -250,8 +250,8 @@ export default {
     },
     calculateDiscount() {
       if (!this.product.oldPrice) return 0;
-      const discount =
-        ((this.product.oldPrice - this.product.price) / this.product.oldPrice) * 100;
+      const current = this.product.calculated_price ?? this.product.price;
+      const discount = ((this.product.oldPrice - current) / this.product.oldPrice) * 100;
       return Math.round(discount);
     },
   },

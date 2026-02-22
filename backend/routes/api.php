@@ -16,6 +16,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\TranslationController;
 
 // Get authenticated user
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
@@ -42,6 +43,9 @@ Route::get('/products/{id}', [ProductController::class, 'show']);
 // Contact form
 Route::post('/contact', [ContactController::class, 'send']);
 
+// Translation API (public, for comment translation)
+Route::post('/translate', [TranslationController::class, 'translate']);
+
 // Orders - create (public, for guests and users)
 Route::post('/orders', [OrderController::class, 'store']);
 
@@ -56,6 +60,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::put('/user/profile', [ProfileController::class, 'updateProfile']);
     Route::put('/user/password', [ProfileController::class, 'updatePassword']);
+    Route::put('/user/language', [ProfileController::class, 'updateLanguage']);
     Route::post('/user/avatar', [ProfileController::class, 'uploadAvatar']);
     Route::delete('/user', [ProfileController::class, 'deleteAccount']);
     

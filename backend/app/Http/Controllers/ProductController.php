@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Product;
 use App\Models\ProductReview;
 use App\Models\User;
 
@@ -17,11 +18,7 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-        $product = DB::table('products')->where('id', $id)->first();
-        
-        if (!$product) {
-            return response()->json(['error' => __('messages.product.not_found')], 404);
-        }
+        $product = Product::findOrFail($id);
         
         // Attach aggregated reviews data if reviews table exists
         if (Schema::hasTable('product_reviews')) {
@@ -50,7 +47,7 @@ class ProductController extends Controller
                 Log::warning('Failed to update product rating fields: ' . $e->getMessage());
             }
 
-            return response()->json(array_merge((array)$product, [
+            return response()->json(array_merge($product->toArray(), [
                 'rating' => (float)($agg->avg_rating ?? 0),
                 'reviews' => (int)($agg->reviews_count ?? 0),
                 'latest_reviews' => $reviews,
@@ -280,7 +277,7 @@ class ProductController extends Controller
 
     public function byCategory($category)
     {
-        $products = DB::table('products')->where('category', $category)->get();
+        $products = Product::where('category', $category)->get();
         return response()->json($products);
     }
 
@@ -298,8 +295,7 @@ class ProductController extends Controller
 
         try {
             // Build a safe query that doesn't reference columns which may not exist
-            $productsQuery = DB::table('products')
-                ->where('title', 'like', "%{$q}%")
+            $productsQuery = Product::where('title', 'like', "%{$q}%")
                 ->orWhere('description', 'like', "%{$q}%")
                 ->orWhere('brand', 'like', "%{$q}%")
                 ->orWhere('category', 'like', "%{$q}%");
@@ -327,13 +323,12 @@ class ProductController extends Controller
 
         try {
             // Prefer records that have explicit discount fields
-            $query = DB::table('products')
-                ->where(function($q) use ($minDiscount) {
-                    // If discount_value column exists, use it
-                    $q->whereRaw("COALESCE(discount_value, 0) >= ?", [$minDiscount])
-                      // Or fallback to oldPrice/current price calculation
-                      ->orWhereRaw("CASE WHEN oldPrice IS NOT NULL AND oldPrice > 0 THEN ROUND((oldPrice - price) / oldPrice * 100) >= ? ELSE 0 END", [$minDiscount]);
-                })
+            $query = Product::where(function($q) use ($minDiscount) {
+                // If discount_value column exists, use it
+                $q->whereRaw("COALESCE(discount_value, 0) >= ?", [$minDiscount])
+                  // Or fallback to oldPrice/current price calculation
+                  ->orWhereRaw("CASE WHEN oldPrice IS NOT NULL AND oldPrice > 0 THEN ROUND((oldPrice - price) / oldPrice * 100) >= ? ELSE 0 END", [$minDiscount]);
+            })
                 ->orderByDesc('discount_value')
                 ->limit($limit);
 

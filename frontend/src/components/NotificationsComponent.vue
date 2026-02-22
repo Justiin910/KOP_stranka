@@ -30,13 +30,13 @@
         <div
           class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between"
         >
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Notifikácie</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $t('notifications.dropdown.title') }}</h3>
           <button
             v-if="unreadCount > 0"
             @click="markAllAsRead"
             class="text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium"
           >
-            Označiť všetko
+            {{ $t('notifications.dropdown.markAll') }}
           </button>
         </div>
 
@@ -103,17 +103,14 @@
                   {{ notification.message }}
                 </p>
                 <div
-                  v-if="
-                    notification.type === 'promotion' &&
-                    notification.title.includes('Výpredaj')
-                  "
+                  v-if="notification.type === 'promotion'"
                   class="mt-2"
                 >
                   <button
                     @click.stop="$router.push('/mega-sale')"
                     class="text-xs px-3 py-1 bg-orange-500 hover:bg-orange-600 text-white rounded transition-colors font-medium"
                   >
-                    🔥 Pozrieť výpredaj
+                    {{ $t('notifications.viewSale') }}
                   </button>
                 </div>
                 <div class="flex items-center justify-between mt-2">
@@ -145,7 +142,7 @@
               d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
             />
           </svg>
-          <p class="text-sm text-gray-600 dark:text-gray-400">Žiadne notifikácie</p>
+          <p class="text-sm text-gray-600 dark:text-gray-400">{{ $t('notifications.dropdown.empty') }}</p>
         </div>
 
         <!-- Footer -->
@@ -156,7 +153,7 @@
             @click="viewAll"
             class="w-full text-center text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium"
           >
-            Zobraziť všetky notifikácie
+            {{ $t('notifications.dropdown.viewAll') }}
           </button>
         </div>
       </div>
@@ -185,29 +182,18 @@ export default {
   },
   mounted() {
     document.addEventListener("click", this.handleClickOutside);
+    // Listen for language changes and refetch notifications
+    window.addEventListener("language-changed", (event) => {
+      this.fetchNotifications();
+    });
     // Only fetch notifications if user is authenticated
     const user = JSON.parse(localStorage.getItem("user") || "null");
     if (user && user.id) {
       this.fetchNotifications();
-      // Refresh notifications every 5 seconds for near real-time updates
-      this.notificationRefreshInterval = setInterval(
-        () => this.fetchNotifications(),
-        5000
-      );
-      // Update displayed time every minute
-      this.timeUpdateInterval = setInterval(() => {
-        this.currentTime = new Date();
-      }, 60000);
     }
   },
   beforeUnmount() {
     document.removeEventListener("click", this.handleClickOutside);
-    if (this.notificationRefreshInterval) {
-      clearInterval(this.notificationRefreshInterval);
-    }
-    if (this.timeUpdateInterval) {
-      clearInterval(this.timeUpdateInterval);
-    }
   },
   methods: {
     async fetchNotifications() {
@@ -215,12 +201,16 @@ export default {
         const response = await api.get("api/notifications");
         this.notifications = response.data.data || response.data || [];
       } catch (error) {
-        console.error("Error fetching notifications:", error);
+        console.error("❌ Error fetching notifications:", error);
         this.notifications = [];
       }
     },
-    toggleDropdown() {
+    async toggleDropdown() {
       this.showDropdown = !this.showDropdown;
+      // Refetch notifications when opening dropdown to ensure latest language
+      if (this.showDropdown) {
+        await this.fetchNotifications();
+      }
     },
     handleClickOutside(event) {
       const dropdown = this.$refs.notificationDropdown;
@@ -288,22 +278,22 @@ export default {
       return paths[type] || paths.general;
     },
     getTimeAgo(createdAt) {
-      if (!createdAt) return "práve teraz";
+      if (!createdAt) return this.$t('time.justNow') || 'Just now';
       
       const created = new Date(createdAt);
       const now = this.currentTime;
       const seconds = Math.floor((now - created) / 1000);
       
-      if (seconds < 60) return "práve teraz";
+      if (seconds < 60) return this.$t('time.justNow') || 'Just now';
       
       const minutes = Math.floor(seconds / 60);
-      if (minutes < 60) return `${minutes}m`;
+      if (minutes < 60) return `${minutes}m ${this.$t('time.ago') || 'ago'}`;
       
       const hours = Math.floor(minutes / 60);
-      if (hours < 24) return `${hours}h`;
+      if (hours < 24) return `${hours}h ${this.$t('time.ago') || 'ago'}`;
       
       const days = Math.floor(hours / 24);
-      return `${days}d`;
+      return `${days}d ${this.$t('time.ago') || 'ago'}`;
     },
   },
 };

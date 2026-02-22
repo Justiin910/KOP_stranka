@@ -7,9 +7,12 @@ export interface CartItem {
   product_id: number
   title: string
   price: number
+  variant_price?: number
   image: string
   description: string
   quantity: number
+  variant_options?: Record<string, string>
+  variants?: Record<string, string[]>
 }
 
 export const useCartStore = defineStore('cart', () => {
@@ -41,7 +44,48 @@ export const useCartStore = defineStore('cart', () => {
     } else {
       // Load from localStorage
       const stored = localStorage.getItem('cart')
-      cartItems.value = stored ? JSON.parse(stored) : []
+      const raw = stored ? JSON.parse(stored) : []
+      // Normalize loaded items: ensure numeric unique id, parse variant_options if string
+      cartItems.value = raw.map((it: any) => {
+        // parse variant_options if it's a string
+        let variant_options = it.variant_options
+        if (typeof variant_options === 'string') {
+          try {
+            variant_options = JSON.parse(variant_options)
+          } catch (e) {
+            // keep as string if parsing fails
+          }
+        }
+
+        // parse variants if it's a string
+        let variants = it.variants
+        if (typeof variants === 'string') {
+          try {
+            variants = JSON.parse(variants)
+          } catch (e) {
+            // keep as string if parsing fails
+          }
+        }
+
+        // ensure id exists and is numeric
+        let id = it.id
+        if (!id) {
+          id = Number(String(Date.now()) + String(Math.floor(Math.random() * 1000)))
+        }
+
+        return {
+          id,
+          product_id: it.product_id ?? it.id ?? it.productId,
+          title: it.title ?? it.name,
+          price: it.price ?? 0,
+          variant_price: it.variant_price ?? undefined,
+          image: it.image ?? '',
+          description: it.description ?? '',
+          quantity: it.quantity ?? 1,
+          variant_options: variant_options ?? null,
+          variants: variants ?? undefined,
+        }
+      })
     }
   }
 
@@ -64,32 +108,101 @@ export const useCartStore = defineStore('cart', () => {
     if (isLoggedIn.value) {
       // Save to database
       try {
-        const response = await api.post('/api/cart', {
+        const payload: any = {
           product_id: product.id,
           quantity: 1,
-        })
+        }
+        
+        // Include variant_options if provided and not empty
+        if (product.variant_options && Object.keys(product.variant_options).length > 0) {
+          payload.variant_options = product.variant_options
+          console.log('[Cart] Including variants:', payload.variant_options)
+        } else {
+          console.log('[Cart] No variants selected')
+        }
+        
+        console.log('[Cart] Payload:', payload)
+        const response = await api.post('/api/cart', payload)
         console.log('[Cart] Item added to database:', response.data)
         await loadCart()
       } catch (error) {
         console.error('[Cart] Failed to add item to cart:', error)
       }
     } else {
-      // Save to localStorage
-      if (existingItem) {
-        existingItem.quantity += 1
+      // Save to localStorage and keep separate items for different variant selections
+      const normalizeVariants = (v?: Record<string, string> | null | string) => {
+        if (!v) return null
+        // if string, try to parse
+        let obj: any = v
+        if (typeof v === 'string') {
+          try {
+            obj = JSON.parse(v)
+          } catch (e) {
+            // keep as string
+            return JSON.stringify(v)
+          }
+        }
+        try {
+          const keys = Object.keys(obj).sort()
+          const ordered: Record<string, string> = {}
+          for (const k of keys) ordered[k] = obj[k]
+          return JSON.stringify(ordered)
+        } catch (e) {
+          return JSON.stringify(obj)
+        }
+      }
+
+      // Deep-clone product.variant_options to avoid storing a reference
+      const cloneVariantOptions = (v?: Record<string, string> | null | string) => {
+        if (!v) return null
+        if (typeof v === 'string') {
+          try {
+            return JSON.parse(v)
+          } catch (e) {
+            return v
+          }
+        }
+        try {
+          return JSON.parse(JSON.stringify(v))
+        } catch (e) {
+          return v
+        }
+      }
+
+      const targetVariant = normalizeVariants(cloneVariantOptions(product.variant_options))
+
+      const existing = cartItems.value.find(item => {
+        if (item.product_id !== product.id) return false
+        return normalizeVariants(item.variant_options) === targetVariant
+      })
+
+      if (existing) {
+        existing.quantity += 1
       } else {
-        cartItems.value.push({
-          id: product.id,
+        // Generate a unique id for local cart item so UI actions work by id
+        const localId = Number(String(Date.now()) + String(Math.floor(Math.random() * 1000)))
+        const newItem = {
+          id: localId,
           product_id: product.id,
           title: product.title,
-          price: product.price,
+          price: product.calculated_price ?? product.price,
+          variant_price: product.variant_price,
           image: product.image,
           description: product.description,
           quantity: 1,
-        })
+          // store a deep-cloned copy so later changes in the product view
+          // won't mutate previously added cart items
+          variant_options: cloneVariantOptions(product.variant_options),
+          variants: product.variants ? JSON.parse(JSON.stringify(product.variants)) : undefined,
+        }
+        cartItems.value.push(newItem)
       }
       saveToLocalStorage()
-      console.log('[Cart] Item added to localStorage')
+      console.log('[Cart] Local item saved:', {
+        isLoggedIn: isLoggedIn.value,
+        cartSize: cartItems.value.length,
+        lastItem: cartItems.value[cartItems.value.length - 1]
+      })
     }
   }
 
@@ -176,15 +289,41 @@ export const useCartStore = defineStore('cart', () => {
       try {
         const items = JSON.parse(localCart)
         for (const item of items) {
-          await api.post('/api/cart', {
+          const payload: any = {
             product_id: item.product_id,
             quantity: item.quantity,
-          })
+          }
+          if (item.variant_options && Object.keys(item.variant_options).length > 0) {
+            payload.variant_options = item.variant_options
+          }
+          await api.post('/api/cart', payload)
         }
         localStorage.removeItem('cart')
         await loadCart()
       } catch (error) {
         console.error('Failed to migrate cart to database:', error)
+      }
+    }
+  }
+
+  // Update cart item variants
+  const updateCartItemVariants = async (cartItemId: number, variantOptions: Record<string, string>) => {
+    if (isLoggedIn.value) {
+      try {
+        await api.put(`/api/cart/${cartItemId}`, {
+          variant_options: variantOptions,
+        })
+        await loadCart()
+      } catch (error) {
+        console.error('Failed to update cart item variants:', error)
+        throw error
+      }
+    } else {
+      // For local storage, update the item
+      const item = cartItems.value.find(i => i.id === cartItemId)
+      if (item) {
+        item.variant_options = variantOptions
+        saveToLocalStorage()
       }
     }
   }
@@ -195,8 +334,27 @@ export const useCartStore = defineStore('cart', () => {
   })
 
   const subtotal = computed(() => {
-    return cartItems.value.reduce((sum, item) => sum + item.price * item.quantity, 0)
+    return cartItems.value.reduce((sum, item) => {
+      const price = item.variant_price ?? item.price
+      return sum + price * item.quantity
+    }, 0)
   })
+
+  // Auto-initialize auth and cart on store load
+  ;(async () => {
+    await initializeAuth()
+    // If user is logged in and there's a local cart, migrate it
+    const hasLocal = !!localStorage.getItem('cart')
+    if (isLoggedIn.value && hasLocal) {
+      try {
+        await migrateToDatabase()
+      } catch (e) {
+        console.error('Auto-migrate failed', e)
+      }
+    }
+    // Load current cart (from DB if logged, local otherwise)
+    await loadCart()
+  })()
 
   return {
     cartItems,
@@ -211,5 +369,6 @@ export const useCartStore = defineStore('cart', () => {
     removeItem,
     clearCart,
     migrateToDatabase,
+    updateCartItemVariants,
   }
 })

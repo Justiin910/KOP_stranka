@@ -24,6 +24,19 @@
     "register": "Register",
     "home": "Home"
   },
+  "notifications": {
+    "dropdown": {
+      "title": "Notifications",
+      "markAll": "Mark all as read",
+      "empty": "No notifications",
+      "viewAll": "View all notifications"
+    },
+    "viewSale": "🔥 View Sale",
+    "all": "All notifications",
+    "no_notifications": "You have no notifications.",
+    "unread": "Unread",
+    "markAsRead": "Mark as read"
+  },
   "home": {
     "hero": {
       "title": "Mega Sale of the Year",
@@ -92,6 +105,8 @@
     "in_stock": "✓ In stock ({count})",
     "out_of_stock": "✗ Out of stock",
     "add_to_cart": "Add to cart",
+    "select_options": "Select options",
+    "select_all_variants": "Please select all available options",
     "confirm_delete_title": "Confirm deletion",
     "review_delete_confirm": "Are you sure you want to delete your review?",
     "loading": "Loading product...",
@@ -180,7 +195,9 @@
     "confirm_yes": "Yes",
     "delete": "Delete",
     "deleting": "Deleting...",
-    "discount": "Discount"
+    "save": "Save",
+    "discount": "Discount",
+    "back": "Back"
   },
   "favorites": {
     "title": "Favorites",
@@ -328,6 +345,7 @@
       "status_label": "Status",
       "email_input_label": "Email",
       "quantity_label": "Quantity",
+      "options_label": "Options",
       "product": "Product",
       "delivery_option_1": "Courier - Slovak Post",
       "delivery_option_2": "Packeta - pickup point",
@@ -342,7 +360,9 @@
       "items_count_label": "Items count",
       "items_one": "item",
       "items_few": "items",
-      "items_many": "items"
+      "items_many": "items",
+      "edit_options_modal": "Edit Options",
+      "no_variants": "No options"
     },
     "countries": {
       "slovakia": "Slovakia",
@@ -370,7 +390,14 @@
       "reset_password": "Reset password",
       "cancel": "Cancel",
       "close": "Close",
-      "remove": "Remove"
+      "remove": "Remove",
+      "add": "Add",
+      "save": "Save"
+    },
+    "variants": {
+      "storage": "Storage",
+      "ram": "RAM",
+      "select": "Select {name}"
     },
     "stats": {
       "vs_last_month": "vs last month",
@@ -446,7 +473,16 @@
       "discount_amount": "Discount amount",
       "percent": "Percent (%)",
       "fixed_amount": "Fixed amount (€)",
-      "no_discount": "No discount"
+      "no_discount": "No discount",
+      "variants": "Product Variants",
+      "add_variant_type": "Add Variant Type",
+      "variant_type_placeholder": "e.g., Color, Size, Storage",
+      "add_option": "Add option",
+      "price_modifier": "Price adjustment",
+      "variant_type_required": "Please enter a variant type name",
+      "variant_type_exists": "This variant type already exists",
+      "variant_option_required": "Please enter an option name",
+      "variant_option_exists": "This option already exists for this type"
     },
     "notifications": {
       "title": "Send notification",
@@ -645,6 +681,7 @@
     },
     "items": {
       "remove": "Remove",
+      "edit_options": "Edit options",
       "per_unit": "€ / pu"
     },
     "summary": {
@@ -944,6 +981,10 @@
       "validation_notify": "Please fill in all required fields.",
       "input_check_notify": "Please check your email address and try again."
     }
+  },
+  "time": {
+    "justNow": "Just now",
+    "ago": "ago"
   }
 }
 

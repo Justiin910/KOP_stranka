@@ -23,8 +23,20 @@
     "login": "Prihlásiť sa",
     "register": "Registrovať sa",
     "home": "Domov"
-  }
-  ,
+  },
+  "notifications": {
+    "dropdown": {
+      "title": "Notifikácie",
+      "markAll": "Označiť všetko",
+      "empty": "Žiadne notifikácie",
+      "viewAll": "Zobraziť všetky notifikácie"
+    },
+    "viewSale": "🔥 Pozrieť výpredaj",
+    "all": "Všetky notifikácie",
+    "no_notifications": "Nemáte žiadne notifikácie.",
+    "unread": "Neprečítané",
+    "markAsRead": "Označiť ako prečítané"
+  },
   "home": {
     "hero": {
       "title": "Mega výpredaj roka",
@@ -93,6 +105,8 @@
     "in_stock": "✓ Skladom ({count})",
     "out_of_stock": "✗ Vypredané",
     "add_to_cart": "Do košíka",
+    "select_options": "Vyberte možnosti",
+    "select_all_variants": "Prosím vyberte všetky dostupné možnosti",
     "confirm_delete_title": "Potvrdiť zmazanie",
     "review_delete_confirm": "Naozaj chcete vymazať svoju recenziu?",
     "loading": "Načítavam produkt...",
@@ -183,7 +197,9 @@
     "confirm_yes": "Áno",
     "delete": "Vymazať",
     "deleting": "Maže sa...",
-    "discount": "Zľava"
+    "save": "Uložiť",
+    "discount": "Zľava",
+    "back": "Späť"
   }
   ,
   "favorites": {
@@ -335,6 +351,7 @@
       "status_label": "Stav",
       "email_input_label": "Email",
       "quantity_label": "Množstvo",
+      "options_label": "Možnosti",
       "product": "Produkt",
       "delivery_option_1": "Kuriér - Slovenská pošta",
       "delivery_option_2": "Packeta - výdajné miesto",
@@ -349,7 +366,9 @@
       "items_count_label": "Počet položiek",
       "items_one": "položka",
       "items_few": "položky",
-      "items_many": "položiek"
+      "items_many": "položiek",
+      "edit_options_modal": "Upraviť možnosti",
+      "no_variants": "Žiadne možnosti"
     },
     "countries": {
       "slovakia": "Slovensko",
@@ -377,7 +396,14 @@
       "reset_password": "Reset hesla",
       "cancel": "Zrušiť",
       "close": "Zavrieť",
-      "remove": "Odstrániť"
+      "remove": "Odstrániť",
+      "add": "Pridať",
+      "save": "Uložiť"
+    },
+    "variants": {
+      "storage": "Úložisko",
+      "ram": "RAM",
+      "select": "Vyberte {name}"
     },
     "stats": {
       "vs_last_month": "vs minulý mesiac",
@@ -454,7 +480,16 @@
       "discount_amount": "Veľkosť zľavy",
       "percent": "Percento (%)",
       "fixed_amount": "Fixná suma (€)",
-      "no_discount": "Bez zľavy"
+      "no_discount": "Bez zľavy",
+      "variants": "Varianty produktu",
+      "add_variant_type": "Pridať typ variantu",
+      "variant_type_placeholder": "napr. Farba, Veľkosť, Úložisko",
+      "add_option": "Pridať možnosť",
+      "price_modifier": "Úprava ceny",
+      "variant_type_required": "Prosím zadajte názov typu variantu",
+      "variant_type_exists": "Tento typ variantu už existuje",
+      "variant_option_required": "Prosím zadajte názov možnosti",
+      "variant_option_exists": "Táto možnosť už existuje pre tento typ"
     },
     "notifications": {
       "title": "Poslať notifikáciu",
@@ -656,6 +691,7 @@
     },
     "items": {
       "remove": "Odstrániť",
+      "edit_options": "Upraviť možnosti",
       "per_unit": "€ / ks"
     },
     "summary": {
@@ -978,5 +1014,9 @@
       "validation_notify": "Prosím vyplňte všetky povinné polia.",
       "input_check_notify": "Prosím skontrolujte vašu emailovú adresu a skúste znova."
     }
+  },
+  "time": {
+    "justNow": "Práve teraz",
+    "ago": "pred"
   }
 }

@@ -4,7 +4,7 @@ import { onMounted, onUnmounted, ref } from "vue";
 import { useCartStore } from "./stores/cartStore";
 import NavbarComponent from "./components/NavbarComponent.vue";
 import FooterComponent from "./components/FooterComponent.vue";
-import ProductCard from "./components/ProductCardComponent.vue";
+import ProductCard from "./components/ProductCard.vue";
 import NotificationBar from "./components/NotificationBar.vue";
 
 const cartStore = useCartStore();

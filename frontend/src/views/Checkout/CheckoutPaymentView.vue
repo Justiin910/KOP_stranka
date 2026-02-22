@@ -177,10 +177,10 @@
                   <input
                     v-model="card.expiry"
                     type="text"
-                    maxlength="7"
+                    maxlength="5"
                     @input="formatExpiry"
                     class="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    placeholder="08/2026"
+                    placeholder="02/26"
                   />
                 </div>
                 <div>
@@ -192,6 +192,7 @@
                     type="text"
                     maxlength="4"
                     inputmode="numeric"
+                    @input="card.cvc = card.cvc.replace(/[^0-9]/g, '')"
                     class="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     placeholder="123"
                   />
@@ -261,7 +262,10 @@
                   <span>{{ item.title }} x{{ item.quantity }}</span>
                   <span
                     >{{
-                      (parseFloat(String(item.price)) * item.quantity).toFixed(2)
+                      (
+                        parseFloat(String(item.variant_price ?? item.price)) *
+                        item.quantity
+                      ).toFixed(2)
                     }}
                     €</span
                   >
@@ -352,7 +356,7 @@ export default {
         .trim();
     },
     formatExpiry() {
-      let digits = this.card.expiry.replace(/\D/g, "").substring(0, 6); // MMYYYY max
+      let digits = this.card.expiry.replace(/\D/g, "").substring(0, 4); // MMYY max
 
       if (digits.length <= 2) {
         this.card.expiry = digits;
@@ -369,11 +373,11 @@ export default {
       if (monthNum > 12) monthNum = 12;
       monthPart = String(monthNum).padStart(2, "0");
 
-      // limit year to 4 digits and max 9999
-      if (yearPart.length > 4) yearPart = yearPart.substring(0, 4);
+      // limit year to 2 digits and max 99
+      if (yearPart.length > 2) yearPart = yearPart.substring(0, 2);
       if (yearPart.length > 0) {
         let yearNum = parseInt(yearPart, 10);
-        if (!isNaN(yearNum) && yearNum > 9999) yearPart = "9999";
+        if (!isNaN(yearNum) && yearNum > 99) yearPart = "99";
       }
 
       this.card.expiry = yearPart.length > 0 ? monthPart + "/" + yearPart : monthPart;
@@ -381,7 +385,8 @@ export default {
     validateCard() {
       const digits = this.card.number.replace(/\D/g, "");
       if (digits.length !== 16) return false;
-      if (!/^\d{2}\/\d{4}$/.test(this.card.expiry)) return false;
+      // expiry now uses MM/YY (e.g. 02/26)
+      if (!/^\d{2}\/\d{2}$/.test(this.card.expiry)) return false;
       if (!/^[0-9]{3,4}$/.test(this.card.cvc)) return false;
       if (!this.card.name) return false;
       return true;
@@ -582,6 +587,23 @@ export default {
       });
     },
 
+    // Calculate the price for a cart item including variant pricing adjustments
+    calculateItemPrice(item) {
+      // If item already has variant_price calculated, use it
+      if (item.variant_price) {
+        return item.variant_price;
+      }
+
+      // Otherwise, calculate from variant_options if available
+      let price = parseFloat(item.price) || 0;
+
+      // Note: In a real scenario, we'd need product data with variant_pricing
+      // For now, if there's no variant_price but there are variant_options,
+      // we use the base price. The backend should ensure the correct price is
+      // stored in order_items.price when the order is created.
+      return price;
+    },
+
     // Create order and process payment
     async createOrder(paymentData) {
       try {
@@ -614,15 +636,29 @@ export default {
           status: "pending",
         };
 
-        // Save to localStorage (persists through navigation)
-        localStorage.setItem("checkoutOrder", JSON.stringify(order));
-
-        // Prepare items for API
+        // Prepare items for API (include variant options and use variant_price when available)
         const items = order.items.map((item) => ({
           product_id: item.product_id || item.id,
           quantity: item.quantity,
-          price: parseFloat(String(item.price)),
+          price: parseFloat(String((item.variant_price ?? item.price) || 0)),
+          variant_options:
+            item.variant_options && Object.keys(item.variant_options).length > 0
+              ? item.variant_options
+              : null,
         }));
+
+        // Update order items with variant-adjusted prices before saving to localStorage
+        const orderWithVariantPrices = {
+          ...order,
+          items: items.map((apiItem, idx) => ({
+            ...order.items[idx],
+            price: apiItem.price, // Use the variant-adjusted price
+            product_id: apiItem.product_id,
+          })),
+        };
+
+        // Save to localStorage (persists through navigation)
+        localStorage.setItem("checkoutOrder", JSON.stringify(orderWithVariantPrices));
 
         // Call backend API to create order
         const response = await fetch("/api/orders", {
@@ -660,8 +696,8 @@ export default {
 
         // Update order with real ID from backend
         if (result.order && result.order.id) {
-          order.id = result.order.id;
-          localStorage.setItem("checkoutOrder", JSON.stringify(order));
+          orderWithVariantPrices.id = result.order.id;
+          localStorage.setItem("checkoutOrder", JSON.stringify(orderWithVariantPrices));
         }
 
         // Clear cart

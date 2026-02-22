@@ -180,4 +180,26 @@ class ProfileController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Update user language preference
+     */
+    public function updateLanguage(Request $request)
+    {
+        $validated = $request->validate([
+            'language' => ['required', 'string', 'in:sk,en,de,fr,es,it,pl,cs'],
+        ]);
+
+        $user = $request->user();
+        $user->update(['language' => $validated['language']]);
+        
+        // Refresh from database to ensure the update worked
+        $user->refresh();
+
+        return response()->json([
+            'message' => 'Language preference updated',
+            'language' => $user->language,
+            'user' => $user,
+        ]);
+    }
 }

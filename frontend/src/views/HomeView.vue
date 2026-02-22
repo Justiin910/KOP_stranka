@@ -13,7 +13,7 @@
           class="relative rounded-2xl overflow-hidden p-8 md:p-12 h-72 md:h-96 flex items-center"
         >
           <img
-            src="https://picsum.photos/1500/900?random=1"
+            src="@/assets/saleBanner2.png"
             class="absolute inset-0 w-full h-full object-cover"
           />
           <div class="absolute inset-0 bg-black/40"></div>
@@ -344,7 +344,7 @@ export default {
         id: product.id,
         product_id: product.id,
         title: product.title,
-        price: product.price,
+        price: product.calculated_price ?? product.price,
         image: product.image,
         description: product.description,
         quantity: 1,

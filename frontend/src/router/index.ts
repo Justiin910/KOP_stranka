@@ -22,6 +22,7 @@ import AdminView from '@/views/Account/AdminView.vue'
 import ProductsGridView from '@/views/Shop/ProductsGridView.vue'
 import NewPasswordView from '@/views/Auth/NewPasswordView.vue'
 import MegaSalePage from '@/views/Shop/MegaSalePage.vue'
+import NotificationsView from '@/views/NotificationsView.vue'
 
 
 const router = createRouter({
@@ -104,6 +105,12 @@ const router = createRouter({
       path: '/orders',
       name: 'orders',
       component: OrdersView,
+    },
+    {
+      path: '/notifications',
+      name: 'notifications',
+      component: NotificationsView,
+      meta: { requiresAuth: true },
     },
     {
       path: '/refunds',
