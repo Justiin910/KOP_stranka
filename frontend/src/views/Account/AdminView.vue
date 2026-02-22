@@ -3268,11 +3268,8 @@ export default {
           : 10;
 
       this.notificationForm.type = "promotion";
-      this.notificationForm.title = this.$t("admin.notifications.premade_sale_title");
-      this.notificationForm.message = this.$t(
-        "admin.notifications.premade_sale_message",
-        { maxDiscount }
-      );
+      this.notificationForm.title = "Výpredaj! 🎉";
+      this.notificationForm.message = `Zľavy na vybrané položky až -${maxDiscount}%! Pospešujte, ponuka platí len do vypredania!`;
       this.notificationForm.sendToAll = true;
 
       // Auto-send after a short delay
