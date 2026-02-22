@@ -181,7 +181,28 @@
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Telefón:</span>
-                    <span>{{ $phone ? '+' . preg_replace('/\D/', '', substr($phone, 0, 5)) . ' ' . implode(' ', str_split(preg_replace('/\D/', '', substr($phone, 5)), 4)) : '' }}</span>
+                    @php
+                        $formattedPhone = '';
+                        if (!empty($phone)) {
+                            $digits = preg_replace('/\D/', '', $phone);
+                            if (strpos($digits, '421') === 0) {
+                                $local = substr($digits, 3);
+                            } elseif (strpos($digits, '0') === 0) {
+                                $local = substr($digits, 1);
+                            } else {
+                                $local = $digits;
+                            }
+                            // keep last 9 digits of local number if longer
+                            if (strlen($local) > 9) {
+                                $local = substr($local, -9);
+                            }
+                            $parts = str_split($local, 3);
+                            if (!empty($parts)) {
+                                $formattedPhone = '+421 ' . implode(' ', $parts);
+                            }
+                        }
+                    @endphp
+                    <span>{{ $formattedPhone }}</span>
                 </div>
             </div>
 

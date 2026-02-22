@@ -209,9 +209,22 @@
             </div>
             <div class="flex items-center mb-4">
               <div
-                class="w-12 h-12 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg"
+                class="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center"
               >
-                {{ user.name.charAt(0) }}
+                <template v-if="user.avatar">
+                  <img
+                    :src="getAvatarUrl(user.avatar)"
+                    :alt="user.name"
+                    class="w-full h-full object-cover"
+                  />
+                </template>
+                <template v-else>
+                  <div
+                    class="w-12 h-12 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg"
+                  >
+                    {{ getInitials(user.name) }}
+                  </div>
+                </template>
               </div>
               <div class="ml-4">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
@@ -3740,6 +3753,20 @@ export default {
         hour: "2-digit",
         minute: "2-digit",
       });
+    },
+    getAvatarUrl(avatar) {
+      if (!avatar) return "";
+      if (typeof avatar === "string" && avatar.startsWith("http")) return avatar;
+      const base = import.meta.env.VITE_API_URL || "http://localhost:8000";
+      return `${base}/storage/${avatar}`;
+    },
+    getInitials(name) {
+      if (!name) return "?";
+      const parts = name.split(" ").filter(Boolean);
+      if (parts.length >= 2) {
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+      }
+      return name.substring(0, 2).toUpperCase();
     },
   },
   watch: {
