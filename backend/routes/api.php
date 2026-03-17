@@ -43,7 +43,7 @@ Route::get('/products/{id}', [ProductController::class, 'show']);
 // Contact form
 Route::post('/contact', [ContactController::class, 'send']);
 
-// Translation API (public, for comment translation)
+// Translation API 
 Route::post('/translate', [TranslationController::class, 'translate']);
 
 // Orders - create (public, for guests and users)

@@ -60,8 +60,8 @@
               v-if="user.avatar"
               class="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-700"
             >
-              <img 
-                :src="getAvatarUrl(user.avatar)" 
+              <img
+                :src="getAvatarUrl(user.avatar)"
                 :alt="user.name"
                 class="w-full h-full object-cover"
               />
@@ -85,7 +85,13 @@
               class="absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-full p-2 shadow-lg transition-colors"
               :title="$t('profile.change_avatar')"
             >
-              <svg v-if="!isUploadingAvatar" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                v-if="!isUploadingAvatar"
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -99,7 +105,13 @@
                   d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
                 />
               </svg>
-              <svg v-else class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                v-else
+                class="w-4 h-4 animate-spin"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -532,8 +544,10 @@
           {{ $t("profile.danger_zone_title") }}
         </h2>
         <p class="text-sm text-red-700 dark:text-red-300 mb-6">
-          {{ $t('profile.danger_zone_desc') }}
-          <strong class="font-semibold">{{ $t('profile.danger_zone_desc_emphasis') }}</strong>
+          {{ $t("profile.danger_zone_desc") }}
+          <strong class="font-semibold">{{
+            $t("profile.danger_zone_desc_emphasis")
+          }}</strong>
         </p>
 
         <button
@@ -1098,17 +1112,17 @@ export default {
       if (!file) return;
 
       // Validate file
-      const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
+      const validTypes = ["image/jpeg", "image/png", "image/jpg", "image/gif"];
       const maxSize = 5 * 1024 * 1024; // 5MB
 
       if (!validTypes.includes(file.type)) {
-        this.errorMessage = this.$t('profile.validation.avatar_invalid_format');
+        this.errorMessage = this.$t("profile.validation.avatar_invalid_format");
         this.scrollToMessages();
         return;
       }
 
       if (file.size > maxSize) {
-        this.errorMessage = this.$t('profile.validation.avatar_too_large');
+        this.errorMessage = this.$t("profile.validation.avatar_too_large");
         this.scrollToMessages();
         return;
       }
@@ -1117,17 +1131,15 @@ export default {
     },
     async uploadAvatar(file) {
       this.isUploadingAvatar = true;
-      this.errorMessage = '';
-      this.successMessage = '';
+      this.errorMessage = "";
+      this.successMessage = "";
 
       const formData = new FormData();
-      formData.append('avatar', file);
+      formData.append("avatar", file);
 
       try {
-        const response = await api.post('api/user/avatar', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          }
+        const response = await api.post("api/user/avatar", formData, {
+          transformRequest: [(data) => data],
         });
 
         // Update user data
@@ -1136,10 +1148,10 @@ export default {
         this.scrollToMessages();
 
         setTimeout(() => {
-          this.successMessage = '';
+          this.successMessage = "";
         }, 3000);
       } catch (error) {
-        console.error('Error uploading avatar:', error);
+        console.error("Error uploading avatar:", error);
 
         if (error.response?.data?.message) {
           this.errorMessage = error.response.data.message;
@@ -1148,23 +1160,25 @@ export default {
           const firstError = Object.values(errors)[0];
           this.errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
         } else {
-          this.errorMessage = this.$t('profile.avatar_upload_error');
+          this.errorMessage = this.$t("profile.avatar_upload_error");
         }
         this.scrollToMessages();
       } finally {
         this.isUploadingAvatar = false;
         // Reset file input
         if (this.$refs.avatarInput) {
-          this.$refs.avatarInput.value = '';
+          this.$refs.avatarInput.value = "";
         }
       }
     },
     getAvatarUrl(avatar) {
-      if (!avatar) return '';
+      if (!avatar) return "";
       // If it's already a full URL, return it
-      if (avatar.startsWith('http')) return avatar;
+      if (avatar.startsWith("http")) return avatar;
       // Otherwise, construct the storage URL
-      return `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/storage/${avatar}`;
+      return `${
+        import.meta.env.VITE_API_URL || "http://localhost:8000"
+      }/storage/${avatar}`;
     },
     getInitials(name) {
       if (!name) return "?";
