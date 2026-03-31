@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="UTF-8">
     <style>
@@ -94,37 +94,38 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📨 Nová správa z kontaktného formulára</h1>
+            <h1>📨 {{ __('messages.email.contact.header') }}</h1>
         </div>
         
         <div class="content">
             <div class="field">
-                <div class="field-label">Meno</div>
+                <div class="field-label">{{ __('messages.email.contact.label_name') }}</div>
                 <div class="field-value">{{ $name }}</div>
             </div>
 
             <div class="field">
-                <div class="field-label">Email na odpoveď</div>
+                <div class="field-label">{{ __('messages.email.contact.label_reply_email') }}</div>
                 <div class="field-value">{{ $email }}</div>
             </div>
 
             <div class="field">
-                <div class="field-label">Predmet</div>
-                <div class="field-value">{{ $subject ?? 'Bez predmetu' }}</div>
+                <div class="field-label">{{ __('messages.email.contact.label_subject') }}</div>
+                <div class="field-value">{{ $subject ?? __('messages.email.contact.subject_fallback') }}</div>
             </div>
 
             <div class="message-section">
-                <div class="message-label">💬 Správa</div>
+                <div class="message-label">💬 {{ __('messages.email.contact.label_message') }}</div>
                 <div class="message-content">{{ $message }}</div>
             </div>
 
             <div class="reply-section">
-                <strong>💡 Tip:</strong> Na túto správu odpovedajte priamo na tejto emailovej konverzácii - odoslateľ bude vidieť vašu odpoveď na adrese {{ $email }}
+                <strong>💡 {{ __('messages.email.contact.tip_label') }}</strong>
+                {{ __('messages.email.contact.reply_tip', ['email' => $email]) }}
             </div>
         </div>
 
         <div class="footer">
-            <p>Táto správa bola odoslaná z kontaktného formulára na vašej webstránke.</p>
+            <p>{{ __('messages.email.contact.footer') }}</p>
         </div>
     </div>
 </body>

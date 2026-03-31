@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="sk">
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -124,44 +124,44 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔐 Heslo zmenené</h1>
+            <h1>🔐 {{ __('messages.email.password_changed.title') }}</h1>
         </div>
         
         <div class="content">
-            <p class="greeting">Dobrý deň {{ $user->name }},</p>
+            <p class="greeting">{{ __('messages.email.password_changed.greeting', ['name' => $user->name]) }}</p>
             
-            <p>Potvrdzujeme, že vaše heslo k účtu {{ $user->email }} bolo úspešne zmenené.</p>
+            <p>{{ __('messages.email.password_changed.intro', ['email' => $user->email]) }}</p>
             
             <div class="info-section">
-                <p><strong>Čas zmeny:</strong> {{ $changeTime ?? 'dnes' }}</p>
+                <p><strong>{{ __('messages.email.password_changed.change_time_label') }}:</strong> {{ $changeTime ?? __('messages.email.password_changed.today') }}</p>
             </div>
             
             <div class="alert-box">
-                <strong>⚠️ Pozor!</strong>
-                Ak ste túto zmenu neuskutočnili, je možné, že váš účet bol kompromitovaný. V takomto prípade prosím<br>
-                <a href="mailto:{{ config('mail.from.address') }}">kontaktujte nás ihneď</a>.
+                <strong>⚠️ {{ __('messages.email.password_changed.alert_title') }}</strong>
+                {{ __('messages.email.password_changed.alert_body') }}<br>
+                <a href="mailto:{{ config('mail.from.address') }}">{{ __('messages.email.password_changed.contact_now') }}</a>.
             </div>
             
             <div class="support-section">
-                <strong>💡 Bezpečnostný tip</strong>
-                Ak ste zmenu nevykonali vy, odporúčame vám:
+                <strong>💡 {{ __('messages.email.password_changed.security_tip_title') }}</strong>
+                {{ __('messages.email.password_changed.security_tip_intro') }}
                 <ul style="margin: 8px 0 0 20px; padding: 0;">
-                    <li>Zmeniť heslo spätne</li>
-                    <li>Skontrolovať bezpečnosť svojho emailu</li>
-                    <li>Aktivovať dvojfaktorovú autentifikáciu ak je dostupná</li>
+                    <li>{{ __('messages.email.password_changed.tip_reset_password') }}</li>
+                    <li>{{ __('messages.email.password_changed.tip_secure_email') }}</li>
+                    <li>{{ __('messages.email.password_changed.tip_enable_2fa') }}</li>
                 </ul>
             </div>
             
             <div class="divider"></div>
             
-            <p style="font-size: 14px; color: #666;">Ak máte ďalšie otázky alebo potrebujete pomoc, neváhajte nás kontaktovať na adrese <a href="mailto:techstore99x@gmail.com">techstore99x@gmail.com</a>.</p>
+            <p style="font-size: 14px; color: #666;">{{ __('messages.email.password_changed.support_contact', ['email' => 'techstore99x@gmail.com']) }}</p>
             
-            <p style="font-size: 14px; color: #666;">S pozdravom,<br><strong>{{ config('mail.from.name') }}</strong></p>
+            <p style="font-size: 14px; color: #666;">{{ __('messages.email.common.regards') }}<br><strong>{{ config('mail.from.name') }}</strong></p>
         </div>
         
         <div class="footer">
-            <p>&copy; {{ date('Y') }} {{ config('app.name') }}. Všetky práva vyhradené.</p>
-            <p>Toto je automatizovaná správa. Prosím, neodpovedajte na túto správu.</p>
+            <p>{{ __('messages.email.common.rights_reserved', ['year' => date('Y'), 'app' => config('app.name')]) }}</p>
+            <p>{{ __('messages.email.common.automated_notice') }}</p>
         </div>
     </div>
 </body>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="UTF-8">
     <style>
@@ -101,44 +101,50 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Objednávka potvrdená! ✓</h1>
+            <h1>{{ __('messages.email.order_confirmation.header') }} ✓</h1>
         </div>
 
         <div class="content">
-            <p>Dobrý deň {{ $address['fullName'] ?? 'Zákazníče' }},</p>
+            <p>{{ __('messages.email.order_confirmation.greeting', ['name' => ($address['fullName'] ?? __('messages.email.order_confirmation.customer_fallback'))]) }}</p>
 
-            <p>Vaša objednávka bola úspešne vytvorená a je v procese spracovania. Nájdete nižšie detaily vašej objednávky:</p>
+            <p>{{ __('messages.email.order_confirmation.intro') }}</p>
 
             <div class="order-reference">
-                Číslo objednávky: {{ $order->reference }}
+                {{ __('messages.email.order_confirmation.order_number') }}: {{ $order->reference }}
             </div>
 
             <div class="order-details">
                 <div class="detail-row">
-                    <span class="detail-label">Dátum objednávky:</span>
+                    <span class="detail-label">{{ __('messages.email.order_confirmation.order_date') }}:</span>
                     <span>{{ $order->created_at->format('d.m.Y H:i') }}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">Stav:</span>
-                    <span><span class="status-badge">{{ ucfirst($order->status) }}</span></span>
+                    <span class="detail-label">{{ __('messages.email.order_confirmation.status') }}:</span>
+                    @php
+                        $statusLabels = trans('messages.email.order_confirmation.statuses');
+                        $statusLabel = is_array($statusLabels)
+                            ? ($statusLabels[$order->status] ?? ucfirst($order->status))
+                            : ucfirst($order->status);
+                    @endphp
+                    <span><span class="status-badge">{{ $statusLabel }}</span></span>
                 </div>
             </div>
 
-            <h2>Položky v objednávke:</h2>
+            <h2>{{ __('messages.email.order_confirmation.items_title') }}</h2>
             <table class="items-table">
                 <thead>
                     <tr>
-                        <th>Produkt</th>
-                        <th>Možnosti</th>
-                        <th>Množstvo</th>
-                        <th>Cena</th>
-                        <th>Spolu</th>
+                        <th>{{ __('messages.email.order_confirmation.table_product') }}</th>
+                        <th>{{ __('messages.email.order_confirmation.table_options') }}</th>
+                        <th>{{ __('messages.email.order_confirmation.table_quantity') }}</th>
+                        <th>{{ __('messages.email.order_confirmation.table_price') }}</th>
+                        <th>{{ __('messages.email.order_confirmation.table_total') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($items as $item)
                     <tr>
-                        <td>{{ $item['product_title'] ?? 'Produkt #' . $item['product_id'] }}</td>
+                        <td>{{ $item['product_title'] ?? __('messages.email.order_confirmation.product_fallback', ['id' => $item['product_id']]) }}</td>
                         <td>
                             @if(!empty($item['variant_options']))
                                 @php
@@ -150,7 +156,7 @@
                                     }
                                 @endphp
                             @else
-                                —
+                                {{ __('messages.email.order_confirmation.no_options') }}
                             @endif
                         </td>
                         <td>{{ $item['quantity'] }}</td>
@@ -162,17 +168,23 @@
             </table>
 
             <div class="total-row">
-                Celková suma: {{ number_format($order->total, 2) }} €
+                {{ __('messages.email.order_confirmation.total_amount') }}: {{ number_format($order->total, 2) }} €
             </div>
 
-            <h2>Doručenie:</h2>
+            <h2>{{ __('messages.email.order_confirmation.delivery_title') }}</h2>
             <div class="order-details">
                 <div class="detail-row">
-                    <span class="detail-label">Spôsob:</span>
-                    <span>{{ ucfirst($order->delivery_method) }}</span>
+                    <span class="detail-label">{{ __('messages.email.order_confirmation.delivery_method') }}:</span>
+                    @php
+                        $deliveryMethods = trans('messages.email.order_confirmation.delivery_methods');
+                        $deliveryMethodLabel = is_array($deliveryMethods)
+                            ? ($deliveryMethods[$order->delivery_method] ?? ucfirst($order->delivery_method))
+                            : ucfirst($order->delivery_method);
+                    @endphp
+                    <span>{{ $deliveryMethodLabel }}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">Adresa:</span>
+                    <span class="detail-label">{{ __('messages.email.order_confirmation.address') }}:</span>
                     <span>
                         {{ $address['street'] ?? '' }}<br>
                         {{ $address['zip'] ?? '' }} {{ $address['city'] ?? '' }}<br>
@@ -180,7 +192,7 @@
                     </span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">Telefón:</span>
+                    <span class="detail-label">{{ __('messages.email.order_confirmation.phone') }}:</span>
                     @php
                         $formattedPhone = '';
                         if (!empty($phone)) {
@@ -206,24 +218,24 @@
                 </div>
             </div>
 
-            <h2>Spôsob platby:</h2>
+            <h2>{{ __('messages.email.order_confirmation.payment_title') }}</h2>
             <div class="order-details">
                 <div class="detail-row">
-                    <span class="detail-label">Metóda:</span>
-                    <span>{{ $paymentMethod }}</span>
+                    <span class="detail-label">{{ __('messages.email.order_confirmation.payment_method') }}:</span>
+                    <span>{{ $paymentMethod['label'] ?? '' }}</span>
                 </div>
             </div>
 
-            <p>Ďakujeme za vašu objednávku! Budeme vás informovať o jej stave prostredníctvom e-mailu.</p>
+            <p>{{ __('messages.email.order_confirmation.thanks') }}</p>
 
            <!-- <a href="#" class="button">Sledovať objednávku</a> -->
 
-            <p style="color: #999; font-size: 12px; margin-top: 30px;">Ak ste si túto objednávku neobjednali, prosím ignorujte tento e-mail.</p>
+            <p style="color: #999; font-size: 12px; margin-top: 30px;">{{ __('messages.email.order_confirmation.ignore_notice') }}</p>
         </div>
 
         <div class="footer">
-            <p>&copy; {{ date('Y') }} TechShop s.r.o. Všetky práva vyhradené.</p>
-            <p>Kontakt: techstore99x@gmail.com</p>
+            <p>{{ __('messages.email.order_confirmation.footer_rights', ['year' => date('Y')]) }}</p>
+            <p>{{ __('messages.email.order_confirmation.footer_contact', ['email' => 'techstore99x@gmail.com']) }}</p>
         </div>
     </div>
 </body>

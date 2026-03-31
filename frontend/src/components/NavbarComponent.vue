@@ -235,8 +235,7 @@ export default {
   mounted() {
     document.addEventListener("click", this.handleClickOutside);
     // Load saved language preference
-    const savedLanguage = localStorage.getItem("language") || "sk";
-    this.currentLanguage = savedLanguage;
+    this.syncCurrentLanguage();
     // initialize favorites count from localStorage (or server if logged)
     this.updateFavoritesCount();
 
@@ -248,6 +247,7 @@ export default {
     );
     window.addEventListener("user-logged-in", this.onUserLoggedIn);
     window.addEventListener("user-logged-out", this.onUserLoggedOut);
+    window.addEventListener("language-changed", this.onLanguageChanged);
 
     // listen to storage events (other tabs) to stay in sync for anonymous users
     window.addEventListener("storage", this.onStorageEvent);
@@ -288,6 +288,7 @@ export default {
     );
     window.removeEventListener("user-logged-in", this.onUserLoggedIn);
     window.removeEventListener("user-logged-out", this.onUserLoggedOut);
+    window.removeEventListener("language-changed", this.onLanguageChanged);
     window.removeEventListener("storage", this.onStorageEvent);
     // Clear debounce timer
     if (this.updateFavoritesCountDebounceTimer) {
@@ -390,6 +391,7 @@ export default {
     },
     async onUserLoggedIn() {
       // when user logs in, try to refresh count from server
+      this.syncCurrentLanguage();
       await this.updateFavoritesCount();
     },
     onUserLoggedOut() {
@@ -400,6 +402,23 @@ export default {
       if (e.key === "favorites") {
         this.favoritesCount = this.getLocalFavoritesCount();
       }
+      if (e.key === "language" || e.key === "locale") {
+        this.syncCurrentLanguage();
+      }
+    },
+    onLanguageChanged(e) {
+      const lang = String(e?.detail?.language || "").toLowerCase();
+      if (lang === "sk" || lang === "en") {
+        this.currentLanguage = lang;
+      } else {
+        this.syncCurrentLanguage();
+      }
+    },
+    syncCurrentLanguage() {
+      const savedLanguage = String(
+        localStorage.getItem("language") || localStorage.getItem("locale") || "sk"
+      ).toLowerCase();
+      this.currentLanguage = savedLanguage === "en" ? "en" : "sk";
     },
     async setLanguage(lang) {
       this.currentLanguage = lang;

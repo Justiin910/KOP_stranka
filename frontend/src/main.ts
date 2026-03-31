@@ -28,7 +28,22 @@ app.use(router)
 .component("font-awesome-icon", FontAwesomeIcon)
 
 // Setup i18n
-const savedLang = localStorage.getItem('language') || 'sk'
+let savedLang = localStorage.getItem('language') || localStorage.getItem('locale') || 'sk'
+
+try {
+	const rawUser = localStorage.getItem('user')
+	if (rawUser) {
+		const parsedUser = JSON.parse(rawUser)
+		const preferred = String(parsedUser?.language || '').toLowerCase()
+		if (preferred === 'sk' || preferred === 'en') {
+			savedLang = preferred
+			localStorage.setItem('language', preferred)
+			localStorage.setItem('locale', preferred)
+		}
+	}
+} catch (e) {
+	// Ignore parsing issues and keep fallback locale.
+}
 
 // Plural rules for different languages
 const pluralRules = {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PaymentCard;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
@@ -22,6 +23,15 @@ class OrderController extends Controller
             'payment_method' => 'required|in:card,googlepay,paypal',
             'payment_token' => 'required|string',
             'total' => 'required|numeric',
+            'save_card' => 'nullable|boolean',
+            'card_details' => 'nullable|array',
+            'card_details.cardholder_name' => 'nullable|string|max:120',
+            'card_details.card_number' => 'nullable|string',
+            'card_details.expiry' => [
+                'nullable',
+                'string',
+                'regex:/^(0[1-9]|1[0-2])\/[0-9]{2}$/',
+            ],
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
@@ -82,6 +92,12 @@ class OrderController extends Controller
                 // Clear user's cart if authenticated
                 if ($userId) {
                     DB::table('cart_items')->where('user_id', $userId)->delete();
+
+                    $shouldSaveCard = ($validated['save_card'] ?? false) && $validated['payment_method'] === 'card';
+                    $cardDetails = $validated['card_details'] ?? null;
+                    if ($shouldSaveCard && $cardDetails) {
+                        $this->saveDefaultPaymentCard($userId, $cardDetails);
+                    }
                 }
 
                 return response()->json([
@@ -129,6 +145,7 @@ class OrderController extends Controller
                             'id' => $item->id,
                             'product_id' => $item->product_id,
                             'product_name' => $item->product?->title ?? 'Deleted Product',
+                            'product_image' => $item->product?->image,
                             'quantity' => $item->quantity,
                             'price' => (float)$item->price,
                             'variant_options' => $item->variant_options ?? [],
@@ -169,6 +186,7 @@ class OrderController extends Controller
                         'id' => $item->id,
                         'product_id' => $item->product_id,
                         'product_name' => $item->product?->title ?? 'Deleted Product',
+                        'product_image' => $item->product?->image,
                         'quantity' => $item->quantity,
                         'price' => (float)$item->price,
                         'variant_options' => $item->variant_options ?? [],
@@ -212,6 +230,8 @@ class OrderController extends Controller
         }
 
         try {
+            $order->loadMissing('items.product');
+
             // Get email from order delivery address
             $address = $order->address;
             $email = $address['email'] ?? null;
@@ -224,6 +244,11 @@ class OrderController extends Controller
             }
 
             // Send email
+            $paymentMethodLabels = trans('messages.email.order_confirmation.payment_methods');
+            $paymentMethodLabel = is_array($paymentMethodLabels)
+                ? ($paymentMethodLabels[$order->payment_method] ?? $order->payment_method)
+                : $order->payment_method;
+
             \Mail::send('emails.order-confirmation', [
                 'order' => $order,
                 'address' => $address,
@@ -232,19 +257,18 @@ class OrderController extends Controller
                     return [
                         'product_id' => $item->product_id,
                         'product_title' => $item->product->title ?? 'Product',
+                        'product_image' => $item->product?->image,
                         'quantity' => $item->quantity,
                         'price' => $item->price,
                         'variant_options' => $item->variant_options ?? null,
                     ];
                 })->toArray(),
                 'paymentMethod' => [
-                    'card' => 'Platobná karta',
-                    'googlepay' => 'Google Pay',
-                    'paypal' => 'PayPal',
-                ][$order->payment_method] ?? $order->payment_method,
+                    'label' => $paymentMethodLabel,
+                ],
             ], function ($message) use ($email, $order) {
                 $message->to($email)
-                    ->subject("Potvrdenie objednávky - {$order->reference}");
+                    ->subject(__('messages.email.order_confirmation.subject', ['reference' => $order->reference]));
             });
 
             return response()->json([
@@ -257,4 +281,46 @@ class OrderController extends Controller
                 'message' => __('messages.order.email_send_failed', ['error' => $e->getMessage()])
             ], 500);
         }
-    }}
+    }
+
+    private function saveDefaultPaymentCard(int $userId, array $cardDetails): void
+    {
+        $digits = preg_replace('/\D+/', '', (string) ($cardDetails['card_number'] ?? ''));
+        $expiry = (string) ($cardDetails['expiry'] ?? '');
+        $name = trim((string) ($cardDetails['cardholder_name'] ?? ''));
+
+        if (strlen($digits) < 13 || strlen($digits) > 19 || !preg_match('/^(0[1-9]|1[0-2])\/[0-9]{2}$/', $expiry) || $name === '') {
+            return;
+        }
+
+        [$monthRaw, $yearRaw] = explode('/', $expiry);
+
+        PaymentCard::where('user_id', $userId)->update(['is_default' => false]);
+
+        PaymentCard::create([
+            'user_id' => $userId,
+            'cardholder_name' => $name,
+            'card_number' => $digits,
+            'expiry_month' => (int) $monthRaw,
+            'expiry_year' => 2000 + (int) $yearRaw,
+            'brand' => $this->detectCardBrand($digits),
+            'last4' => substr($digits, -4),
+            'is_default' => true,
+        ]);
+    }
+
+    private function detectCardBrand(string $digits): string
+    {
+        if (preg_match('/^4/', $digits)) {
+            return 'visa';
+        }
+        if (preg_match('/^(5[1-5]|2[2-7])/', $digits)) {
+            return 'mastercard';
+        }
+        if (preg_match('/^3[47]/', $digits)) {
+            return 'amex';
+        }
+
+        return 'card';
+    }
+}

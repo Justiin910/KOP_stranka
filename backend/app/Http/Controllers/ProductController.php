@@ -7,9 +7,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use App\Models\Product;
 use App\Models\ProductReview;
 use App\Models\User;
+use App\Models\Notification;
 
 class ProductController extends Controller
 {
@@ -30,10 +33,12 @@ class ProductController extends Controller
             $reviews = DB::table('product_reviews')
                 ->where('product_id', $id)
                 ->leftJoin('users', 'product_reviews.user_id', '=', 'users.id')
-                ->select('product_reviews.id', 'product_reviews.rating', 'product_reviews.comment', 'product_reviews.created_at', 'users.id as user_id', 'users.name as user_name')
+                ->select('product_reviews.id', 'product_reviews.rating', 'product_reviews.comment', 'product_reviews.created_at', 'users.id as user_id', 'users.name as user_name', 'users.avatar as user_avatar')
                 ->orderByDesc('product_reviews.created_at')
                 ->limit(20)
                 ->get();
+
+            $reviews = $this->attachCommentsToReviews($reviews);
 
             // If products table has rating/reviews fields, update them for convenience
             try {
@@ -127,8 +132,10 @@ class ProductController extends Controller
         $review = DB::table('product_reviews')
             ->leftJoin('users', 'product_reviews.user_id', '=', 'users.id')
             ->where('product_reviews.id', $reviewId)
-            ->select('product_reviews.id', 'product_reviews.rating', 'product_reviews.comment', 'product_reviews.created_at', 'product_reviews.updated_at', 'users.id as user_id', 'users.name as user_name')
+            ->select('product_reviews.id', 'product_reviews.rating', 'product_reviews.comment', 'product_reviews.created_at', 'product_reviews.updated_at', 'users.id as user_id', 'users.name as user_name', 'users.avatar as user_avatar')
             ->first();
+
+        $review = $this->attachCommentsToReviews(collect([$review]))->first();
 
         return response()->json([
             'success' => true,
@@ -151,8 +158,12 @@ class ProductController extends Controller
             ->leftJoin('users', 'product_reviews.user_id', '=', 'users.id')
             ->where('product_reviews.product_id', $id)
             ->where('product_reviews.user_id', auth()->id())
-            ->select('product_reviews.id', 'product_reviews.rating', 'product_reviews.comment', 'product_reviews.created_at', 'product_reviews.updated_at', 'users.id as user_id', 'users.name as user_name')
+            ->select('product_reviews.id', 'product_reviews.rating', 'product_reviews.comment', 'product_reviews.created_at', 'product_reviews.updated_at', 'users.id as user_id', 'users.name as user_name', 'users.avatar as user_avatar')
             ->first();
+
+        if ($review) {
+            $review = $this->attachCommentsToReviews(collect([$review]))->first();
+        }
 
         return response()->json(['review' => $review]);
     }
@@ -209,8 +220,10 @@ class ProductController extends Controller
         $updatedReview = DB::table('product_reviews')
             ->leftJoin('users', 'product_reviews.user_id', '=', 'users.id')
             ->where('product_reviews.id', $reviewId)
-            ->select('product_reviews.id', 'product_reviews.rating', 'product_reviews.comment', 'product_reviews.created_at', 'product_reviews.updated_at', 'users.id as user_id', 'users.name as user_name')
+            ->select('product_reviews.id', 'product_reviews.rating', 'product_reviews.comment', 'product_reviews.created_at', 'product_reviews.updated_at', 'users.id as user_id', 'users.name as user_name', 'users.avatar as user_avatar')
             ->first();
+
+        $updatedReview = $this->attachCommentsToReviews(collect([$updatedReview]))->first();
 
         return response()->json([
             'success' => true,
@@ -242,7 +255,7 @@ class ProductController extends Controller
         }
 
         // Check authorization: user can delete own review, or admin/owner can delete any
-        if ($review->user_id !== auth()->id() && !$isAdmin) {
+        if ((int) $review->user_id !== (int) auth()->id() && !$isAdmin) {
             return response()->json(['message' => __('messages.product.review_unauthorized_delete')], 403);
         }
 
@@ -273,6 +286,226 @@ class ProductController extends Controller
             'rating' => (float)$agg->avg_rating,
             'reviews' => (int)$agg->reviews_count,
         ]);
+    }
+
+    /**
+     * Create a comment on review or a reply to an existing review comment.
+     */
+    public function storeReviewComment(Request $request, $id, $reviewId)
+    {
+        if (!auth()->check()) {
+            return response()->json(['message' => __('messages.product.unauthorized')], 401);
+        }
+
+        if (!Schema::hasTable('product_review_comments')) {
+            return response()->json(['message' => 'Review comments are not available yet.'], 503);
+        }
+
+        $validated = $request->validate([
+            'comment' => 'required|string|max:2000',
+            'parent_id' => 'nullable|integer',
+        ]);
+
+        $review = DB::table('product_reviews')
+            ->where('id', $reviewId)
+            ->where('product_id', $id)
+            ->first();
+
+        if (!$review) {
+            return response()->json(['message' => __('messages.product.review_not_found')], 404);
+        }
+
+        $parentId = $validated['parent_id'] ?? null;
+        $parentComment = null;
+        if ($parentId !== null) {
+            $parentComment = DB::table('product_review_comments')
+                ->where('id', $parentId)
+                ->where('review_id', $reviewId)
+                ->first();
+
+            if (!$parentComment) {
+                return response()->json(['message' => 'Parent comment not found.'], 422);
+            }
+        }
+
+        $commentId = DB::table('product_review_comments')->insertGetId([
+            'review_id' => $reviewId,
+            'user_id' => auth()->id(),
+            'parent_id' => $parentId,
+            'comment' => trim((string) $validated['comment']),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $actorId = (int) auth()->id();
+        $recipientId = null;
+        $notificationTitle = null;
+        $notificationMessage = null;
+
+        $authorName = auth()->user()?->name ?: 'Používateľ';
+        $productTitle = (string) (DB::table('products')->where('id', $id)->value('title') ?? "#{$id}");
+        $commentPreview = Str::limit(trim((string) $validated['comment']), 180);
+
+        // 1) Reply to an existing discussion comment -> notify that comment author.
+        if (
+            $parentComment &&
+            !empty($parentComment->user_id) &&
+            (int) $parentComment->user_id !== $actorId
+        ) {
+            $recipientId = (int) $parentComment->user_id;
+            $notificationTitle = 'Niekto odpovedal na váš komentár';
+            $notificationMessage = "{$authorName} odpovedal na váš komentár pri produkte {$productTitle}: \"{$commentPreview}\"";
+        }
+
+        // 2) New top-level discussion comment under a review -> notify review author.
+        if (
+            !$recipientId &&
+            !empty($review->user_id) &&
+            (int) $review->user_id !== $actorId
+        ) {
+            $recipientId = (int) $review->user_id;
+            $notificationTitle = 'Niekto komentoval vašu recenziu';
+            $notificationMessage = "{$authorName} pridal komentár k vašej recenzii pri produkte {$productTitle}: \"{$commentPreview}\"";
+        }
+
+        if ($recipientId && $notificationTitle && $notificationMessage) {
+            try {
+                Notification::create([
+                    'user_id' => $recipientId,
+                    'type' => 'general',
+                    'title' => $notificationTitle,
+                    'message' => $notificationMessage,
+                    'read' => false,
+                ]);
+            } catch (\Exception $e) {
+                Log::warning('Failed to create review discussion notification: ' . $e->getMessage(), [
+                    'review_id' => $reviewId,
+                    'recipient_id' => $recipientId,
+                    'actor_id' => $actorId,
+                ]);
+            }
+        }
+
+        $comment = DB::table('product_review_comments')
+            ->leftJoin('users', 'product_review_comments.user_id', '=', 'users.id')
+            ->where('product_review_comments.id', $commentId)
+            ->select(
+                'product_review_comments.id',
+                'product_review_comments.review_id',
+                'product_review_comments.parent_id',
+                'product_review_comments.comment',
+                'product_review_comments.created_at',
+                'product_review_comments.updated_at',
+                'users.id as user_id',
+                'users.name as user_name',
+                'users.avatar as user_avatar'
+            )
+            ->first();
+
+        return response()->json([
+            'success' => true,
+            'comment' => [
+                'id' => (int) $comment->id,
+                'review_id' => (int) $comment->review_id,
+                'parent_id' => $comment->parent_id !== null ? (int) $comment->parent_id : null,
+                'comment' => (string) $comment->comment,
+                'created_at' => $comment->created_at,
+                'updated_at' => $comment->updated_at,
+                'user_id' => $comment->user_id !== null ? (int) $comment->user_id : null,
+                'user_name' => $comment->user_name,
+                'user_avatar' => $comment->user_avatar,
+                'replies' => [],
+            ],
+        ]);
+    }
+
+    private function attachCommentsToReviews(Collection $reviews): Collection
+    {
+        if ($reviews->isEmpty()) {
+            return $reviews;
+        }
+
+        foreach ($reviews as $review) {
+            if ($review) {
+                $review->comments = [];
+            }
+        }
+
+        if (!Schema::hasTable('product_review_comments')) {
+            return $reviews;
+        }
+
+        $reviewIds = $reviews->pluck('id')->filter()->values()->all();
+        if (empty($reviewIds)) {
+            return $reviews;
+        }
+
+        $commentRows = DB::table('product_review_comments')
+            ->leftJoin('users', 'product_review_comments.user_id', '=', 'users.id')
+            ->whereIn('product_review_comments.review_id', $reviewIds)
+            ->select(
+                'product_review_comments.id',
+                'product_review_comments.review_id',
+                'product_review_comments.parent_id',
+                'product_review_comments.comment',
+                'product_review_comments.created_at',
+                'product_review_comments.updated_at',
+                'users.id as user_id',
+                'users.name as user_name',
+                'users.avatar as user_avatar'
+            )
+            ->orderBy('product_review_comments.created_at')
+            ->get()
+            ->map(function ($row) {
+                return [
+                    'id' => (int) $row->id,
+                    'review_id' => (int) $row->review_id,
+                    'parent_id' => $row->parent_id !== null ? (int) $row->parent_id : null,
+                    'comment' => (string) $row->comment,
+                    'created_at' => $row->created_at,
+                    'updated_at' => $row->updated_at,
+                    'user_id' => $row->user_id !== null ? (int) $row->user_id : null,
+                    'user_name' => $row->user_name,
+                    'user_avatar' => $row->user_avatar,
+                ];
+            });
+
+        $commentsByReview = $commentRows->groupBy('review_id');
+
+        foreach ($reviews as $review) {
+            if (!$review) {
+                continue;
+            }
+
+            $reviewComments = $commentsByReview->get((int) $review->id, collect());
+            $review->comments = $this->buildCommentTree($reviewComments);
+        }
+
+        return $reviews;
+    }
+
+    private function buildCommentTree(Collection $comments): array
+    {
+        if ($comments->isEmpty()) {
+            return [];
+        }
+
+        $groupedByParent = $comments->groupBy(function (array $comment) {
+            return $comment['parent_id'] !== null ? (string) $comment['parent_id'] : 'root';
+        });
+
+        $buildBranch = function (string $parentKey) use (&$buildBranch, $groupedByParent): array {
+            return $groupedByParent
+                ->get($parentKey, collect())
+                ->map(function (array $comment) use (&$buildBranch) {
+                    $comment['replies'] = $buildBranch((string) $comment['id']);
+                    return $comment;
+                })
+                ->values()
+                ->all();
+        };
+
+        return $buildBranch('root');
     }
 
     public function byCategory($category)

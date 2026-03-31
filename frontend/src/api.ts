@@ -5,7 +5,34 @@ import axios from 'axios';
 let sessionToken: string | null = null;
 
 // Store current locale for API requests
-let currentLocale: string = localStorage.getItem('locale') || 'sk';
+let currentLocale: string = localStorage.getItem('language') || localStorage.getItem('locale') || 'sk';
+
+function getPreferredAcceptLanguage(): string {
+    if (typeof navigator === 'undefined') {
+        return currentLocale;
+    }
+
+    const langs = Array.isArray(navigator.languages) && navigator.languages.length > 0
+        ? navigator.languages
+        : [navigator.language];
+
+    const browserList = langs
+        .map((lang) => String(lang || '').trim())
+        .filter(Boolean);
+
+    const appLocale = String(currentLocale || '').trim();
+    const combined = [appLocale, ...browserList].filter(Boolean);
+
+    const seen = new Set<string>();
+    const unique = combined.filter((lang) => {
+        const key = lang.toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+
+    return unique.join(', ') || currentLocale;
+}
 
 // Initialize sessionToken from sessionStorage (survives reloads, cleared when tab/window closes)
 try {
@@ -27,6 +54,9 @@ const api = axios.create({
 
 // Add interceptor to include auth token if available
 api.interceptors.request.use((config) => {
+    // Keep locale in sync if changed outside this module.
+    currentLocale = localStorage.getItem('language') || localStorage.getItem('locale') || currentLocale;
+
     // Check localStorage first (persistent login)
     const persistentToken = localStorage.getItem('token');
     if (persistentToken) {
@@ -42,8 +72,8 @@ api.interceptors.request.use((config) => {
         }
     }
     
-    // Add current locale header so backend responds in correct language
-    config.headers['Accept-Language'] = currentLocale;
+    // Use current browser language preferences at request time.
+    config.headers['Accept-Language'] = getPreferredAcceptLanguage();
     
     return config;
 });
@@ -87,6 +117,7 @@ export function getSessionToken() {
 
 export function setLocale(locale: string) {
     currentLocale = locale;
+    localStorage.setItem('language', locale);
     localStorage.setItem('locale', locale);
 }
 

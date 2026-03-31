@@ -25,6 +25,7 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 
 // Authentication
 Route::post('/login', [AuthenticatedSessionController::class, 'store'])->middleware('guest');
+Route::post('/login/verify-2fa', [AuthenticatedSessionController::class, 'verifyTwoFactor'])->middleware('guest');
 Route::post('/register', [RegisteredUserController::class, 'store'])->middleware('guest');
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth');
 
@@ -54,14 +55,21 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/products/{id}/reviews', [ProductController::class, 'storeReview']);
     Route::put('/products/{id}/reviews/{reviewId}', [ProductController::class, 'updateReview']);
     Route::delete('/products/{id}/reviews/{reviewId}', [ProductController::class, 'deleteReview']);
+    Route::post('/products/{id}/reviews/{reviewId}/comments', [ProductController::class, 'storeReviewComment']);
 });
 
 // User profile management
 Route::middleware('auth:sanctum')->group(function () {
     Route::put('/user/profile', [ProfileController::class, 'updateProfile']);
+    Route::post('/user/profile/confirm-email-change', [ProfileController::class, 'confirmEmailChange']);
     Route::put('/user/password', [ProfileController::class, 'updatePassword']);
+    Route::put('/user/2fa', [ProfileController::class, 'updateTwoFactor']);
+    Route::get('/user/payment-card', [ProfileController::class, 'getPaymentCard']);
+    Route::post('/user/payment-card', [ProfileController::class, 'savePaymentCard']);
+    Route::delete('/user/payment-card', [ProfileController::class, 'deletePaymentCard']);
     Route::put('/user/language', [ProfileController::class, 'updateLanguage']);
     Route::post('/user/avatar', [ProfileController::class, 'uploadAvatar']);
+    Route::delete('/user/avatar', [ProfileController::class, 'resetAvatar']);
     Route::delete('/user', [ProfileController::class, 'deleteAccount']);
     
     // Favorites API

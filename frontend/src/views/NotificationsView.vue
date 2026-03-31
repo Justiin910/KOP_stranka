@@ -229,13 +229,15 @@ export default {
 
       if (seconds < 60) return this.$t('time.justNow') || 'Just now';
       const minutes = Math.floor(seconds / 60);
-      if (minutes < 60) return `${minutes}m ${this.$t('time.ago') || 'ago'}`;
+      const isSk = this.$i18n?.locale?.startsWith && this.$i18n.locale.startsWith('sk');
+      const t = (k, d) => this.$t(k) || d;
+      if (minutes < 60) return isSk ? `${t('time.ago', 'pred')} ${minutes}m` : `${minutes}m ${t('time.ago', 'ago')}`;
       const hours = Math.floor(minutes / 60);
-      if (hours < 24) return `${hours}h ${this.$t('time.ago') || 'ago'}`;
+      if (hours < 24) return isSk ? `${t('time.ago', 'pred')} ${hours}h` : `${hours}h ${t('time.ago', 'ago')}`;
       const days = Math.floor(hours / 24);
-      if (days < 7) return `${days}d ${this.$t('time.ago') || 'ago'}`;
+      if (days < 7) return isSk ? `${t('time.ago', 'pred')} ${days}d` : `${days}d ${t('time.ago', 'ago')}`;
       const weeks = Math.floor(days / 7);
-      if (weeks < 4) return `${weeks}w ${this.$t('time.ago') || 'ago'}`;
+      if (weeks < 4) return isSk ? `${t('time.ago', 'pred')} ${weeks}w` : `${weeks}w ${t('time.ago', 'ago')}`;
 
       return notifDate.toLocaleDateString();
     },

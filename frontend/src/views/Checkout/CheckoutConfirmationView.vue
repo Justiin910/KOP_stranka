@@ -103,7 +103,7 @@
                 </p>
                 <p>{{ order.delivery?.address?.country }}</p>
                 <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                  {{ order.delivery?.phone }}
+                  {{ formatPhone(order.delivery?.phone || order.delivery?.address?.phone) }}
                 </p>
                 <p class="text-sm text-gray-600 dark:text-gray-400">
                   {{ order.delivery?.address?.email }}
@@ -262,6 +262,7 @@
 </template>
 
 <script>
+import api from "@/api.ts";
 import { useRouter } from "vue-router";
 import { useCartStore } from '../../stores/cartStore';
 
@@ -293,6 +294,7 @@ export default {
   methods: {
     loadOrder() {
       const raw = localStorage.getItem("checkoutOrder");
+      this.isAuthenticated = !!(localStorage.getItem("token") || sessionStorage.getItem("token"));
       console.log("🔍 Loading order from localStorage:", raw ? "FOUND" : "NOT FOUND");
       if (!raw) {
         // redirect to home if no order
@@ -314,22 +316,15 @@ export default {
 
     async sendConfirmationEmail() {
       try {
-        const token = localStorage.getItem("token");
-        if (!token || !this.order?.id) {
+        if (!this.isAuthenticated || !this.order?.id) {
           console.log("ℹ️ Skipping email: not authenticated or no order ID");
           return;
         }
 
         console.log("📧 Sending confirmation email...");
-        const response = await fetch(`/api/orders/${this.order.id}/send-confirmation`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await api.post(`/api/orders/${this.order.id}/send-confirmation`);
 
-        if (response.ok) {
+        if (response.status >= 200 && response.status < 300) {
           console.log("✅ Confirmation email sent successfully");
         } else {
           console.warn("⚠️ Failed to send confirmation email:", response.status);
@@ -374,21 +369,21 @@ export default {
 
     getOrderStatus(status) {
       const statuses = {
-        pending: "Čakajúce spracovanie",
-        paid: "Zaplatené",
-        cancelled: "Zrušené",
-        shipped: "Odoslané",
-        delivered: "Doručené",
+        pending: this.$t("pages.checkout.confirmation.status_pending"),
+        paid: this.$t("pages.checkout.confirmation.status_paid"),
+        cancelled: this.$t("pages.checkout.confirmation.status_cancelled"),
+        shipped: this.$t("pages.checkout.confirmation.status_shipped"),
+        delivered: this.$t("pages.checkout.confirmation.status_delivered"),
       };
       return statuses[status] || status;
     },
 
     formatDate(dateString) {
       try {
-        if (!dateString) return "Neznámy dátum";
+        if (!dateString) return this.$t("pages.checkout.confirmation.unknown_date");
         const date = new Date(dateString);
-        if (isNaN(date.getTime())) return "Neznámy dátum";
-        return date.toLocaleDateString("sk-SK", {
+        if (isNaN(date.getTime())) return this.$t("pages.checkout.confirmation.unknown_date");
+        return date.toLocaleString(this.getActiveLocale(), {
           year: "numeric",
           month: "long",
           day: "numeric",
@@ -396,8 +391,35 @@ export default {
           minute: "2-digit",
         });
       } catch {
-        return "Neznámy dátum";
+        return this.$t("pages.checkout.confirmation.unknown_date");
       }
+    },
+
+    getActiveLocale() {
+      return localStorage.getItem("language") || localStorage.getItem("locale") || "sk-SK";
+    },
+
+    formatPhone(phone) {
+      if (!phone) return "";
+
+      const digits = String(phone).replace(/\D/g, "");
+      if (!digits) return "";
+
+      let local = digits;
+      let prefix = "+421";
+
+      if (digits.startsWith("421")) {
+        local = digits.slice(3);
+      } else if (digits.startsWith("0")) {
+        local = digits.slice(1);
+      } else if (digits.length > 9) {
+        local = digits.slice(-9);
+      } else {
+        prefix = "";
+      }
+
+      const chunks = local.slice(0, 9).match(/.{1,3}/g) || [local.slice(0, 9)];
+      return `${prefix ? `${prefix} ` : ""}${chunks.join(" ")}`.trim();
     },
 
     formatVariantOptions(variantOptions) {

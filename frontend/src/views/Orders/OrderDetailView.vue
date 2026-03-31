@@ -22,7 +22,9 @@
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-          <p class="mt-4 text-gray-600 dark:text-gray-400">Načítavanie objednávky...</p>
+          <p class="mt-4 text-gray-600 dark:text-gray-400">
+            {{ $t("pages.orders.detail.loading") }}
+          </p>
         </div>
       </div>
 
@@ -36,7 +38,7 @@
           @click="$router.back()"
           class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
         >
-          Späť
+          {{ $t("common.back") }}
         </button>
       </div>
 
@@ -57,17 +59,17 @@
                   d="M15 19l-7-7 7-7"
                 ></path>
               </svg>
-              Späť
+              {{ $t("common.back") }}
             </button>
             <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-              Objednávka #{{ order.id }}
+              {{ $t("pages.orders.detail.title", { id: order.id }) }}
             </h1>
           </div>
           <span
             class="px-4 py-2 rounded-lg text-sm font-semibold"
             :class="getStatusClass(order.status)"
           >
-            {{ order.status }}
+            {{ getOrderStatusLabel(order.status) }}
           </span>
         </div>
 
@@ -77,7 +79,9 @@
           <div
             class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6"
           >
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Dátum objednávky</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+              {{ $t("pages.orders.detail.order_date") }}
+            </p>
             <p class="text-lg font-bold text-gray-900 dark:text-white">
               {{ formatDate(order.created_at) }}
             </p>
@@ -87,7 +91,9 @@
           <div
             class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6"
           >
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Celková suma</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+              {{ $t("pages.orders.detail.total_amount") }}
+            </p>
             <p class="text-lg font-bold text-gray-900 dark:text-white">
               {{ formatPrice(order.total) }} €
             </p>
@@ -97,7 +103,9 @@
           <div
             class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6"
           >
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Referenčné číslo</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+              {{ $t("pages.orders.detail.reference") }}
+            </p>
             <p class="text-lg font-bold text-gray-900 dark:text-white font-mono">
               {{ order.reference }}
             </p>
@@ -109,7 +117,7 @@
           class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8"
         >
           <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
-            Položky objednávky
+            {{ $t("pages.orders.detail.items_title") }}
           </h2>
 
           <div class="overflow-x-auto">
@@ -119,22 +127,22 @@
                   <th
                     class="px-4 py-3 text-left text-gray-600 dark:text-gray-400 font-medium"
                   >
-                    Produkt
+                    {{ $t("pages.orders.detail.product") }}
                   </th>
                   <th
                     class="px-4 py-3 text-center text-gray-600 dark:text-gray-400 font-medium"
                   >
-                    Množstvo
+                    {{ $t("pages.orders.detail.quantity") }}
                   </th>
                   <th
                     class="px-4 py-3 text-right text-gray-600 dark:text-gray-400 font-medium"
                   >
-                    Jednotková cena
+                    {{ $t("pages.orders.detail.unit_price") }}
                   </th>
                   <th
                     class="px-4 py-3 text-right text-gray-600 dark:text-gray-400 font-medium"
                   >
-                    Spolu
+                    {{ $t("pages.orders.detail.total") }}
                   </th>
                 </tr>
               </thead>
@@ -144,8 +152,25 @@
                   :key="item.id"
                   class="hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
-                  <td class="px-4 py-4 text-gray-900 dark:text-white font-medium">
-                    {{ item.product_name }}
+                  <td class="px-4 py-4 text-gray-900 dark:text-white">
+                    <div class="flex items-center gap-3">
+                      <img
+                        :src="getProductImageUrl(item.product_image)"
+                        :alt="item.product_name"
+                        class="w-12 h-12 object-cover rounded-lg flex-shrink-0"
+                      />
+                      <div>
+                        <p class="font-medium text-gray-900 dark:text-white">
+                          {{ item.product_name }}
+                        </p>
+                        <p
+                          v-if="item.variant_options && Object.keys(item.variant_options).length > 0"
+                          class="text-xs text-gray-600 dark:text-gray-400"
+                        >
+                          {{ formatVariantOptions(item.variant_options) }}
+                        </p>
+                      </div>
+                    </div>
                   </td>
                   <td class="px-4 py-4 text-center text-gray-900 dark:text-white">
                     {{ item.quantity }}
@@ -167,7 +192,7 @@
           <div class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
             <div class="flex justify-end items-center gap-4">
               <span class="text-lg font-bold text-gray-900 dark:text-white"
-                >Celková suma:</span
+                >{{ $t("pages.orders.detail.total_amount") }}:</span
               >
               <span class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
                 {{ formatPrice(order.total) }} €
@@ -183,7 +208,7 @@
             class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6"
           >
             <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">
-              Doručovacia adresa
+              {{ $t("pages.orders.detail.delivery_address") }}
             </h3>
             <div class="text-sm text-gray-700 dark:text-gray-300 space-y-2">
               <p v-if="address.fullName">
@@ -194,19 +219,20 @@
                 {{ address.zip }} {{ address.city }}
               </p>
               <p v-if="address.country">{{ address.country }}</p>
-              <p v-if="address.phone" class="mt-3">
-                <strong>Telefón:</strong> {{ address.phone }}
+              <p v-if="address.phone || order.phone" class="mt-3">
+                <strong>{{ $t("pages.orders.detail.phone") }}:</strong>
+                {{ formatPhone(address.phone || order.phone) }}
               </p>
               <p v-if="address.email" class="mt-1">
-                <strong>Email:</strong> {{ address.email }}
+                <strong>{{ $t("pages.orders.detail.email") }}:</strong> {{ address.email }}
               </p>
             </div>
             <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
               <p class="text-xs text-gray-600 dark:text-gray-400 mb-1">
-                Metóda doručenia:
+                {{ $t("pages.orders.detail.delivery_method") }}:
               </p>
               <p class="text-sm font-medium text-gray-900 dark:text-white">
-                {{ order.delivery_method }}
+                {{ getDeliveryMethodLabel(order.delivery_method) }}
               </p>
             </div>
           </div>
@@ -216,27 +242,27 @@
             class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6"
           >
             <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">
-              Informácie o platbe
+              {{ $t("pages.orders.detail.payment_info") }}
             </h3>
             <div class="text-sm text-gray-700 dark:text-gray-300 space-y-3">
               <div>
                 <p class="text-xs text-gray-600 dark:text-gray-400 mb-1">
-                  Metóda platby:
+                  {{ $t("pages.orders.detail.payment_method") }}:
                 </p>
                 <p class="text-sm font-medium text-gray-900 dark:text-white">
-                  {{ order.payment_method }}
+                  {{ getPaymentMethodLabel(order.payment_method) }}
                 </p>
               </div>
               <div>
                 <p class="text-xs text-gray-600 dark:text-gray-400 mb-1">
-                  Stav objednávky:
+                  {{ $t("pages.orders.detail.status") }}:
                 </p>
                 <p class="text-sm font-medium">
                   <span
                     class="px-2 py-1 rounded text-xs font-semibold"
                     :class="getStatusClass(order.status)"
                   >
-                    {{ order.status }}
+                    {{ getOrderStatusLabel(order.status) }}
                   </span>
                 </p>
               </div>
@@ -250,13 +276,13 @@
             @click="$router.back()"
             class="px-6 py-2 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-medium transition-colors"
           >
-            Späť na zoznam
+            {{ $t("pages.orders.detail.back_to_list") }}
           </button>
           <button
-            v-if="order.status === 'Doručené'"
+            v-if="normalizeStatus(order.status) === 'delivered'"
             class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
           >
-            Stiahnuť faktúru
+            {{ $t("pages.orders.detail.download_invoice") }}
           </button>
         </div>
       </div>
@@ -307,25 +333,53 @@ export default {
           this.order = response.data;
           this.address = this.order?.address || {};
         } else {
-          this.error = "Chyba pri načítaní objednávky";
+          this.error = this.$t("pages.orders.detail.error_load");
         }
       } catch (err) {
         console.error("Error fetching order:", err);
         if (err.response?.status === 403) {
-          this.error = "Nemáte prístup k tejto objednávke";
+          this.error = this.$t("pages.orders.detail.error_forbidden");
         } else if (err.response?.status === 404) {
-          this.error = "Objednávka nebola nájdená";
+          this.error = this.$t("pages.orders.detail.error_not_found");
         } else {
-          this.error = "Chyba pri načítaní objednávky";
+          this.error = this.$t("pages.orders.detail.error_load");
         }
       } finally {
         this.loading = false;
       }
     },
+    getActiveLocale() {
+      return localStorage.getItem("language") || localStorage.getItem("locale") || "sk-SK";
+    },
+    normalizeStatus(status) {
+      const normalized = String(status || "").trim().toLowerCase();
+      const map = {
+        pending: "pending",
+        paid: "paid",
+        cancelled: "cancelled",
+        shipped: "shipped",
+        delivered: "delivered",
+        "čakajúce": "pending",
+        cakajuce: "pending",
+        "spracováva sa": "paid",
+        spracovava: "paid",
+        "v preprave": "shipped",
+        "odoslané": "shipped",
+        odoslane: "shipped",
+        "doručené": "delivered",
+        dorucene: "delivered",
+        "zrušené": "cancelled",
+        zrusene: "cancelled",
+      };
+      return map[normalized] || "pending";
+    },
+    getOrderStatusLabel(status) {
+      return this.$t(`pages.orders.status.${this.normalizeStatus(status)}`);
+    },
     formatDate(date) {
       if (!date) return "";
       const d = new Date(date);
-      return d.toLocaleDateString("sk-SK", {
+      return d.toLocaleDateString(this.getActiveLocale(), {
         year: "numeric",
         month: "long",
         day: "numeric",
@@ -335,17 +389,93 @@ export default {
       return parseFloat(price).toFixed(2);
     },
     getStatusClass(status) {
+      const key = this.normalizeStatus(status);
       const classes = {
-        Doručené: "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200",
-        "V preprave": "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200",
-        "Spracováva sa":
-          "bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200",
-        čakajúce: "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200",
-        Zrušené: "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200",
+        pending: "bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200",
+        paid: "bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200",
+        shipped: "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200",
+        delivered: "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200",
+        cancelled: "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200",
       };
       return (
-        classes[status] || "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+        classes[key] || "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
       );
+    },
+    getDeliveryMethodLabel(method) {
+      const map = { standard: "method1", express: "method2", pickup: "method3" };
+      const key = map[method] || null;
+      if (!key) return method;
+      return this.$t(`pages.delivery.delivery_methods.${key}.name`);
+    },
+    getPaymentMethodLabel(method) {
+      const mapping = {
+        card: "payment_method_card",
+        googlepay: "payment_method_googlepay",
+        paypal: "payment_method_paypal",
+      };
+      const key = mapping[method];
+      if (!key) return method;
+      return this.$t(`pages.checkout.payment.${key}`);
+    },
+    formatPhone(phone) {
+      if (!phone) return "";
+
+      const digits = String(phone).replace(/\D/g, "");
+      if (!digits) return "";
+
+      let local = digits;
+      let prefix = "+421";
+
+      if (digits.startsWith("421")) {
+        local = digits.slice(3);
+      } else if (digits.startsWith("0")) {
+        local = digits.slice(1);
+      } else if (digits.length > 9) {
+        local = digits.slice(-9);
+      } else {
+        prefix = "";
+      }
+
+      const chunks = local.slice(0, 9).match(/.{1,3}/g) || [local.slice(0, 9)];
+      return `${prefix ? `${prefix} ` : ""}${chunks.join(" ")}`.trim();
+    },
+    getProductImageUrl(image) {
+      const placeholder = "https://via.placeholder.com/200?text=Product";
+      if (!image) return placeholder;
+
+      const src = String(image).trim();
+      if (!src) return placeholder;
+      if (src.startsWith("http://") || src.startsWith("https://")) return src;
+
+      const base = import.meta.env.VITE_API_URL || "http://localhost:8000";
+      if (src.startsWith("/storage/")) return `${base}${src}`;
+      if (src.startsWith("storage/")) return `${base}/${src}`;
+      return `${base}/storage/${src.replace(/^\/+/, "")}`;
+    },
+    formatVariantOptions(variantOptions) {
+      if (
+        !variantOptions ||
+        (typeof variantOptions === "string" && variantOptions === "{}")
+      ) {
+        return "";
+      }
+
+      let options = variantOptions;
+      if (typeof variantOptions === "string") {
+        try {
+          options = JSON.parse(variantOptions);
+        } catch {
+          return "";
+        }
+      }
+
+      if (!options || Object.keys(options).length === 0) {
+        return "";
+      }
+
+      return Object.entries(options)
+        .map(([key, value]) => `${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`)
+        .join(", ");
     },
   },
 };

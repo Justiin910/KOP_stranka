@@ -154,13 +154,13 @@
               :disabled="
                 product.stock === 0 || (product.variants && !areAllVariantsSelected())
               "
-              class="w-full px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+              class="w-full px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold transition disabled:opacity-50 cursor-pointer"
             >
               {{ t("product.add_to_cart") }}
             </button>
             <p
               v-if="product.variants && !areAllVariantsSelected()"
-              class="text-sm text-red-600 dark:text-red-400 mt-2"
+              class="text-sm text-red-600  dark:text-red-400 mt-2"
             >
               {{
                 t("product.select_all_variants") || "Please select all available options"
@@ -294,20 +294,36 @@
             >
               <div v-if="editingReviewId !== rev.id">
                 <div class="flex items-center justify-between mb-3">
-                  <div>
-                    <div class="font-semibold text-gray-900 dark:text-white">
-                      {{ rev.user_name || t("product.anonymous_user") }}
+                  <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
+                      <img
+                        v-if="rev.user_avatar"
+                        :src="getAvatarUrl(rev.user_avatar)"
+                        :alt="rev.user_name || t('product.anonymous_user')"
+                        class="w-full h-full object-cover"
+                      />
+                      <div
+                        v-else
+                        class="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center text-xs font-semibold"
+                      >
+                        {{ getInitials(rev.user_name || t("product.anonymous_user")) }}
+                      </div>
                     </div>
-                    <div class="text-xs text-gray-600 dark:text-gray-400">
-                      {{
-                        new Date(rev.created_at).toLocaleDateString(
-                          this.$i18n && this.$i18n.locale
-                            ? String(this.$i18n.locale)
-                            : "sk-SK" === "sk"
-                            ? "sk-SK"
-                            : "en-US"
-                        )
-                      }}
+                    <div>
+                      <div class="font-semibold text-gray-900 dark:text-white">
+                        {{ rev.user_name || t("product.anonymous_user") }}
+                      </div>
+                      <div class="text-xs text-gray-600 dark:text-gray-400">
+                        {{
+                          new Date(rev.created_at).toLocaleDateString(
+                            this.$i18n && this.$i18n.locale
+                              ? String(this.$i18n.locale)
+                              : "sk-SK" === "sk"
+                              ? "sk-SK"
+                              : "en-US"
+                          )
+                        }}
+                      </div>
                     </div>
                   </div>
                   <div class="flex items-center gap-3">
@@ -316,7 +332,7 @@
                     </div>
                     <div v-if="canDeleteReview(rev)" class="flex gap-2">
                       <button
-                        v-if="user && user.id === rev.user_id"
+                        v-if="isReviewOwner(rev)"
                         @click="startEditReview(rev)"
                         class="text-xs text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium"
                       >
@@ -340,6 +356,158 @@
                 >
                   Prekladá sa...
                 </p>
+
+                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <h4 class="text-sm font-semibold text-gray-900 dark:text-white">
+                    {{ t("product.review_discussion") }}
+                  </h4>
+
+                  <div class="mt-3 flex justify-end">
+                    <button
+                      type="button"
+                      @click="toggleReviewCommentComposer(rev.id)"
+                      class="text-xs text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium"
+                    >
+                      {{
+                        isReviewCommentOpen(rev.id)
+                          ? t("product.hide_review_comment_form")
+                          : t("product.open_review_comment_form")
+                      }}
+                    </button>
+                  </div>
+
+                  <div
+                    v-if="flattenReviewComments(rev.comments || []).length"
+                    class="space-y-3 mt-3"
+                  >
+                    <div
+                      v-for="item in flattenReviewComments(rev.comments || [])"
+                      :key="item.id"
+                      class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3"
+                      :style="{ marginLeft: `${Math.min(item.level, 4) * 16}px` }"
+                    >
+                      <div class="flex items-start gap-3">
+                        <div
+                          class="w-8 h-8 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 shrink-0"
+                        >
+                          <img
+                            v-if="item.user_avatar"
+                            :src="getAvatarUrl(item.user_avatar)"
+                            :alt="item.user_name || t('product.anonymous_user')"
+                            class="w-full h-full object-cover"
+                          />
+                          <div
+                            v-else
+                            class="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center text-[10px] font-semibold"
+                          >
+                            {{ getInitials(item.user_name || t("product.anonymous_user")) }}
+                          </div>
+                        </div>
+
+                        <div class="min-w-0 flex-1">
+                          <div class="flex items-center gap-2">
+                            <p class="text-xs font-semibold text-gray-900 dark:text-white">
+                              {{ item.user_name || t("product.anonymous_user") }}
+                            </p>
+                            <span class="text-[11px] text-gray-500 dark:text-gray-400">
+                              {{
+                                new Date(item.created_at).toLocaleDateString(
+                                  this.$i18n && this.$i18n.locale
+                                    ? String(this.$i18n.locale)
+                                    : "sk-SK" === "sk"
+                                    ? "sk-SK"
+                                    : "en-US"
+                                )
+                              }}
+                            </span>
+                          </div>
+                          <p class="text-sm text-gray-700 dark:text-gray-300 mt-1 whitespace-pre-line">
+                            {{ translatedReviewDiscussionComments[item.id] || item.comment }}
+                          </p>
+                          <button
+                            v-if="user"
+                            @click="setReplyTarget(rev.id, item.id, item.user_name)"
+                            class="mt-2 text-xs text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium"
+                          >
+                            {{ t("product.reply") }}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <p
+                    v-else
+                    class="text-xs text-gray-500 dark:text-gray-400 mt-3"
+                  >
+                    {{ t("product.no_review_comments") }}
+                  </p>
+
+                  <div
+                    v-if="isReviewCommentOpen(rev.id) || isReplyingTo(rev.id)"
+                    class="mt-4"
+                  >
+                    <div
+                      v-if="isReplyingTo(rev.id)"
+                      class="mb-2 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400"
+                    >
+                      <span>
+                        {{ t("product.replying_to", { name: getReplyTargetName(rev.id) }) }}
+                      </span>
+                      <button
+                        type="button"
+                        @click="clearReplyTarget(rev.id)"
+                        class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                      >
+                        {{ t("product.cancel_reply") }}
+                      </button>
+                    </div>
+
+                    <textarea
+                      v-model="reviewCommentForms[rev.id]"
+                      rows="2"
+                      class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                      :placeholder="
+                        user
+                          ? t('product.review_comment_placeholder')
+                          : t('product.login_to_comment_review')
+                      "
+                      :disabled="!user || isReviewCommentSubmitting(rev.id)"
+                    ></textarea>
+
+                    <div class="mt-2 flex items-center justify-between">
+                      <p
+                        v-if="!user"
+                        class="text-xs text-gray-500 dark:text-gray-400"
+                      >
+                        {{ t("product.login_to_review") }}
+                        <router-link
+                          to="/login"
+                          class="text-indigo-600 font-semibold hover:underline"
+                        >
+                          {{ t("product.login_link") }}
+                        </router-link>
+                        .
+                      </p>
+
+                      <button
+                        v-if="user"
+                        @click="submitReviewComment(rev.id)"
+                        :disabled="
+                          isReviewCommentSubmitting(rev.id) ||
+                          !(reviewCommentForms[rev.id] || '').trim().length
+                        "
+                        class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {{
+                          isReviewCommentSubmitting(rev.id)
+                            ? t("product.submitting_comment")
+                            : t("product.submit_review_comment")
+                        }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div v-else>
@@ -545,6 +713,13 @@ export default {
       // Translation cache for product description
       translatedDescription: "",
       translatingDescription: false,
+      // Review comments and reply state
+      reviewCommentForms: {},
+      reviewCommentSubmitting: {},
+      reviewReplyTargets: {},
+      reviewCommentComposerOpen: {},
+      translatedReviewDiscussionComments: {},
+      translatingReviewDiscussionComments: {},
     };
   },
 
@@ -576,6 +751,8 @@ export default {
       ) {
         this.translatedComments = {};
         this.translatingComments = {};
+        this.translatedReviewDiscussionComments = {};
+        this.translatingReviewDiscussionComments = {};
 
         this.$nextTick(() => {
           this.product.latest_reviews.forEach((review) => {
@@ -589,6 +766,8 @@ export default {
               this.getTranslatedComment(review.id, review.comment);
             }
           });
+
+          this.queueReviewDiscussionTranslations();
         });
       }
     },
@@ -603,6 +782,13 @@ export default {
         const id = this.$route.params.slug;
         const response = await api.get(`/api/products/${id}`);
         this.product = response.data;
+
+        if (Array.isArray(this.product.latest_reviews)) {
+          this.product.latest_reviews = this.product.latest_reviews.map((review) => ({
+            ...review,
+            comments: this.normalizeReviewCommentsTree(review?.comments || []),
+          }));
+        }
 
         // Ensure variants is parsed if it comes as a string
         if (this.product.variants && typeof this.product.variants === "string") {
@@ -696,6 +882,8 @@ export default {
                 this.getTranslatedComment(review.id, review.comment);
               }
             });
+
+            this.queueReviewDiscussionTranslations();
           });
         } else {
           console.log("[ProductView] No reviews to translate", {
@@ -772,10 +960,13 @@ export default {
           // Remove any existing review by this user so duplicates don't appear
           if (this.user && this.user.id) {
             this.product.latest_reviews = this.product.latest_reviews.filter(
-              (r) => r.user_id !== this.user.id
+              (r) => !this.isSameUserId(r.user_id, this.user.id)
             );
           }
-          this.product.latest_reviews.unshift(resp.data.review);
+          this.product.latest_reviews.unshift({
+            ...resp.data.review,
+            comments: this.normalizeReviewCommentsTree(resp.data.review?.comments || []),
+          });
           // Translate the new review comment
           if (resp.data.review && resp.data.review.comment) {
             console.log(
@@ -804,10 +995,13 @@ export default {
         const resp = await api.delete(
           `/api/products/${this.product.id}/reviews/${reviewId}`
         );
-        if (resp.data && resp.data.success) {
+        const wasSuccessful =
+          resp.status >= 200 && resp.status < 300 && (resp.data?.success ?? true);
+
+        if (wasSuccessful) {
           // Remove from list
           this.product.latest_reviews = this.product.latest_reviews.filter(
-            (r) => r.id !== reviewId
+            (r) => !this.isSameUserId(r.id, reviewId)
           );
           // Update aggregates
           this.product.rating = resp.data.rating ?? this.product.rating;
@@ -818,7 +1012,10 @@ export default {
       } catch (e) {
         console.error("Failed to delete review", e);
         this.$notify &&
-          this.$notify({ type: "error", text: this.t("product.review_delete_failed") });
+          this.$notify({
+            type: "error",
+            text: e?.response?.data?.message || this.t("product.review_delete_failed"),
+          });
       } finally {
         this.deleteProcessing = false;
         this.showDeleteModal = false;
@@ -839,7 +1036,7 @@ export default {
     },
     startEditReview(review) {
       this.editingReviewId = review.id;
-      this.editingReview.rating = review.rating;
+      this.editingReview.rating = parseFloat(review.rating) || 0;
       this.editingReview.comment = review.comment;
     },
     cancelEditReview() {
@@ -863,11 +1060,22 @@ export default {
           }
         );
 
-        if (resp.data.success) {
+        const wasSuccessful =
+          resp.status >= 200 && resp.status < 300 && (resp.data?.success ?? true);
+
+        if (wasSuccessful) {
           // Update the review in the list
-          const idx = this.product.latest_reviews.findIndex((r) => r.id === reviewId);
+          const idx = this.product.latest_reviews.findIndex((r) =>
+            this.isSameUserId(r.id, reviewId)
+          );
           if (idx !== -1) {
-            this.product.latest_reviews[idx] = resp.data.review;
+            const existingComments = this.product.latest_reviews[idx]?.comments || [];
+            this.product.latest_reviews[idx] = {
+              ...resp.data.review,
+              comments: this.normalizeReviewCommentsTree(
+                resp.data.review?.comments || existingComments
+              ),
+            };
             // Clear cached translation for this review so it gets re-translated
             delete this.translatedComments[reviewId];
             // Translate the updated review comment
@@ -886,7 +1094,7 @@ export default {
         }
       } catch (e) {
         console.error("Failed to update review", e);
-        alert("Chyba pri úprave recenzie.");
+        alert(e?.response?.data?.message || "Chyba pri úprave recenzie.");
       } finally {
         this.updatingReview = false;
       }
@@ -932,12 +1140,209 @@ export default {
       };
       return categoryMap[category] || category;
     },
+    isSameUserId(a, b) {
+      return String(a ?? "") === String(b ?? "");
+    },
+    isReviewOwner(review) {
+      if (!this.user || !review) return false;
+      return this.isSameUserId(this.user.id, review.user_id);
+    },
     canDeleteReview(review) {
       // User can delete their own review, or if they are admin/owner
       if (!this.user) return false;
-      if (this.user.id === review.user_id) return true;
+      if (this.isReviewOwner(review)) return true;
       if (this.user.role === "admin" || this.user.role === "owner") return true;
       return false;
+    },
+    normalizeSingleReviewComment(comment) {
+      if (!comment || typeof comment !== "object") {
+        return {
+          id: null,
+          review_id: null,
+          parent_id: null,
+          comment: "",
+          created_at: null,
+          updated_at: null,
+          user_id: null,
+          user_name: "",
+          user_avatar: null,
+          replies: [],
+        };
+      }
+
+      return {
+        id: comment.id,
+        review_id: comment.review_id,
+        parent_id: comment.parent_id ?? null,
+        comment: comment.comment || "",
+        created_at: comment.created_at,
+        updated_at: comment.updated_at,
+        user_id: comment.user_id ?? null,
+        user_name: comment.user_name || "",
+        user_avatar: comment.user_avatar || null,
+        replies: this.normalizeReviewCommentsTree(comment.replies || []),
+      };
+    },
+    normalizeReviewCommentsTree(comments) {
+      if (!Array.isArray(comments)) return [];
+      return comments.map((comment) => this.normalizeSingleReviewComment(comment));
+    },
+    flattenReviewComments(comments, level = 0, result = []) {
+      if (!Array.isArray(comments) || comments.length === 0) {
+        return result;
+      }
+
+      comments.forEach((comment) => {
+        const normalized = this.normalizeSingleReviewComment(comment);
+        result.push({ ...normalized, level });
+        if (normalized.replies && normalized.replies.length > 0) {
+          this.flattenReviewComments(normalized.replies, level + 1, result);
+        }
+      });
+
+      return result;
+    },
+    isReviewCommentSubmitting(reviewId) {
+      return !!this.reviewCommentSubmitting[reviewId];
+    },
+    toggleReviewCommentComposer(reviewId) {
+      this.reviewCommentComposerOpen[reviewId] = !this.isReviewCommentOpen(reviewId);
+      if (!this.reviewCommentComposerOpen[reviewId]) {
+        this.clearReplyTarget(reviewId);
+      }
+    },
+    isReviewCommentOpen(reviewId) {
+      return !!this.reviewCommentComposerOpen[reviewId];
+    },
+    setReplyTarget(reviewId, parentCommentId, parentUserName) {
+      this.reviewReplyTargets[reviewId] = {
+        parentId: parentCommentId,
+        parentUserName: parentUserName || this.t("product.anonymous_user"),
+      };
+      this.reviewCommentComposerOpen[reviewId] = true;
+    },
+    clearReplyTarget(reviewId) {
+      delete this.reviewReplyTargets[reviewId];
+    },
+    isReplyingTo(reviewId) {
+      return !!this.reviewReplyTargets[reviewId]?.parentId;
+    },
+    getReplyTargetName(reviewId) {
+      return (
+        this.reviewReplyTargets[reviewId]?.parentUserName ||
+        this.t("product.anonymous_user")
+      );
+    },
+    appendCommentToTree(tree, newComment) {
+      if (!Array.isArray(tree) || !newComment?.parent_id) {
+        return false;
+      }
+
+      for (const item of tree) {
+        if (this.isSameUserId(item.id, newComment.parent_id)) {
+          if (!Array.isArray(item.replies)) {
+            item.replies = [];
+          }
+          item.replies.push(newComment);
+          return true;
+        }
+
+        if (this.appendCommentToTree(item.replies || [], newComment)) {
+          return true;
+        }
+      }
+
+      return false;
+    },
+    appendCommentToReview(reviewId, comment) {
+      const review = (this.product.latest_reviews || []).find((item) =>
+        this.isSameUserId(item.id, reviewId)
+      );
+
+      if (!review) {
+        return;
+      }
+
+      if (!Array.isArray(review.comments)) {
+        review.comments = [];
+      }
+
+      const normalizedComment = this.normalizeSingleReviewComment(comment);
+      if (!normalizedComment.parent_id) {
+        review.comments.push(normalizedComment);
+        return;
+      }
+
+      const inserted = this.appendCommentToTree(review.comments, normalizedComment);
+      if (!inserted) {
+        normalizedComment.parent_id = null;
+        review.comments.push(normalizedComment);
+      }
+    },
+    async submitReviewComment(reviewId) {
+      if (!this.user) {
+        this.reviewError = this.t("product.login_to_comment_review");
+        return;
+      }
+
+      const text = (this.reviewCommentForms[reviewId] || "").trim();
+      if (!text || this.isReviewCommentSubmitting(reviewId)) {
+        return;
+      }
+
+      this.reviewCommentSubmitting[reviewId] = true;
+      try {
+        const replyTarget = this.reviewReplyTargets[reviewId] || null;
+        const response = await api.post(
+          `/api/products/${this.product.id}/reviews/${reviewId}/comments`,
+          {
+            comment: text,
+            parent_id: replyTarget?.parentId || null,
+          }
+        );
+
+        if (response.data?.comment) {
+          this.appendCommentToReview(reviewId, response.data.comment);
+          this.getTranslatedReviewDiscussionComment(
+            response.data.comment.id,
+            response.data.comment.comment
+          );
+          this.reviewCommentForms[reviewId] = "";
+          this.clearReplyTarget(reviewId);
+          this.reviewCommentComposerOpen[reviewId] = false;
+        }
+      } catch (error) {
+        console.error("Failed to submit review comment", error);
+        this.$notify &&
+          this.$notify({
+            type: "error",
+            text:
+              error?.response?.data?.message || this.t("product.review_comment_submit_failed"),
+          });
+      } finally {
+        this.reviewCommentSubmitting[reviewId] = false;
+      }
+    },
+    getAvatarUrl(avatar) {
+      if (!avatar) return "";
+      if (typeof avatar === "string" && avatar.startsWith("http")) return avatar;
+      const base = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(
+        /\/+$/,
+        ""
+      );
+      const normalized = String(avatar).replace(/^\/+/, "");
+      if (normalized.startsWith("storage/")) {
+        return `${base}/${normalized}`;
+      }
+      return `${base}/storage/${normalized}`;
+    },
+    getInitials(name) {
+      if (!name) return "?";
+      const parts = String(name).split(" ").filter(Boolean);
+      if (parts.length >= 2) {
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+      }
+      return parts[0].substring(0, 2).toUpperCase();
     },
     async getTranslatedDescription(descriptionText) {
       // Don't translate if text is empty
@@ -1054,6 +1459,60 @@ export default {
         return commentText;
       } finally {
         this.translatingComments[commentId] = false;
+      }
+    },
+    queueReviewDiscussionTranslations() {
+      if (!Array.isArray(this.product?.latest_reviews)) {
+        return;
+      }
+
+      this.product.latest_reviews.forEach((review) => {
+        const discussionComments = this.flattenReviewComments(review?.comments || []);
+        discussionComments.forEach((item) => {
+          if (item?.id && item?.comment) {
+            this.getTranslatedReviewDiscussionComment(item.id, item.comment);
+          }
+        });
+      });
+    },
+    async getTranslatedReviewDiscussionComment(commentId, commentText) {
+      if (!commentText || !commentText.trim()) {
+        this.translatedReviewDiscussionComments[commentId] = commentText;
+        return commentText;
+      }
+
+      if (this.translatedReviewDiscussionComments[commentId]) {
+        return this.translatedReviewDiscussionComments[commentId];
+      }
+
+      if (this.translatingReviewDiscussionComments[commentId]) {
+        return commentText;
+      }
+
+      this.translatingReviewDiscussionComments[commentId] = true;
+
+      try {
+        const currentLocale = this.$i18n?.locale || "sk";
+
+        if (currentLocale === "sk") {
+          this.translatedReviewDiscussionComments[commentId] = commentText;
+          return commentText;
+        }
+
+        const response = await api.post("/api/translate", {
+          text: commentText,
+          targetLanguage: currentLocale,
+        });
+
+        this.translatedReviewDiscussionComments[commentId] =
+          response.data.translatedText || commentText;
+        return this.translatedReviewDiscussionComments[commentId];
+      } catch (error) {
+        console.warn("[ProductView] Discussion translation API error:", error);
+        this.translatedReviewDiscussionComments[commentId] = commentText;
+        return commentText;
+      } finally {
+        this.translatingReviewDiscussionComments[commentId] = false;
       }
     },
     calculateCurrentPrice() {

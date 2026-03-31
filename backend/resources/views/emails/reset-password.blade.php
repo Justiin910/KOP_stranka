@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="sk">
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -115,40 +115,40 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔑 Obnovenie hesla</h1>
+            <h1>🔑 {{ __('messages.email.reset_password.title') }}</h1>
         </div>
         
         <div class="content">
-            <p class="greeting">Dobrý deň,</p>
+            <p class="greeting">{{ __('messages.email.reset_password.greeting') }}</p>
             
-            <p>Obdržali ste túto správu, pretože sme dostali požiadavku na obnovenie hesla vášho účtu.</p>
+            <p>{{ __('messages.email.reset_password.intro') }}</p>
             
             <div class="button-container">
-                <a href="{{ $resetUrl }}" class="button">Obnoviť heslo</a>
+                <a href="{{ $resetUrl }}" class="button">{{ __('messages.email.reset_password.button') }}</a>
             </div>
             
-            <p style="text-align: center; font-size: 14px; color: #666;">Alebo skopírujte a vložte tento odkaz do prehliadača:</p>
+            <p style="text-align: center; font-size: 14px; color: #666;">{{ __('messages.email.reset_password.copy_link') }}</p>
             <div class="url-box">{{ $resetUrl }}</div>
             
             <div class="info-section">
-                <p><strong>Platnosť odkazu:</strong> Tento odkaz na obnovenie hesla platí 60 minút.</p>
+                <p><strong>{{ __('messages.email.reset_password.validity_label') }}:</strong> {{ __('messages.email.reset_password.validity', ['minutes' => config('auth.passwords.users.expire', 60)]) }}</p>
             </div>
             
             <div class="security-note">
-                <strong>⚠️ Bezpečnostné upozornenie</strong>
-                Ak ste si nepožiadali obnovenie hesla, jednoducho ignorujte túto správu. Váš účet ostane bezpečný.
+                <strong>⚠️ {{ __('messages.email.reset_password.security_title') }}</strong>
+                {{ __('messages.email.reset_password.security_body') }}
             </div>
             
             <div class="divider"></div>
             
-            <p style="font-size: 14px; color: #666;">Ak máte ďalšie otázky, kontaktujte nás na adrese <a href="mailto:techstore99x@gmail.com">techstore99x@gmail.com</a>.</p>
+            <p style="font-size: 14px; color: #666;">{{ __('messages.email.reset_password.support_contact', ['email' => 'techstore99x@gmail.com']) }}</p>
             
-            <p style="font-size: 14px; color: #666;">S pozdravom,<br><strong>{{ config('mail.from.name') }}</strong></p>
+            <p style="font-size: 14px; color: #666;">{{ __('messages.email.common.regards') }}<br><strong>{{ config('mail.from.name') }}</strong></p>
         </div>
         
         <div class="footer">
-            <p>&copy; {{ date('Y') }} {{ config('app.name') }}. Všetky práva vyhradené.</p>
-            <p>Toto je automatizovaná správa. Prosím, neodpovedajte na túto správu.</p>
+            <p>{{ __('messages.email.common.rights_reserved', ['year' => date('Y'), 'app' => config('app.name')]) }}</p>
+            <p>{{ __('messages.email.common.automated_notice') }}</p>
         </div>
     </div>
 </body>

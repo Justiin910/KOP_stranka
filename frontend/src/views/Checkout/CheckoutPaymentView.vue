@@ -197,6 +197,16 @@
                     placeholder="123"
                   />
                 </div>
+                <label class="col-span-2 flex items-center gap-2 pt-1">
+                  <input
+                    v-model="saveCardToProfile"
+                    type="checkbox"
+                    class="h-4 w-4 cursor-pointer rounded border border-gray-300 bg-white text-indigo-600 accent-indigo-600 focus:ring-1 focus:ring-indigo-500 dark:border-gray-500 dark:bg-gray-800"
+                  />
+                  <span class="text-sm text-gray-700 dark:text-gray-300">
+                    {{ $t("pages.checkout.payment.save_card_to_profile") }}
+                  </span>
+                </label>
               </div>
             </div>
 
@@ -284,6 +294,7 @@
 </template>
 
 <script>
+import api from "@/api.ts";
 import { useCartStore } from "../../stores/cartStore";
 import { useRouter } from "vue-router";
 
@@ -306,6 +317,8 @@ export default {
         expiry: "",
         cvc: "",
       },
+      savedCard: null,
+      saveCardToProfile: false,
       orderReference: String(Math.floor(Math.random() * 900000) + 100000),
       googlePayReady: false,
       paypalReady: false,
@@ -381,6 +394,31 @@ export default {
       }
 
       this.card.expiry = yearPart.length > 0 ? monthPart + "/" + yearPart : monthPart;
+    },
+    async loadSavedCard() {
+      const hasToken = !!(localStorage.getItem("token") || sessionStorage.getItem("token"));
+      if (!hasToken) return;
+
+      try {
+        const response = await api.get("/api/user/payment-card");
+        const payload = response.data || {};
+        this.savedCard = payload.card || null;
+        if (this.savedCard) {
+          this.applySavedCard();
+        }
+      } catch (error) {
+        console.error("Failed to load saved card:", error);
+      }
+    },
+    applySavedCard() {
+      if (!this.savedCard) return;
+      this.card.name = this.savedCard.cardholder_name || "";
+      this.card.number = this.savedCard.card_number || "";
+      this.formatCardNumber();
+      const month = String(this.savedCard.expiry_month || "").padStart(2, "0");
+      const year = String(this.savedCard.expiry_year || "").slice(-2);
+      this.card.expiry = `${month}/${year}`;
+      this.card.cvc = "";
     },
     validateCard() {
       const digits = this.card.number.replace(/\D/g, "");
@@ -661,37 +699,27 @@ export default {
         localStorage.setItem("checkoutOrder", JSON.stringify(orderWithVariantPrices));
 
         // Call backend API to create order
-        const response = await fetch("/api/orders", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
-          },
-          body: JSON.stringify({
-            reference: order.reference,
-            delivery_method: order.delivery.method,
-            address: JSON.stringify(order.delivery.address),
-            phone: order.delivery.phone,
-            payment_method: order.payment.method,
-            payment_token: order.payment.token,
-            total: parseFloat(order.total),
-            items: items,
-          }),
+        const response = await api.post("/api/orders", {
+          reference: order.reference,
+          delivery_method: order.delivery.method,
+          address: JSON.stringify(order.delivery.address),
+          phone: order.delivery.phone,
+          payment_method: order.payment.method,
+          payment_token: order.payment.token,
+          total: parseFloat(order.total),
+          save_card: this.selectedPayment === "card" ? this.saveCardToProfile : false,
+          card_details:
+            this.selectedPayment === "card" && this.saveCardToProfile
+              ? {
+                  cardholder_name: this.card.name,
+                  card_number: this.card.number,
+                  expiry: this.card.expiry,
+                }
+              : null,
+          items: items,
         });
 
-        if (!response.ok) {
-          let errorMsg = "Failed to create order";
-          try {
-            const error = await response.json();
-            errorMsg = error.message || error.error || errorMsg;
-          } catch (e) {
-            // Response is not JSON (e.g., 404 HTML page)
-            errorMsg = `Server error (${response.status}): ${response.statusText}`;
-          }
-          throw new Error(errorMsg);
-        }
-
-        const result = await response.json();
+        const result = response.data || {};
         console.log("Order created successfully:", result);
 
         // Update order with real ID from backend
@@ -713,9 +741,10 @@ export default {
         this.router.push("/checkout/confirmation");
       } catch (error) {
         console.error("Order creation failed:", error);
+        const backendMessage = error?.response?.data?.message || error?.response?.data?.error;
         alert(
           this.$t("pages.checkout.payment.alert_order_create_failed_prefix") +
-            error.message
+            (backendMessage || error.message)
         );
       }
     },
@@ -749,6 +778,7 @@ export default {
   },
   mounted() {
     this.loadDelivery();
+    this.loadSavedCard();
     // Initialize payment providers
     this.initGooglePay();
     this.initPayPal();

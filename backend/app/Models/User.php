@@ -9,6 +9,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Notifications\ResetPasswordNotification;
+use App\Notifications\VerifyEmailNotification;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -25,15 +26,23 @@ class User extends Authenticatable implements MustVerifyEmail
         'zip',
         'avatar',
         'language',
+        'two_factor_enabled',
+        'two_factor_code',
+        'two_factor_expires_at',
+        'two_factor_purpose',
+        'two_factor_pending_email',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_code',
     ];
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'two_factor_enabled' => 'boolean',
+        'two_factor_expires_at' => 'datetime',
        // 'password' => 'hashed',
     ];
 
@@ -52,6 +61,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(ProductReview::class);
     }
 
+    public function paymentCards(): HasMany
+    {
+        return $this->hasMany(PaymentCard::class);
+    }
+
     /**
      * Send the password reset notification.
      *
@@ -60,7 +74,15 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function sendPasswordResetNotification($token)
     {
-        $this->notify(new ResetPasswordNotification($token));
+        $this->notify((new ResetPasswordNotification($token))->locale(app()->getLocale()));
+    }
+
+    /**
+     * Send the email verification notification.
+     */
+    public function sendEmailVerificationNotification()
+    {
+        $this->notify((new VerifyEmailNotification())->locale(app()->getLocale()));
     }
 }
 

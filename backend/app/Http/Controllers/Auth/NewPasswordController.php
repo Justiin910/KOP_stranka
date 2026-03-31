@@ -69,7 +69,7 @@ class NewPasswordController extends Controller
 
                     Mail::html($htmlBody, function($message) use ($user) {
                         $message->to($user->email)
-                                ->subject('Vaše heslo bolo zmenené')
+                                ->subject(__('messages.email.password_changed.subject'))
                                 ->from(config('mail.from.address'), config('mail.from.name'));
                     });
 

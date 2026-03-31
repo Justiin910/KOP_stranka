@@ -220,9 +220,9 @@
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              {{$t('auth.login.submitting')}}
+              {{ $t('auth.login.submitting') }}
             </span>
-            <span v-else>{{$t('auth.login.submit')}}</span>
+            <span v-else>{{ $t('auth.login.submit') }}</span>
           </button>
         </form>
 
@@ -249,12 +249,78 @@
           </router-link>
         </p>
       </div>
+
+      <!-- Two-factor Modal -->
+      <div
+        v-if="twoFactorRequired"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+        @click.self="cancelTwoFactorStep"
+      >
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-xl w-full p-8">
+          <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+            {{ $t('auth.login.two_factor_label') }}
+          </h3>
+          <p class="text-base leading-7 text-gray-700 dark:text-gray-300 mb-2">
+            {{ twoFactorMessage || $t('auth.login.two_factor_prompt') }}
+          </p>
+          <p class="text-sm font-medium text-blue-700 dark:text-blue-300 mb-5">
+            {{ twoFactorEmail }}
+          </p>
+
+          <div class="grid grid-cols-6 gap-3" @paste.prevent="onTwoFactorPaste">
+            <input
+              v-for="(digit, idx) in twoFactorDigits"
+              :key="idx"
+              :ref="`twoFactorDigit${idx}`"
+              v-model="twoFactorDigits[idx]"
+              type="text"
+              inputmode="numeric"
+              maxlength="1"
+              :disabled="isSubmitting"
+              :autocomplete="idx === 0 ? 'one-time-code' : 'off'"
+              class="w-full h-14 text-center text-2xl font-semibold border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              @input="onTwoFactorDigitInput(idx, $event)"
+              @keydown="onTwoFactorDigitKeydown(idx, $event)"
+            />
+          </div>
+
+          <div class="flex items-center justify-between mt-3 mb-5">
+            <button
+              type="button"
+              @click="requestNewTwoFactorCode"
+              :disabled="isSubmitting"
+              class="text-sm text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 disabled:opacity-50"
+            >
+              {{ $t('auth.login.two_factor_resend') }}
+            </button>
+          </div>
+
+          <div class="flex gap-3">
+            <button
+              type="button"
+              @click="cancelTwoFactorStep"
+              :disabled="isSubmitting"
+              class="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg font-medium disabled:opacity-50"
+            >
+              {{ $t('common.cancel') }}
+            </button>
+            <button
+              type="button"
+              @click="verifyTwoFactorLogin"
+              :disabled="isSubmitting || twoFactorCode.length !== 6"
+              class="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium disabled:opacity-50"
+            >
+              {{ isSubmitting ? $t('auth.login.two_factor_verifying') : $t('auth.login.two_factor_submit') }}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import api, { setSessionToken } from "@/api";
+import api, { setLocale, setSessionToken } from "@/api";
 
 export default {
   name: "LoginView",
@@ -268,6 +334,11 @@ export default {
       showPassword: false,
       loginError: "",
       isSubmitting: false,
+      twoFactorRequired: false,
+      twoFactorEmail: "",
+      twoFactorCode: "",
+      twoFactorDigits: ["", "", "", "", "", ""],
+      twoFactorMessage: "",
       fieldErrors: {
         email: null,
         password: null,
@@ -298,24 +369,23 @@ export default {
       this.isSubmitting = true;
 
       try {
-        // 1. Post login credentials
         const response = await api.post("/login", {
           email: this.form.email,
           password: this.form.password,
         });
 
-        // 2. Store token in localStorage for persistent login
-        localStorage.setItem("token", response.data.token);
-        setSessionToken(response.data.token);
+        if (response.data?.requires_2fa) {
+          this.twoFactorRequired = true;
+          this.twoFactorEmail = this.form.email;
+          this.resetTwoFactorDigits();
+          this.twoFactorMessage =
+            response.data.message || this.$t("auth.login.two_factor_prompt");
+          this.loginError = "";
+          this.$nextTick(() => this.focusTwoFactorDigit(0));
+          return;
+        }
 
-        // 3. Store user data
-        localStorage.setItem("user", JSON.stringify(response.data.user));
-
-        // 4. Emit event for navbar refresh
-        window.dispatchEvent(new Event("user-logged-in"));
-
-        // 5. Redirect to home
-        this.$router.push("/");
+        this.finishLogin(response.data);
       } catch (err) {
         console.error("Login error:", err);
 
@@ -362,6 +432,125 @@ export default {
       } finally {
         this.isSubmitting = false;
       }
+    },
+    async verifyTwoFactorLogin() {
+      if (this.isSubmitting || this.twoFactorCode.length !== 6) return;
+      this.isSubmitting = true;
+      this.loginError = "";
+      try {
+        const response = await api.post("/login/verify-2fa", {
+          email: this.twoFactorEmail || this.form.email,
+          code: this.twoFactorCode,
+        });
+        this.finishLogin(response.data);
+      } catch (err) {
+        this.loginError =
+          err.response?.data?.message || this.$t("auth.login.two_factor_resend_failed");
+      } finally {
+        this.isSubmitting = false;
+      }
+    },
+    finishLogin(payload) {
+      localStorage.setItem("token", payload.token);
+      setSessionToken(payload.token);
+      localStorage.setItem("user", JSON.stringify(payload.user));
+
+      const userLanguage = payload?.user?.language;
+      if (userLanguage && ["sk", "en"].includes(String(userLanguage).toLowerCase())) {
+        const normalized = String(userLanguage).toLowerCase();
+        setLocale(normalized);
+        window.dispatchEvent(
+          new CustomEvent("language-changed", { detail: { language: normalized } })
+        );
+      }
+
+      window.dispatchEvent(new Event("user-logged-in"));
+      this.$router.push("/");
+    },
+    async requestNewTwoFactorCode() {
+      if (this.isSubmitting) return;
+      this.isSubmitting = true;
+      this.loginError = "";
+      try {
+        const response = await api.post("/login", {
+          email: this.form.email,
+          password: this.form.password,
+          resend_2fa: true,
+        });
+
+        if (response.data?.requires_2fa) {
+          this.twoFactorMessage =
+            response.data.message || this.$t("auth.login.two_factor_prompt");
+          this.resetTwoFactorDigits();
+          this.$nextTick(() => this.focusTwoFactorDigit(0));
+        }
+      } catch (err) {
+        this.loginError =
+          err.response?.data?.message || this.$t("auth.login.two_factor_resend_failed");
+      } finally {
+        this.isSubmitting = false;
+      }
+    },
+    cancelTwoFactorStep() {
+      this.twoFactorRequired = false;
+      this.resetTwoFactorDigits();
+      this.twoFactorMessage = "";
+      this.loginError = "";
+    },
+    onTwoFactorDigitInput(index, event) {
+      const value = (event.target.value || "").replace(/\D/g, "").slice(-1);
+      this.twoFactorDigits[index] = value;
+      this.syncTwoFactorCode();
+
+      if (value && index < this.twoFactorDigits.length - 1) {
+        this.$nextTick(() => this.focusTwoFactorDigit(index + 1));
+      }
+    },
+    onTwoFactorDigitKeydown(index, event) {
+      if (event.key !== "Backspace") return;
+
+      if (this.twoFactorDigits[index]) {
+        event.preventDefault();
+        this.twoFactorDigits[index] = "";
+        this.syncTwoFactorCode();
+        this.$nextTick(() => this.focusTwoFactorDigit(index));
+        return;
+      }
+
+      if (index > 0) {
+        event.preventDefault();
+        this.twoFactorDigits[index - 1] = "";
+        this.syncTwoFactorCode();
+        this.$nextTick(() => this.focusTwoFactorDigit(index - 1));
+      }
+    },
+    onTwoFactorPaste(event) {
+      const pasted = (event.clipboardData?.getData("text") || "")
+        .replace(/\D/g, "")
+        .slice(0, 6);
+      if (!pasted) return;
+
+      for (let i = 0; i < 6; i += 1) {
+        this.twoFactorDigits[i] = pasted[i] || "";
+      }
+      this.syncTwoFactorCode();
+      const nextIndex = Math.min(pasted.length, 5);
+      this.$nextTick(() => this.focusTwoFactorDigit(nextIndex));
+    },
+    focusTwoFactorDigit(index) {
+      const ref = this.$refs[`twoFactorDigit${index}`];
+      const input = Array.isArray(ref) ? ref[0] : ref;
+      if (input && typeof input.focus === "function") {
+        input.focus();
+        if (typeof input.select === "function") input.select();
+      }
+    },
+    syncTwoFactorCode() {
+      this.twoFactorCode = this.twoFactorDigits.join("");
+    },
+    resetTwoFactorDigits() {
+      this.twoFactorDigits = ["", "", "", "", "", ""];
+      this.twoFactorCode = "";
     },
   },
 };

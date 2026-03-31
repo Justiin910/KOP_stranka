@@ -231,6 +231,19 @@
                   {{ user.name }}
                 </h3>
                 <p class="text-sm text-gray-500 dark:text-gray-400">{{ user.email }}</p>
+                <div class="mt-1 h-6">
+                  <span
+                    v-if="isElevatedRole(user.role)"
+                    class="inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full"
+                    :class="
+                      user.role === 'owner'
+                        ? 'bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200'
+                        : 'bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200'
+                    "
+                  >
+                    {{ getRoleLabel(user.role) }}
+                  </span>
+                </div>
               </div>
             </div>
             <div class="space-y-2 mb-4">
@@ -920,11 +933,7 @@
             {{ $t("admin.order.title", { id: selectedOrder.id }) }}
           </h2>
           <button
-            @click="
-              editingOrder = editingOrder
-                ? null
-                : JSON.parse(JSON.stringify(selectedOrder))
-            "
+            @click="toggleOrderEditing"
             class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium"
           >
             {{ editingOrder ? $t("admin.actions.cancel") : $t("admin.actions.edit") }}
@@ -950,6 +959,12 @@
               </p>
               <p class="text-sm text-gray-600 dark:text-gray-400">
                 {{ selectedOrder.email }}
+              </p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                {{ $t("admin.orders.linked_account") }}
+              </p>
+              <p class="text-sm text-gray-700 dark:text-gray-300">
+                {{ linkedUserDisplay(selectedOrder.linkedUser) }}
               </p>
             </div>
             <div>
@@ -1113,6 +1128,7 @@
               <input
                 v-model="editingOrder.customerName"
                 type="text"
+                readonly
                 class="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg border border-gray-300 dark:border-gray-600"
               />
             </div>
@@ -1122,10 +1138,39 @@
                 >{{ $t("admin.orders.email_input_label") }}</label
               >
               <input
-                v-model="editingOrder.email"
+                v-model="editingOrder.address.email"
                 type="email"
                 class="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg border border-gray-300 dark:border-gray-600"
               />
+            </div>
+          </div>
+
+          <div class="border-t pt-4">
+            <p class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-3">
+              {{ $t("admin.orders.linked_account_section") }}
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label
+                  class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >{{ $t("admin.orders.linked_account") }}</label
+                >
+                <select
+                  v-model="editingOrder.user_id"
+                  @change="syncCustomerFromLinkedAccount"
+                  class="w-full px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg border border-gray-300 dark:border-gray-600 text-sm"
+                >
+                  <option :value="null">
+                    {{ $t("admin.orders.guest_order") }}
+                  </option>
+                  <option v-for="user in users" :key="user.id" :value="user.id">
+                    #{{ user.id }} - {{ user.name }} ({{ user.email }})
+                  </option>
+                </select>
+              </div>
+              <div class="text-xs text-gray-600 dark:text-gray-400 flex items-end">
+                {{ $t("admin.orders.linked_account_hint") }}
+              </div>
             </div>
           </div>
 
@@ -1498,6 +1543,12 @@
               }}
               €
             </p>
+            <p
+              v-if="variantChangesPending"
+              class="mt-2 text-sm text-amber-700 dark:text-amber-300"
+            >
+              {{ $t("admin.orders.variant_changes_pending") }}
+            </p>
           </div>
 
           <div class="flex gap-3">
@@ -1511,7 +1562,7 @@
               }}
             </button>
             <button
-              @click="editingOrder = null"
+              @click="cancelOrderEditing"
               class="flex-1 px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-900 dark:text-white rounded-lg hover:bg-gray-400 dark:hover:bg-gray-700 font-medium"
             >
               {{ $t("admin.orders.cancel_action") }}
@@ -1520,10 +1571,7 @@
         </div>
 
         <button
-          @click="
-            selectedOrder = null;
-            editingOrder = null;
-          "
+          @click="closeOrderModal"
           class="mt-6 w-full px-4 py-2 btn-primary text-white rounded-lg font-medium hover:shadow-lg transition-all"
         >
           {{ $t("admin.actions.close") }}
@@ -1663,10 +1711,101 @@
             </label>
             <input
               v-model="editingUser.phone"
+              @input="onEditUserPhoneInput"
               type="tel"
               placeholder="+421 123 456 789"
               class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
             />
+          </div>
+
+          <!-- Avatar controls -->
+          <div>
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
+              {{ $t("admin.users.avatar_label") }}
+            </label>
+            <div class="flex items-center gap-4">
+              <div
+                class="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-700"
+              >
+                <template v-if="editingUser.avatar && !editingUser.remove_avatar">
+                  <img
+                    :src="getAvatarUrl(editingUser.avatar)"
+                    :alt="editingUser.name"
+                    class="w-full h-full object-cover"
+                  />
+                </template>
+                <template v-else>
+                  <div
+                    class="w-14 h-14 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold"
+                  >
+                    {{ getInitials(editingUser.name) }}
+                  </div>
+                </template>
+              </div>
+
+              <button
+                type="button"
+                @click="toggleAvatarRemoval"
+                class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                :class="
+                  editingUser.remove_avatar
+                    ? 'bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-500'
+                    : 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-800'
+                "
+              >
+                {{
+                  editingUser.remove_avatar
+                    ? $t("admin.users.avatar_restore")
+                    : $t("admin.users.avatar_remove")
+                }}
+              </button>
+            </div>
+            <p
+              v-if="editingUser.remove_avatar"
+              class="text-xs text-orange-700 dark:text-orange-300 mt-2"
+            >
+              {{ $t("admin.users.avatar_remove_pending") }}
+            </p>
+          </div>
+
+          <!-- Two-factor toggle -->
+          <div
+            class="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-900/30"
+          >
+            <div class="flex items-center justify-between gap-4">
+              <div>
+                <p class="text-sm font-medium text-gray-900 dark:text-white">
+                  {{ $t("admin.users.two_factor_toggle") }}
+                </p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  {{
+                    editingUser.two_factor_enabled
+                      ? $t("admin.users.two_factor_enabled")
+                      : $t("admin.users.two_factor_disabled")
+                  }}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                role="switch"
+                :aria-checked="editingUser.two_factor_enabled"
+                @click="editingUser.two_factor_enabled = !editingUser.two_factor_enabled"
+                class="relative inline-flex h-8 w-14 items-center rounded-full transition-colors"
+                :class="
+                  editingUser.two_factor_enabled
+                    ? 'bg-green-500'
+                    : 'bg-gray-300 dark:bg-gray-600'
+                "
+              >
+                <span
+                  class="inline-block h-6 w-6 transform rounded-full bg-white transition-transform"
+                  :class="editingUser.two_factor_enabled ? 'translate-x-7' : 'translate-x-1'"
+                ></span>
+              </button>
+            </div>
           </div>
 
           <!-- Role (only visible to owner) -->
@@ -2142,15 +2281,51 @@
                 rows="4"
               ></textarea>
             </div>
+            <!-- Specifications -->
+            <div>
+              <label
+                class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
+              >
+                {{ $t("admin.products.specs") }}
+              </label>
+              <textarea
+                v-model="currentProduct.specs"
+                :placeholder="$t('admin.products.specs_placeholder')"
+                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                rows="5"
+              ></textarea>
+            </div>
 
             <!-- Variant Types Section -->
-            <div
-              v-if="currentProduct.variants"
-              class="border-t border-gray-300 dark:border-gray-600 pt-6"
-            >
-              <h4 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-                {{ $t("admin.products.variants") || "Product Variants" }}
-              </h4>
+            <div class="border-t border-gray-300 dark:border-gray-600 pt-6">
+              <div class="flex items-center justify-between mb-4">
+                <h4 class="text-lg font-semibold text-gray-800 dark:text-white">
+                  {{ $t("admin.products.variants") || "Product Variants" }}
+                </h4>
+                <label class="inline-flex items-center gap-2 cursor-pointer">
+                  <input
+                    v-model="productVariantsEnabled"
+                    type="checkbox"
+                    class="h-4 w-4 text-indigo-600 rounded border-gray-300 dark:border-gray-600"
+                    @change="toggleProductVariants"
+                  />
+                  <span class="text-sm text-gray-700 dark:text-gray-300">
+                    {{ $t("admin.products.use_variants") || "Use variants" }}
+                  </span>
+                </label>
+              </div>
+
+              <div
+                v-if="!productVariantsEnabled"
+                class="text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 rounded-lg p-4"
+              >
+                {{
+                  $t("admin.products.enable_variants_help") ||
+                  "Enable variants to add options like color, size, or storage."
+                }}
+              </div>
+
+              <div v-else>
 
               <!-- Add Variant Type -->
               <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
@@ -2222,7 +2397,7 @@
                             currentProduct.variant_pricing[typeName][option]
                           "
                           type="number"
-                          step="0.01"
+                          step="0.1"
                           min="0"
                           class="w-20 px-2 py-1 border border-gray-300 dark:border-gray-500 rounded bg-white dark:bg-gray-600 text-gray-900 dark:text-white"
                         />
@@ -2256,6 +2431,7 @@
                     </button>
                   </div>
                 </div>
+              </div>
               </div>
             </div>
 
@@ -2323,6 +2499,7 @@ export default {
       },
       orderSaving: false,
       orderError: "",
+      variantChangesPending: false,
       showAddProduct: false,
       editingUser: null,
       editingSaving: false,
@@ -2333,6 +2510,7 @@ export default {
       showGeneratedPassword: false,
       showPasswordConfirmation: false,
       editingProduct: null,
+      productVariantsEnabled: false,
       currentProduct: {
         name: "",
         brand: "",
@@ -2342,6 +2520,7 @@ export default {
         stock: 0,
         image: "",
         description: "",
+        specs: "",
         discount_type: "percent",
         discount_value: 0,
         variants: {},
@@ -2781,18 +2960,125 @@ export default {
       if (n >= 2 && n <= 4) return n + " " + this.$t("admin.orders.items_few");
       return n + " " + this.$t("admin.orders.items_many");
     },
+    linkedUserDisplay(linkedUser) {
+      if (!linkedUser) {
+        return this.$t("admin.orders.guest_order");
+      }
+
+      const id = linkedUser.id ?? "?";
+      const name = linkedUser.name ?? "";
+      const email = linkedUser.email ?? "";
+
+      return `#${id} - ${name} (${email})`;
+    },
+    syncCustomerFromLinkedAccount() {
+      if (!this.editingOrder) {
+        return;
+      }
+
+      const parsedUserId = Number(this.editingOrder.user_id);
+      const resolvedUserId =
+        this.editingOrder.user_id === null || this.editingOrder.user_id === ""
+          ? null
+          : Number.isFinite(parsedUserId)
+          ? parsedUserId
+          : null;
+
+      this.editingOrder.user_id = resolvedUserId;
+
+      if (resolvedUserId === null) {
+        this.editingOrder.customerName =
+          this.editingOrder.address?.fullName || this.$t("admin.orders.guest_order");
+        return;
+      }
+
+      const linkedUser = this.users.find((user) => Number(user.id) === resolvedUserId);
+      if (linkedUser) {
+        this.editingOrder.customerName = linkedUser.name || "";
+      }
+    },
     viewOrder(order) {
       this.selectedOrder = order;
+      this.editingOrder = null;
+      this.orderError = "";
+      this.variantChangesPending = false;
+    },
+    toggleOrderEditing() {
+      if (this.editingOrder) {
+        this.cancelOrderEditing();
+        return;
+      }
+
+      const draftOrder = JSON.parse(JSON.stringify(this.selectedOrder));
+
+      if (!draftOrder.address || typeof draftOrder.address !== "object") {
+        draftOrder.address = {};
+      }
+
+      draftOrder.address.fullName =
+        draftOrder.address.fullName || draftOrder.customerName || "";
+      draftOrder.address.email = draftOrder.address.email || draftOrder.email || "";
+      draftOrder.address.phone = draftOrder.address.phone || "";
+      draftOrder.address.street = draftOrder.address.street || "";
+      draftOrder.address.city = draftOrder.address.city || "";
+      draftOrder.address.zip = draftOrder.address.zip || "";
+      draftOrder.address.country = draftOrder.address.country || "";
+
+      if (typeof draftOrder.user_id === "undefined") {
+        draftOrder.user_id = draftOrder.linkedUser?.id ?? null;
+      }
+
+      if (draftOrder.user_id === null || draftOrder.user_id === "") {
+        draftOrder.user_id = null;
+      } else {
+        const parsedUserId = Number(draftOrder.user_id);
+        draftOrder.user_id = Number.isFinite(parsedUserId) ? parsedUserId : null;
+      }
+
+      this.editingOrder = draftOrder;
+      this.syncCustomerFromLinkedAccount();
+      this.variantChangesPending = false;
+      this.orderError = "";
+    },
+    cancelOrderEditing() {
+      this.editingOrder = null;
+      this.variantChangesPending = false;
+      this.orderError = "";
+    },
+    closeOrderModal() {
+      this.selectedOrder = null;
+      this.editingOrder = null;
+      this.variantChangesPending = false;
+      this.orderError = "";
     },
     saveOrderChanges() {
       this.orderSaving = true;
       this.orderError = "";
 
+      const normalizedAddress = {
+        fullName: this.editingOrder.address?.fullName || "",
+        email: this.editingOrder.address?.email || "",
+        phone: this.editingOrder.address?.phone || "",
+        street: this.editingOrder.address?.street || "",
+        city: this.editingOrder.address?.city || "",
+        zip: this.editingOrder.address?.zip || "",
+        country: this.editingOrder.address?.country || "",
+      };
+
+      const parsedUserId = Number(this.editingOrder.user_id);
+      const resolvedUserId =
+        this.editingOrder.user_id === null || this.editingOrder.user_id === ""
+          ? null
+          : Number.isFinite(parsedUserId)
+          ? parsedUserId
+          : null;
+
       const updateData = {
         status: this.editingOrder.status,
         payment_method: this.editingOrder.payment_method,
         delivery_method: this.editingOrder.delivery_method,
-        address: this.editingOrder.address,
+        address: normalizedAddress,
+        user_id: resolvedUserId,
         items: this.editingOrder.order_items.map((item) => {
           const itemData = {
             product_id: item.product_id,
@@ -2822,6 +3108,7 @@ export default {
           }
           this.selectedOrder = updatedOrder;
           this.editingOrder = null;
+          this.variantChangesPending = false;
           alert(this.$t("admin.messages.order_updated"));
         })
         .catch((error) => {
@@ -2865,23 +3152,16 @@ export default {
       }
       return [];
     },
-    async saveVariantChanges() {
+    saveVariantChanges() {
       if (!this.editingVariant || !this.editingOrder) {
         return;
       }
 
-      try {
-        // Update locally
-        this.editingVariant.variant_options = this.editingVariantData;
-
-        // Save to backend via saveOrderChanges
-        await this.saveOrderChanges();
-
-        this.closeEditVariant();
-      } catch (error) {
-        console.error("Failed to save variant changes:", error);
-        alert(this.$t("admin.messages.save_error") || "Error saving variant changes");
-      }
+      this.editingVariant.variant_options = JSON.parse(
+        JSON.stringify(this.editingVariantData)
+      );
+      this.variantChangesPending = true;
+      this.closeEditVariant();
     },
     selectProduct(product) {
       this.newOrderItem.product_id = product.id;
@@ -2995,10 +3275,22 @@ export default {
         email: user.email,
         phone: this.formatPhoneNumber(user.phone) || "",
         role: user.role || "user",
+        avatar: user.avatar || null,
+        original_avatar: user.avatar || null,
+        remove_avatar: false,
+        two_factor_enabled: !!user.two_factor_enabled,
       };
       this.editError = "";
       this.generatedPassword = "";
       this.showGeneratedPassword = false;
+    },
+    toggleAvatarRemoval() {
+      if (!this.editingUser) return;
+
+      this.editingUser.remove_avatar = !this.editingUser.remove_avatar;
+      this.editingUser.avatar = this.editingUser.remove_avatar
+        ? null
+        : this.editingUser.original_avatar || null;
     },
     generateRandomPassword() {
       this.showPasswordConfirmation = true;
@@ -3088,16 +3380,36 @@ export default {
     copyToClipboard() {
       navigator.clipboard.writeText(this.generatedPassword);
     },
+    onEditUserPhoneInput() {
+      if (!this.editingUser) return;
+      this.editingUser.phone = this.formatPhoneNumber(this.editingUser.phone);
+    },
     formatPhoneNumber(phone) {
       if (!phone) return "";
-      // Remove all non-digits except leading +
-      const cleaned = phone.replace(/[^\d+]/g, "");
-      // Format as +XXX XXX XXX XXX
-      if (cleaned.startsWith("+")) {
-        const withoutPlus = cleaned.slice(1);
-        return "+" + withoutPlus.replace(/(\d{3})(?=\d)/g, "$1 ");
+
+      const raw = String(phone).trim();
+      let digits = raw.replace(/\D/g, "");
+
+      // Normalize common Slovak variants: 00421..., 421..., 09...
+      if (digits.startsWith("00421")) {
+        digits = digits.slice(5);
+      } else if (digits.startsWith("421")) {
+        digits = digits.slice(3);
+      } else if (digits.startsWith("0")) {
+        digits = digits.slice(1);
       }
-      return cleaned.replace(/(\d{3})(?=\d)/g, "$1 ");
+
+      if (!digits) return "";
+
+      // Keep only local 9 digits for display.
+      if (digits.length > 9) {
+        digits = digits.slice(-9);
+      }
+
+      const local = digits.slice(0, 9);
+      const grouped = local.replace(/(\d{3})(?=\d)/g, "$1 ");
+
+      return `+421 ${grouped}`.trim();
     },
     saveUserChanges() {
       this.editingSaving = true;
@@ -3118,7 +3430,12 @@ export default {
         name: this.editingUser.name,
         email: this.editingUser.email,
         phone: this.editingUser.phone,
+        two_factor_enabled: !!this.editingUser.two_factor_enabled,
       };
+
+      if (this.editingUser.remove_avatar) {
+        data.remove_avatar = true;
+      }
 
       // Only owners can change roles
       if (this.currentUser?.role === "owner" && this.editingUser.role) {
@@ -3134,6 +3451,10 @@ export default {
             this.users[index].name = this.editingUser.name;
             this.users[index].email = this.editingUser.email;
             this.users[index].phone = this.editingUser.phone;
+            this.users[index].two_factor_enabled = !!this.editingUser.two_factor_enabled;
+            if (this.editingUser.remove_avatar) {
+              this.users[index].avatar = null;
+            }
             if (data.role) this.users[index].role = data.role;
           }
           this.editingUser = null;
@@ -3325,6 +3646,9 @@ export default {
 
       // Set editable form data
       this.currentProduct = productData;
+      this.productVariantsEnabled =
+        !!this.currentProduct.variants &&
+        Object.keys(this.currentProduct.variants).length > 0;
 
       // Initialize variantInputs for each variant type
       this.variantInputs = {};
@@ -3380,6 +3704,11 @@ export default {
           finalPrice = finalOldPrice;
         }
 
+        const hasVariants =
+          this.productVariantsEnabled &&
+          this.currentProduct.variants &&
+          Object.keys(this.currentProduct.variants).length > 0;
+
         // Only send form fields, not all product fields
         const payload = {
           name: this.currentProduct.name,
@@ -3390,13 +3719,14 @@ export default {
           stock: this.currentProduct.stock,
           image: this.currentProduct.image,
           description: this.currentProduct.description,
+          specs: this.currentProduct.specs || "",
           discount_type: finalDiscountValue > 0 ? finalDiscountType : null,
           discount_value: finalDiscountValue > 0 ? finalDiscountValue : null,
-          variants: this.currentProduct.variants
+          variants: hasVariants
             ? JSON.stringify(this.currentProduct.variants)
             : null,
-          variant_pricing: this.currentProduct.variant_pricing
-            ? JSON.stringify(this.currentProduct.variant_pricing)
+          variant_pricing: hasVariants
+            ? JSON.stringify(this.currentProduct.variant_pricing || {})
             : null,
         };
 
@@ -3429,11 +3759,13 @@ export default {
           stock: 0,
           image: "",
           description: "",
+          specs: "",
           discount_type: "percent",
           discount_value: 0,
           variants: null,
           variant_pricing: null,
         };
+        this.productVariantsEnabled = false;
       } catch (error) {
         console.error("Error saving product:", error);
         alert(this.$t("admin.messages.product_save_error"));
@@ -3442,6 +3774,15 @@ export default {
       }
     },
     addVariantType() {
+      if (!this.productVariantsEnabled) {
+        this.productVariantsEnabled = true;
+      }
+      if (!this.currentProduct.variants) {
+        this.currentProduct.variants = {};
+      }
+      if (!this.currentProduct.variant_pricing) {
+        this.currentProduct.variant_pricing = {};
+      }
       const typeName = this.variantInputs.newType?.trim();
       if (!typeName) {
         alert(this.$t("admin.messages.variant_type_required"));
@@ -3451,15 +3792,24 @@ export default {
         alert(this.$t("admin.messages.variant_type_exists"));
         return;
       }
-      if (!this.currentProduct.variants) {
-        this.currentProduct.variants = {};
-      }
-      if (!this.currentProduct.variant_pricing) {
-        this.currentProduct.variant_pricing = {};
-      }
       this.currentProduct.variants[typeName] = [];
       this.currentProduct.variant_pricing[typeName] = {};
       this.variantInputs.newType = "";
+    },
+    toggleProductVariants() {
+      if (this.productVariantsEnabled) {
+        if (!this.currentProduct.variants) {
+          this.currentProduct.variants = {};
+        }
+        if (!this.currentProduct.variant_pricing) {
+          this.currentProduct.variant_pricing = {};
+        }
+        return;
+      }
+
+      this.currentProduct.variants = null;
+      this.currentProduct.variant_pricing = null;
+      this.variantInputs = {};
     },
     removeVariantType(typeName) {
       delete this.currentProduct.variants[typeName];
@@ -3508,12 +3858,23 @@ export default {
         stock: 0,
         image: "",
         description: "",
+        specs: "",
         discount_type: "percent",
         discount_value: 0,
         variants: null,
         variant_pricing: null,
       };
       this.originalProduct = null;
+      this.productVariantsEnabled = false;
+      this.variantInputs = {};
+    },
+    isElevatedRole(role) {
+      return role === "admin" || role === "owner";
+    },
+    getRoleLabel(role) {
+      const key = `roles.${role}`;
+      const translated = this.$t(key);
+      return translated === key ? String(role || "").toUpperCase() : translated;
     },
     clampDiscountValue(e) {
       // get the typed value (string) or fallback to model

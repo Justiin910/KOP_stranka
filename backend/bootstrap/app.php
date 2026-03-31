@@ -21,6 +21,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
 
         $middleware->web(prepend: [
             \Illuminate\Http\Middleware\HandleCors::class,
+            \App\Http\Middleware\SetLocale::class,
         ]);
 
         $middleware->alias([

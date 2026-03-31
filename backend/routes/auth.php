@@ -27,6 +27,7 @@ Route::get('login', function (Request $request) {
 })->name('login')->middleware('guest');
 
 Route::post('login', [AuthenticatedSessionController::class, 'store'])->middleware('guest');
+Route::post('login/verify-2fa', [AuthenticatedSessionController::class, 'verifyTwoFactor'])->middleware('guest');
 Route::post('register', [RegisteredUserController::class, 'store'])->middleware('guest');
 Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth');
 

@@ -53,8 +53,10 @@ class ContactController extends Controller
                 ])->render();
 
                 Mail::html($htmlBody, function ($message) use ($validated, $recipientEmail) {
+                    $subjectText = $validated['subject'] ?? __('messages.email.contact.subject_fallback');
+
                     $message->to($recipientEmail)
-                        ->subject('Nová správa z kontaktného formulára: ' . ($validated['subject'] ?? 'Bez predmetu'))
+                        ->subject(__('messages.email.contact.subject_line', ['subject' => $subjectText]))
                         ->from(config('mail.from.address'), 'TechStore Support')
                         ->replyTo($validated['email'], $validated['name']);
                 });

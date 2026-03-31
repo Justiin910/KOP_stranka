@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="utf-8">
     <style>
@@ -15,35 +15,35 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Vaše dočasné heslo</h1>
+            <h1>{{ __('messages.email.temp_password.title') }}</h1>
         </div>
         
         <div class="content">
-            <p>Dobrý deň <strong>{{ $userName }}</strong>,</p>
+            <p>{{ __('messages.email.temp_password.greeting', ['name' => $userName]) }}</p>
             
-            <p>Administrátor vám vygeneroval nové dočasné heslo na prístup do vášho konta.</p>
+            <p>{{ __('messages.email.temp_password.intro') }}</p>
             
             <div class="password-box">
-                <p style="margin: 0 0 10px 0; color: #666; font-size: 12px;">Dočasné heslo:</p>
+                <p style="margin: 0 0 10px 0; color: #666; font-size: 12px;">{{ __('messages.email.temp_password.password_label') }}:</p>
                 <code>{{ $tempPassword }}</code>
             </div>
             
-            <h3>Ako sa prihlásiť:</h3>
+            <h3>{{ __('messages.email.temp_password.how_to_login') }}:</h3>
             <ol>
-                <li>Prejdite na prihlásovaciu stránku</li>
-                <li>Zadajte vašu emailovú adresu</li>
-                <li>Zadajte toto dočasné heslo</li>
-                <li>Po prihlásení si prosím zmeniť heslo na nové silné heslo</li>
+                <li>{{ __('messages.email.temp_password.step_1') }}</li>
+                <li>{{ __('messages.email.temp_password.step_2') }}</li>
+                <li>{{ __('messages.email.temp_password.step_3') }}</li>
+                <li>{{ __('messages.email.temp_password.step_4') }}</li>
             </ol>
             
             <p style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 10px; border-radius: 3px;">
-                <strong>⚠️ Bezpečnosť:</strong> Toto heslo je dočasné. Zmeniť si ho môžete v nastaveniach svojho profilu.
+                <strong>⚠️ {{ __('messages.email.temp_password.security_title') }}:</strong> {{ __('messages.email.temp_password.security_body') }}
             </p>
         </div>
         
         <div class="footer">
-            <p>Ak ste si nepožiadali toto heslo alebo máte otázky, kontaktujte nás.</p>
-            <p>&copy; {{ date('Y') }} {{ config('app.name') }}. Všetky práva vyhradené.</p>
+            <p>{{ __('messages.email.temp_password.footer_help') }}</p>
+            <p>{{ __('messages.email.common.rights_reserved', ['year' => date('Y'), 'app' => config('app.name')]) }}</p>
         </div>
     </div>
 </body>

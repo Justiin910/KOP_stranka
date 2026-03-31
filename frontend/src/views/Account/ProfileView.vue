@@ -126,6 +126,17 @@
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
               {{ user.name }}
             </h1>
+            <span
+              v-if="isElevatedRole(user.role)"
+              class="inline-flex items-center px-2 py-0.5 mt-2 text-xs font-semibold rounded-full"
+              :class="
+                user.role === 'owner'
+                  ? 'bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200'
+                  : 'bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200'
+              "
+            >
+              {{ getRoleLabel(user.role) }}
+            </span>
             <div class="flex items-center gap-2 mt-1">
               <p class="text-gray-600 dark:text-gray-400">{{ user.email }}</p>
               <span
@@ -166,6 +177,19 @@
                 class="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-sm font-medium rounded-full"
                 >{{ $t("profile.orders_count", { count: orders.length }) }}</span
               >
+              <button
+                v-if="user.avatar"
+                type="button"
+                :disabled="isResettingAvatar"
+                class="px-3 py-1 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 text-sm font-medium rounded-full disabled:opacity-50"
+                @click="resetAvatarToDefault"
+              >
+                {{
+                  isResettingAvatar
+                    ? $t("profile.avatar_resetting")
+                    : $t("profile.avatar_reset")
+                }}
+              </button>
             </div>
           </div>
 
@@ -178,8 +202,31 @@
         </div>
       </div>
 
+      <!-- Mini Tabs -->
+      <div
+        class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-2 mb-6"
+      >
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <button
+            v-for="tab in profileMiniTabs"
+            :key="tab.id"
+            type="button"
+            @click="activeProfileMiniTab = tab.id"
+            class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            :class="
+              activeProfileMiniTab === tab.id
+                ? 'bg-indigo-600 text-white'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+            "
+          >
+            {{ tab.label }}
+          </button>
+        </div>
+      </div>
+
       <!-- Profile Details -->
       <div
+        v-if="activeProfileMiniTab === 'overview'"
         class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8"
       >
         <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
@@ -399,8 +446,220 @@
         </form>
       </div>
 
+      <!-- Security: Two-Factor Authentication -->
+      <div
+        v-if="activeProfileMiniTab === 'security'"
+        class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 mt-6"
+      >
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+          {{ $t("profile.two_factor_title") }}
+        </h2>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-5">
+          {{ $t("profile.two_factor_desc") }}
+        </p>
+
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <p class="text-sm font-medium text-gray-900 dark:text-white">
+              {{ twoFactorEnabled ? $t("profile.two_factor_on") : $t("profile.two_factor_off") }}
+            </p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              {{ $t("profile.two_factor_email_channel") }}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            role="switch"
+            :aria-checked="twoFactorEnabled"
+            :disabled="isUpdatingTwoFactor"
+            @click="toggleTwoFactor(!twoFactorEnabled)"
+            class="relative inline-flex h-8 w-14 items-center rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            :class="twoFactorEnabled ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'"
+          >
+            <span
+              class="inline-block h-6 w-6 transform rounded-full bg-white transition-transform"
+              :class="twoFactorEnabled ? 'translate-x-7' : 'translate-x-1'"
+            ></span>
+          </button>
+        </div>
+
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
+          {{
+            isUpdatingTwoFactor
+              ? $t("profile.saving")
+              : twoFactorEnabled
+              ? $t("profile.two_factor_disable")
+              : $t("profile.two_factor_enable")
+          }}
+        </p>
+
+        <p
+          v-if="!user.email_verified_at"
+          class="text-xs text-amber-700 dark:text-amber-300 mt-4"
+        >
+          {{ $t("profile.two_factor_requires_verified") }}
+        </p>
+      </div>
+
+      <!-- Saved Payment Card -->
+      <div
+        v-if="activeProfileMiniTab === 'payment'"
+        class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 mt-6"
+      >
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+            {{ $t("profile.saved_card_title") }}
+          </h2>
+          <span
+            v-if="savedCard"
+            class="text-xs px-2 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"
+          >
+            {{ $t("profile.saved_card_exists") }}
+          </span>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {{ $t("pages.checkout.payment.card_name") }}
+            </label>
+            <input
+              v-model="paymentCardForm.cardholder_name"
+              type="text"
+              :disabled="!editMode"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {{ $t("pages.checkout.payment.card_number") }}
+            </label>
+            <input
+              v-model="paymentCardForm.card_number"
+              type="text"
+              inputmode="numeric"
+              maxlength="19"
+              @input="formatPaymentCardNumber"
+              :disabled="!editMode"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {{ $t("pages.checkout.payment.card_expiry") }}
+            </label>
+            <input
+              v-model="paymentCardForm.expiry"
+              type="text"
+              maxlength="5"
+              @input="formatPaymentCardExpiry"
+              :disabled="!editMode"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
+              placeholder="MM/YY"
+            />
+          </div>
+
+          <div v-if="savedCard" class="text-sm text-gray-600 dark:text-gray-400">
+            {{ $t("profile.saved_card_masked", { number: savedCard.masked_number }) }}
+          </div>
+
+          <div v-if="editMode" class="flex gap-3 pt-1">
+            <button
+              type="button"
+              :disabled="!editMode || isSavingPaymentCard"
+              @click="savePaymentCard"
+              class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium disabled:opacity-50"
+            >
+              {{ isSavingPaymentCard ? $t("profile.saving") : $t("profile.saved_card_save") }}
+            </button>
+            <button
+              v-if="savedCard"
+              type="button"
+              :disabled="!editMode || isDeletingPaymentCard"
+              @click="deletePaymentCard"
+              class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium disabled:opacity-50"
+            >
+              {{
+                isDeletingPaymentCard
+                  ? $t("profile.deleting")
+                  : $t("profile.saved_card_delete")
+              }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pending email change 2FA modal -->
+      <div
+        v-if="pendingEmailChange"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+        @click.self="closeEmailChangeModal"
+      >
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-xl w-full p-8">
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+            {{ $t("profile.email_change_verify_title") }}
+          </h2>
+          <p class="text-base leading-7 text-gray-700 dark:text-gray-300 mb-5">
+            {{ $t("profile.email_change_verify_desc", { email: pendingEmailTarget }) }}
+          </p>
+
+          <div class="grid grid-cols-6 gap-3" @paste.prevent="onPendingEmailPaste">
+            <input
+              v-for="(digit, idx) in pendingEmailDigits"
+              :key="idx"
+              :ref="`pendingEmailDigit${idx}`"
+              v-model="pendingEmailDigits[idx]"
+              type="text"
+              inputmode="numeric"
+              maxlength="1"
+              :disabled="isConfirmingEmailChange || isResendingEmailChangeCode"
+              :autocomplete="idx === 0 ? 'one-time-code' : 'off'"
+              class="w-full h-14 text-center text-2xl font-semibold border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              @input="onPendingEmailDigitInput(idx, $event)"
+              @keydown="onPendingEmailDigitKeydown(idx, $event)"
+            />
+          </div>
+
+          <div class="mt-3 mb-1">
+            <button
+              type="button"
+              @click="resendEmailChangeCode"
+              :disabled="isConfirmingEmailChange || isResendingEmailChangeCode"
+              class="text-sm text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 disabled:opacity-50"
+            >
+              {{ isResendingEmailChangeCode ? $t("profile.sending") : $t("profile.email_change_verify_resend") }}
+            </button>
+          </div>
+
+          <div class="flex gap-3 mt-5">
+            <button
+              type="button"
+              @click="closeEmailChangeModal"
+              :disabled="isConfirmingEmailChange || isResendingEmailChangeCode"
+              class="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg font-medium disabled:opacity-50"
+            >
+              {{ $t("common.cancel") }}
+            </button>
+            <button
+              type="button"
+              :disabled="isConfirmingEmailChange || isResendingEmailChangeCode || pendingEmailCode.length !== 6"
+              @click="confirmEmailChangeCode"
+              class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium disabled:opacity-50"
+            >
+              {{
+                isConfirmingEmailChange
+                  ? $t("profile.saving")
+                  : $t("profile.email_change_verify_confirm")
+              }}
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Change Password Section -->
       <div
+        v-if="activeProfileMiniTab === 'security'"
         class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 mt-6"
       >
         <div class="flex items-center justify-between mb-6">
@@ -470,6 +729,7 @@
 
       <!-- Order History -->
       <div
+        v-if="activeProfileMiniTab === 'overview'"
         class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 mt-6"
       >
         <div class="flex items-center justify-between mb-6">
@@ -538,6 +798,7 @@
 
       <!-- Danger Zone - Delete Account -->
       <div
+        v-if="activeProfileMiniTab === 'overview'"
         class="bg-red-50 dark:bg-red-900/10 rounded-lg shadow-sm border-2 border-red-200 dark:border-red-800 p-8 mt-6"
       >
         <h2 class="text-xl font-bold text-red-900 dark:text-red-400 mb-2">
@@ -564,6 +825,113 @@
           </svg>
           {{ $t("profile.delete_confirm_button") }}
         </button>
+      </div>
+
+      <!-- Avatar Crop Modal -->
+      <div
+        v-if="showAvatarCropModal"
+        class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+      >
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full p-6">
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">
+            {{ $t("profile.avatar_crop_title") }}
+          </h3>
+
+          <div class="flex justify-center mb-4">
+            <div
+              v-if="avatarCropIsGif"
+              class="w-72 h-72 rounded-full overflow-hidden border-2 border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700"
+            >
+              <img
+                ref="avatarCropImage"
+                :src="avatarCropPreviewUrl"
+                alt="avatar-crop-preview"
+                class="w-full h-full object-cover"
+                draggable="false"
+                @load="onAvatarCropImageLoad"
+              />
+            </div>
+
+            <div
+              v-else
+              ref="avatarCropStage"
+              class="w-72 h-72 rounded-xl overflow-hidden border-2 border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 relative cursor-grab active:cursor-grabbing"
+              @wheel.prevent="onAvatarCropWheel"
+              @mousedown.prevent="startAvatarDrag"
+            >
+              <img
+                ref="avatarCropImage"
+                :src="avatarCropPreviewUrl"
+                alt="avatar-crop-preview"
+                class="absolute select-none max-w-none"
+                draggable="false"
+                @load="onAvatarCropImageLoad"
+                :style="avatarCropImageStyle"
+              />
+              <div class="absolute inset-0 pointer-events-none">
+                <div class="absolute inset-0 border border-black/20 dark:border-white/10"></div>
+                <div class="absolute inset-3 rounded-full border-[3px] border-white/95 shadow-[0_0_0_999px_rgba(0,0,0,0.28)]"></div>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="!avatarCropIsGif" class="space-y-3">
+            <div>
+              <div class="flex items-center justify-between text-sm text-gray-700 dark:text-gray-300">
+                <span>{{ $t("profile.avatar_zoom") }}</span>
+                <span>{{ avatarCropZoom.toFixed(1) }}x</span>
+              </div>
+              <input
+                v-model.number="avatarCropZoom"
+                type="range"
+                min="1"
+                max="3"
+                step="0.1"
+                class="w-full"
+                @input="setAvatarZoom(avatarCropZoom)"
+              />
+              <div class="flex gap-2 justify-center">
+                <button
+                  type="button"
+                  class="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md"
+                  @click="decreaseAvatarZoom"
+                >
+                  {{ $t("profile.avatar_zoom_out") }}
+                </button>
+                <button
+                  type="button"
+                  class="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md"
+                  @click="increaseAvatarZoom"
+                >
+                  {{ $t("profile.avatar_zoom_in") }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-3 mt-6">
+            <button
+              type="button"
+              class="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg font-medium"
+              :disabled="isCroppingAvatar"
+              @click="closeAvatarCropModal"
+            >
+              {{ $t("profile.cancel") }}
+            </button>
+            <button
+              type="button"
+              class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium disabled:opacity-50"
+              :disabled="isCroppingAvatar"
+              @click="confirmAvatarCrop"
+            >
+              {{
+                isCroppingAvatar
+                  ? $t("profile.avatar_processing")
+                  : $t("profile.avatar_confirm")
+              }}
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Delete Confirmation Modal -->
@@ -661,7 +1029,7 @@
 </template>
 
 <script>
-import api, { setSessionToken } from "@/api";
+import api, { setLocale, setSessionToken } from "@/api";
 
 export default {
   name: "ProfileView",
@@ -671,13 +1039,32 @@ export default {
       editMode: false,
       isSaving: false,
       isUploadingAvatar: false,
+      isCroppingAvatar: false,
+      isResettingAvatar: false,
       verificationSent: false,
       resendTimeout: null,
       isChangingPassword: false,
       isSendingResetLink: false,
       isDeletingAccount: false,
+      isUpdatingTwoFactor: false,
+      isConfirmingEmailChange: false,
+      isResendingEmailChangeCode: false,
+      isSavingPaymentCard: false,
+      isDeletingPaymentCard: false,
       successMessage: "",
       errorMessage: "",
+      activeProfileMiniTab: "overview",
+      twoFactorEnabled: false,
+      pendingEmailChange: false,
+      pendingEmailTarget: "",
+      pendingEmailCode: "",
+      pendingEmailDigits: ["", "", "", "", "", ""],
+      savedCard: null,
+      paymentCardForm: {
+        cardholder_name: "",
+        card_number: "",
+        expiry: "",
+      },
       user: {},
       formData: {
         name: "",
@@ -710,6 +1097,25 @@ export default {
       orders: [],
       showDeleteConfirmation: false,
       deleteAccountPassword: "",
+      showAvatarCropModal: false,
+      avatarCropPreviewUrl: "",
+      avatarCropZoom: 1,
+      avatarCropOffsetX: 0,
+      avatarCropOffsetY: 0,
+      avatarCropStageSize: 288,
+      avatarCropBaseWidth: 288,
+      avatarCropBaseHeight: 288,
+      avatarCropNaturalWidth: 0,
+      avatarCropNaturalHeight: 0,
+      avatarCropDragging: false,
+      avatarDragStartX: 0,
+      avatarDragStartY: 0,
+      avatarDragInitialOffsetX: 0,
+      avatarDragInitialOffsetY: 0,
+      avatarCropFileName: "",
+      avatarCropOriginalFile: null,
+      avatarCropIsGif: false,
+      avatarCropMimeType: "image/jpeg",
     };
   },
   async mounted() {
@@ -745,6 +1151,31 @@ export default {
 
       return this.formData.phone;
     },
+    avatarCropImageStyle() {
+      const width = this.avatarCropBaseWidth * this.avatarCropZoom;
+      const height = this.avatarCropBaseHeight * this.avatarCropZoom;
+      const left = (this.avatarCropStageSize - width) / 2 + this.avatarCropOffsetX;
+      const top = (this.avatarCropStageSize - height) / 2 + this.avatarCropOffsetY;
+      return {
+        width: `${width}px`,
+        height: `${height}px`,
+        left: `${left}px`,
+        top: `${top}px`,
+      };
+    },
+    profileMiniTabs() {
+      return [
+        { id: "overview", label: this.$t("profile.tabs.overview") },
+        { id: "security", label: this.$t("profile.tabs.security") },
+        { id: "payment", label: this.$t("profile.tabs.payment") },
+      ];
+    },
+  },
+  beforeUnmount() {
+    this.removeAvatarDragListeners();
+    if (this.avatarCropPreviewUrl) {
+      URL.revokeObjectURL(this.avatarCropPreviewUrl);
+    }
   },
   methods: {
     scrollToMessages() {
@@ -760,6 +1191,18 @@ export default {
       try {
         const userResponse = await api.get("/api/user");
         this.user = userResponse.data;
+
+        const preferredLanguage = String(this.user?.language || "").toLowerCase();
+        if (["sk", "en"].includes(preferredLanguage)) {
+          setLocale(preferredLanguage);
+          window.dispatchEvent(
+            new CustomEvent("language-changed", {
+              detail: { language: preferredLanguage },
+            })
+          );
+        }
+
+        this.twoFactorEnabled = !!this.user.two_factor_enabled;
 
         this.formData = {
           name: this.user.name || "",
@@ -779,6 +1222,8 @@ export default {
           console.log("Orders endpoint not available");
           this.orders = [];
         }
+
+        await this.loadSavedPaymentCard();
       } catch (error) {
         console.error("Error loading user data:", error);
         this.errorMessage = this.$t("profile.load_failed");
@@ -919,6 +1364,17 @@ export default {
 
       try {
         const response = await api.put("/api/user/profile", dataToSave);
+
+        if (response.data?.requires_email_change_2fa) {
+          this.pendingEmailChange = true;
+          this.pendingEmailTarget = response.data.pending_email || this.formData.email;
+          this.resetPendingEmailDigits();
+          this.successMessage =
+            response.data.message || this.$t("profile.email_change_verify_title");
+          this.scrollToMessages();
+          this.$nextTick(() => this.focusPendingEmailDigit(0));
+          return;
+        }
 
         this.user = { ...this.user, ...response.data.user };
         this.formData.phone = fullPhone;
@@ -1127,15 +1583,267 @@ export default {
         return;
       }
 
-      this.uploadAvatar(file);
+      this.openAvatarCropModal(file);
     },
-    async uploadAvatar(file) {
+    openAvatarCropModal(file) {
+      if (this.avatarCropPreviewUrl) {
+        URL.revokeObjectURL(this.avatarCropPreviewUrl);
+      }
+      this.avatarCropFileName = file.name || "avatar";
+      this.avatarCropOriginalFile = file;
+      this.avatarCropIsGif = file.type === "image/gif";
+      this.avatarCropMimeType = file.type || "image/jpeg";
+      this.avatarCropZoom = 1;
+      this.avatarCropOffsetX = 0;
+      this.avatarCropOffsetY = 0;
+      this.avatarCropNaturalWidth = 0;
+      this.avatarCropNaturalHeight = 0;
+      this.avatarCropBaseWidth = this.avatarCropStageSize;
+      this.avatarCropBaseHeight = this.avatarCropStageSize;
+      this.avatarCropPreviewUrl = URL.createObjectURL(file);
+      this.showAvatarCropModal = true;
+    },
+    closeAvatarCropModal() {
+      this.removeAvatarDragListeners();
+      this.showAvatarCropModal = false;
+      this.avatarCropZoom = 1;
+      this.avatarCropOffsetX = 0;
+      this.avatarCropOffsetY = 0;
+      this.avatarCropNaturalWidth = 0;
+      this.avatarCropNaturalHeight = 0;
+      this.avatarCropBaseWidth = this.avatarCropStageSize;
+      this.avatarCropBaseHeight = this.avatarCropStageSize;
+      this.avatarCropFileName = "";
+      this.avatarCropOriginalFile = null;
+      this.avatarCropIsGif = false;
+      this.avatarCropMimeType = "image/jpeg";
+      if (this.avatarCropPreviewUrl) {
+        URL.revokeObjectURL(this.avatarCropPreviewUrl);
+      }
+      this.avatarCropPreviewUrl = "";
+      if (this.$refs.avatarInput) {
+        this.$refs.avatarInput.value = "";
+      }
+    },
+    onAvatarCropImageLoad(event) {
+      const img = event?.target;
+      if (!img || !img.naturalWidth || !img.naturalHeight) return;
+
+      const naturalWidth = img.naturalWidth;
+      const naturalHeight = img.naturalHeight;
+      this.avatarCropNaturalWidth = naturalWidth;
+      this.avatarCropNaturalHeight = naturalHeight;
+
+      const ratio = naturalWidth / naturalHeight;
+      if (ratio >= 1) {
+        this.avatarCropBaseWidth = this.avatarCropStageSize;
+        this.avatarCropBaseHeight = this.avatarCropStageSize / ratio;
+      } else {
+        this.avatarCropBaseHeight = this.avatarCropStageSize;
+        this.avatarCropBaseWidth = this.avatarCropStageSize * ratio;
+      }
+
+      this.clampAvatarCropOffset();
+    },
+    setAvatarZoom(value) {
+      if (this.avatarCropIsGif) return;
+      const normalized = Math.min(3, Math.max(1, Math.round(value * 10) / 10));
+      this.avatarCropZoom = normalized;
+      this.clampAvatarCropOffset();
+    },
+    onAvatarCropWheel(event) {
+      if (this.avatarCropIsGif) return;
+      const step = event.deltaY < 0 ? 0.1 : -0.1;
+      this.setAvatarZoom(this.avatarCropZoom + step);
+    },
+    startAvatarDrag(event) {
+      if (this.avatarCropIsGif) return;
+      if (!this.showAvatarCropModal) return;
+      this.avatarCropDragging = true;
+      this.avatarDragStartX = event.clientX;
+      this.avatarDragStartY = event.clientY;
+      this.avatarDragInitialOffsetX = this.avatarCropOffsetX;
+      this.avatarDragInitialOffsetY = this.avatarCropOffsetY;
+      this.addAvatarDragListeners();
+    },
+    onAvatarDragMove(event) {
+      if (!this.avatarCropDragging) return;
+      const deltaX = event.clientX - this.avatarDragStartX;
+      const deltaY = event.clientY - this.avatarDragStartY;
+      this.avatarCropOffsetX = this.avatarDragInitialOffsetX + deltaX;
+      this.avatarCropOffsetY = this.avatarDragInitialOffsetY + deltaY;
+      this.clampAvatarCropOffset();
+    },
+    stopAvatarDrag() {
+      this.avatarCropDragging = false;
+      this.removeAvatarDragListeners();
+    },
+    addAvatarDragListeners() {
+      window.addEventListener("mousemove", this.onAvatarDragMove);
+      window.addEventListener("mouseup", this.stopAvatarDrag);
+      window.addEventListener("mouseleave", this.stopAvatarDrag);
+    },
+    removeAvatarDragListeners() {
+      window.removeEventListener("mousemove", this.onAvatarDragMove);
+      window.removeEventListener("mouseup", this.stopAvatarDrag);
+      window.removeEventListener("mouseleave", this.stopAvatarDrag);
+    },
+    clampAvatarCropOffset() {
+      const renderedWidth = this.avatarCropBaseWidth * this.avatarCropZoom;
+      const renderedHeight = this.avatarCropBaseHeight * this.avatarCropZoom;
+      const maxOffsetX = Math.max(0, (renderedWidth - this.avatarCropStageSize) / 2);
+      const maxOffsetY = Math.max(0, (renderedHeight - this.avatarCropStageSize) / 2);
+      this.avatarCropOffsetX = Math.min(
+        maxOffsetX,
+        Math.max(-maxOffsetX, this.avatarCropOffsetX)
+      );
+      this.avatarCropOffsetY = Math.min(
+        maxOffsetY,
+        Math.max(-maxOffsetY, this.avatarCropOffsetY)
+      );
+    },
+    increaseAvatarZoom() {
+      if (this.avatarCropIsGif) return;
+      this.setAvatarZoom(this.avatarCropZoom + 0.1);
+    },
+    decreaseAvatarZoom() {
+      if (this.avatarCropIsGif) return;
+      this.setAvatarZoom(this.avatarCropZoom - 0.1);
+    },
+    calculateCropRectangle(image) {
+      const renderedWidth = this.avatarCropBaseWidth * this.avatarCropZoom;
+      const renderedHeight = this.avatarCropBaseHeight * this.avatarCropZoom;
+
+      let sourceX =
+        ((this.avatarCropStageSize / 2 - this.avatarCropOffsetX) - renderedWidth / 2) /
+        renderedWidth *
+        image.naturalWidth;
+      let sourceY =
+        ((this.avatarCropStageSize / 2 - this.avatarCropOffsetY) - renderedHeight / 2) /
+        renderedHeight *
+        image.naturalHeight;
+      let sourceWidth =
+        (this.avatarCropStageSize / renderedWidth) * image.naturalWidth;
+      let sourceHeight =
+        (this.avatarCropStageSize / renderedHeight) * image.naturalHeight;
+
+      sourceX = Math.max(0, Math.min(image.naturalWidth - sourceWidth, sourceX));
+      sourceY = Math.max(0, Math.min(image.naturalHeight - sourceHeight, sourceY));
+      sourceWidth = Math.max(1, Math.min(image.naturalWidth, sourceWidth));
+      sourceHeight = Math.max(1, Math.min(image.naturalHeight, sourceHeight));
+
+      return {
+        x: Math.round(sourceX),
+        y: Math.round(sourceY),
+        width: Math.round(sourceWidth),
+        height: Math.round(sourceHeight),
+      };
+    },
+    async confirmAvatarCrop() {
+      if (this.isCroppingAvatar) return;
+
+      if (this.avatarCropIsGif && this.avatarCropOriginalFile) {
+        this.isCroppingAvatar = true;
+        try {
+          await this.uploadAvatar(this.avatarCropOriginalFile);
+          this.closeAvatarCropModal();
+        } catch (error) {
+          console.error("Error uploading GIF avatar:", error);
+        } finally {
+          this.isCroppingAvatar = false;
+        }
+        return;
+      }
+
+      const image = this.$refs.avatarCropImage;
+      if (!image || !image.naturalWidth || !image.naturalHeight) {
+        this.errorMessage = this.$t("profile.avatar_crop_error");
+        this.scrollToMessages();
+        return;
+      }
+
+      this.isCroppingAvatar = true;
+      try {
+        const cropRect = this.calculateCropRectangle(image);
+
+        const canvas = document.createElement("canvas");
+        canvas.width = 512;
+        canvas.height = 512;
+        const ctx = canvas.getContext("2d");
+
+        if (!ctx) {
+          throw new Error("Unable to create crop canvas context");
+        }
+
+        ctx.drawImage(
+          image,
+          cropRect.x,
+          cropRect.y,
+          cropRect.width,
+          cropRect.height,
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        );
+
+        const outputMime = this.avatarCropMimeType === "image/png" ? "image/png" : "image/jpeg";
+        const blob = await new Promise((resolve) => {
+          canvas.toBlob((result) => resolve(result), outputMime, 0.92);
+        });
+
+        if (!blob) {
+          throw new Error("Crop image generation failed");
+        }
+
+        const ext = outputMime === "image/png" ? "png" : "jpg";
+        const baseName = this.avatarCropFileName.replace(/\.[^/.]+$/, "") || "avatar";
+        const croppedFile = new File([blob], `${baseName}-cropped.${ext}`, {
+          type: outputMime,
+        });
+
+        await this.uploadAvatar(croppedFile);
+        this.closeAvatarCropModal();
+      } catch (error) {
+        console.error("Error cropping avatar:", error);
+        this.errorMessage = this.$t("profile.avatar_crop_error");
+        this.scrollToMessages();
+      } finally {
+        this.isCroppingAvatar = false;
+      }
+    },
+    async resetAvatarToDefault() {
+      if (this.isResettingAvatar) return;
+      this.isResettingAvatar = true;
+      this.errorMessage = "";
+      this.successMessage = "";
+
+      try {
+        const response = await api.delete("/api/user/avatar");
+        this.user = response.data.user;
+        this.successMessage = response.data.message || this.$t("profile.avatar_reset_success");
+        this.scrollToMessages();
+      } catch (error) {
+        console.error("Error resetting avatar:", error);
+        this.errorMessage =
+          error.response?.data?.message || this.$t("profile.avatar_reset_error");
+        this.scrollToMessages();
+      } finally {
+        this.isResettingAvatar = false;
+      }
+    },
+    async uploadAvatar(file, cropData = null) {
       this.isUploadingAvatar = true;
       this.errorMessage = "";
       this.successMessage = "";
 
       const formData = new FormData();
       formData.append("avatar", file);
+      if (cropData) {
+        Object.entries(cropData).forEach(([key, value]) => {
+          formData.append(key, String(value));
+        });
+      }
 
       try {
         const response = await api.post("api/user/avatar", formData, {
@@ -1170,6 +1878,250 @@ export default {
           this.$refs.avatarInput.value = "";
         }
       }
+    },
+    async toggleTwoFactor(enabled) {
+      if (this.isUpdatingTwoFactor) return;
+
+      this.isUpdatingTwoFactor = true;
+      this.errorMessage = "";
+
+      try {
+        const response = await api.put("/api/user/2fa", { enabled });
+        this.twoFactorEnabled = !!response.data.two_factor_enabled;
+        this.user.two_factor_enabled = this.twoFactorEnabled;
+        this.successMessage = response.data.message;
+        this.scrollToMessages();
+      } catch (error) {
+        this.errorMessage =
+          error.response?.data?.message || this.$t("profile.two_factor_toggle_failed");
+        this.scrollToMessages();
+      } finally {
+        this.isUpdatingTwoFactor = false;
+      }
+    },
+    async confirmEmailChangeCode() {
+      if (this.isConfirmingEmailChange || this.pendingEmailCode.length !== 6) return;
+
+      this.isConfirmingEmailChange = true;
+      this.errorMessage = "";
+
+      try {
+        const response = await api.post("/api/user/profile/confirm-email-change", {
+          code: this.pendingEmailCode,
+        });
+
+        this.user = { ...this.user, ...response.data.user };
+        this.formData.email = this.user.email;
+        localStorage.setItem("user", JSON.stringify(this.user));
+        this.pendingEmailChange = false;
+        this.pendingEmailTarget = "";
+        this.pendingEmailCode = "";
+        this.successMessage = response.data.message;
+        this.scrollToMessages();
+      } catch (error) {
+        this.errorMessage =
+          error.response?.data?.message || this.$t("profile.email_change_verify_failed");
+        this.scrollToMessages();
+      } finally {
+        this.isConfirmingEmailChange = false;
+      }
+    },
+    closeEmailChangeModal() {
+      if (this.isConfirmingEmailChange) return;
+      this.pendingEmailChange = false;
+      this.resetPendingEmailDigits();
+    },
+    async resendEmailChangeCode() {
+      if (this.isResendingEmailChangeCode || this.isConfirmingEmailChange) return;
+
+      this.isResendingEmailChangeCode = true;
+      this.errorMessage = "";
+
+      const fullPhone = this.phoneNumber
+        ? `${this.phoneCountryCode}${this.phoneNumber.replace(/\D/g, "")}`
+        : "";
+
+      const dataToSave = {
+        ...this.formData,
+        phone: fullPhone,
+        email: this.pendingEmailTarget || this.formData.email,
+        resend_email_change_2fa: true,
+      };
+
+      try {
+        const response = await api.put("/api/user/profile", dataToSave);
+
+        if (response.data?.requires_email_change_2fa) {
+          this.pendingEmailTarget = response.data.pending_email || dataToSave.email;
+          this.resetPendingEmailDigits();
+          this.successMessage =
+            response.data.message || this.$t("profile.email_change_verify_title");
+          this.scrollToMessages();
+          this.$nextTick(() => this.focusPendingEmailDigit(0));
+          return;
+        }
+
+        this.errorMessage = this.$t("profile.email_change_verify_failed");
+      } catch (error) {
+        this.errorMessage =
+          error.response?.data?.message || this.$t("profile.email_change_verify_failed");
+        this.scrollToMessages();
+      } finally {
+        this.isResendingEmailChangeCode = false;
+      }
+    },
+    onPendingEmailDigitInput(index, event) {
+      const value = (event.target.value || "").replace(/\D/g, "").slice(-1);
+      this.pendingEmailDigits[index] = value;
+      this.syncPendingEmailCode();
+
+      if (value && index < this.pendingEmailDigits.length - 1) {
+        this.$nextTick(() => this.focusPendingEmailDigit(index + 1));
+      }
+    },
+    onPendingEmailDigitKeydown(index, event) {
+      if (event.key !== "Backspace") return;
+
+      if (this.pendingEmailDigits[index]) {
+        event.preventDefault();
+        this.pendingEmailDigits[index] = "";
+        this.syncPendingEmailCode();
+        this.$nextTick(() => this.focusPendingEmailDigit(index));
+        return;
+      }
+
+      if (index > 0) {
+        event.preventDefault();
+        this.pendingEmailDigits[index - 1] = "";
+        this.syncPendingEmailCode();
+        this.$nextTick(() => this.focusPendingEmailDigit(index - 1));
+      }
+    },
+    onPendingEmailPaste(event) {
+      const pasted = (event.clipboardData?.getData("text") || "")
+        .replace(/\D/g, "")
+        .slice(0, 6);
+      if (!pasted) return;
+
+      for (let i = 0; i < 6; i += 1) {
+        this.pendingEmailDigits[i] = pasted[i] || "";
+      }
+      this.syncPendingEmailCode();
+      const nextIndex = Math.min(pasted.length, 5);
+      this.$nextTick(() => this.focusPendingEmailDigit(nextIndex));
+    },
+    focusPendingEmailDigit(index) {
+      const ref = this.$refs[`pendingEmailDigit${index}`];
+      const input = Array.isArray(ref) ? ref[0] : ref;
+      if (input && typeof input.focus === "function") {
+        input.focus();
+        if (typeof input.select === "function") input.select();
+      }
+    },
+    syncPendingEmailCode() {
+      this.pendingEmailCode = this.pendingEmailDigits.join("");
+    },
+    resetPendingEmailDigits() {
+      this.pendingEmailDigits = ["", "", "", "", "", ""];
+      this.pendingEmailCode = "";
+    },
+    async loadSavedPaymentCard() {
+      try {
+        const response = await api.get("/api/user/payment-card");
+        this.savedCard = response.data?.card || null;
+        if (this.savedCard) {
+          this.paymentCardForm.cardholder_name = this.savedCard.cardholder_name || "";
+          this.paymentCardForm.card_number = this.savedCard.card_number || "";
+          const year = String(this.savedCard.expiry_year || "").slice(-2);
+          const month = String(this.savedCard.expiry_month || "").padStart(2, "0");
+          this.paymentCardForm.expiry = `${month}/${year}`;
+          this.formatPaymentCardNumber();
+          this.formatPaymentCardExpiry();
+        } else {
+          this.paymentCardForm = {
+            cardholder_name: "",
+            card_number: "",
+            expiry: "",
+          };
+        }
+      } catch (error) {
+        this.savedCard = null;
+      }
+    },
+    formatPaymentCardNumber() {
+      this.paymentCardForm.card_number = this.paymentCardForm.card_number
+        .replace(/\D/g, "")
+        .substring(0, 19)
+        .replace(/(.{4})/g, "$1 ")
+        .trim();
+    },
+    formatPaymentCardExpiry() {
+      let digits = this.paymentCardForm.expiry.replace(/\D/g, "").substring(0, 4);
+      if (digits.length <= 2) {
+        this.paymentCardForm.expiry = digits;
+        return;
+      }
+      const month = Math.min(12, Math.max(1, parseInt(digits.substring(0, 2), 10) || 1));
+      const year = digits.substring(2, 4);
+      this.paymentCardForm.expiry = `${String(month).padStart(2, "0")}/${year}`;
+    },
+    async savePaymentCard() {
+      if (!this.editMode) return;
+      if (this.isSavingPaymentCard) return;
+      this.isSavingPaymentCard = true;
+      this.errorMessage = "";
+
+      try {
+        const response = await api.post("/api/user/payment-card", this.paymentCardForm);
+        this.savedCard = response.data.card;
+        this.paymentCardForm.cardholder_name = this.savedCard?.cardholder_name || "";
+        this.paymentCardForm.card_number = this.savedCard.card_number || "";
+        const year = String(this.savedCard?.expiry_year || "").slice(-2);
+        const month = String(this.savedCard?.expiry_month || "").padStart(2, "0");
+        this.paymentCardForm.expiry = `${month}/${year}`;
+        this.formatPaymentCardNumber();
+        this.formatPaymentCardExpiry();
+        this.successMessage = response.data.message;
+        this.scrollToMessages();
+      } catch (error) {
+        this.errorMessage =
+          error.response?.data?.message || this.$t("profile.saved_card_save_failed");
+        this.scrollToMessages();
+      } finally {
+        this.isSavingPaymentCard = false;
+      }
+    },
+    async deletePaymentCard() {
+      if (!this.editMode) return;
+      if (this.isDeletingPaymentCard) return;
+      this.isDeletingPaymentCard = true;
+      this.errorMessage = "";
+
+      try {
+        const response = await api.delete("/api/user/payment-card");
+        this.savedCard = null;
+        this.paymentCardForm = {
+          cardholder_name: "",
+          card_number: "",
+          expiry: "",
+        };
+        this.successMessage = response.data.message;
+        this.scrollToMessages();
+      } catch (error) {
+        this.errorMessage =
+          error.response?.data?.message || this.$t("profile.saved_card_delete_failed");
+        this.scrollToMessages();
+      } finally {
+        this.isDeletingPaymentCard = false;
+      }
+    },
+    isElevatedRole(role) {
+      return role === "admin" || role === "owner";
+    },
+    getRoleLabel(role) {
+      const key = `roles.${role}`;
+      const translated = this.$t(key);
+      return translated === key ? String(role || "").toUpperCase() : translated;
     },
     getAvatarUrl(avatar) {
       if (!avatar) return "";
