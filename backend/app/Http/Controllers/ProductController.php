@@ -527,7 +527,7 @@ class ProductController extends Controller
         }
 
         try {
-            // Build a safe query that doesn't reference columns which may not exist
+            // Build query without optional columns unless they exist
             $productsQuery = Product::where('title', 'like', "%{$q}%")
                 ->orWhere('description', 'like', "%{$q}%")
                 ->orWhere('brand', 'like', "%{$q}%")

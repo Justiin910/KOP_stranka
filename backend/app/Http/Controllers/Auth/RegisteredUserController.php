@@ -23,7 +23,7 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        // Always use RFC + DNS validation for emails (reject clearly bogus domains)
+        // Validate email with RFC + DNS rules
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email:rfc,dns', 'max:255', 'unique:'.User::class],
@@ -31,7 +31,7 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        // Extra safeguard: explicit DNS check for domain (require MX records only)
+        // Additional MX check for email domain
         $email = $request->string('email');
         $domain = substr(strrchr($email, '@'), 1);
         if ($domain) {

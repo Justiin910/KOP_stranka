@@ -8,7 +8,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
-    protected $fillable = ['title', 'brand', 'price', 'oldPrice', 'image', 'rating', 'reviews', 'category', 'stock', 'monthlyPrice', 'description', 'service', 'topBadge', 'addedAt', 'specs', 'discount_type', 'discount_value', 'variants', 'variant_pricing'];
+    protected $fillable = ['title', 'brand', 'price', 'oldPrice', 'image', 
+    'rating', 'reviews', 'category', 'stock', 'monthlyPrice', 'description', 
+    'service', 'topBadge', 'addedAt', 'specs', 'discount_type', 'discount_value', 
+    'variants', 'variant_pricing'];
 
     protected $casts = [
         'variants' => 'json',

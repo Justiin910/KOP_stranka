@@ -26,7 +26,7 @@ class ContactController extends Controller
             'message.max' => 'Vaša správa nesmie presiahnuť 5000 znakov.',
         ]);
 
-        // Additional defensive DNS check (in case the email rule misses some edge cases)
+        // Additional MX check for email domain
         $email = $validated['email'] ?? null;
         if ($email) {
             $domain = substr(strrchr($email, '@'), 1);

@@ -89,7 +89,7 @@ class AdminController extends Controller
 
         $validated = $request->validate($rules);
 
-        // Defensive MX-only DNS check for updated email address
+        // Additional MX check for updated email domain
         $emailToCheck = $validated['email'] ?? null;
         if ($emailToCheck) {
             $domain = substr(strrchr($emailToCheck, '@'), 1);

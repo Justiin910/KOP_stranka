@@ -607,7 +607,7 @@
         </div>
       </div>
 
-      <!-- Delete confirmation modal (duplicate safe - ensures modal always in template hierarchy) -->
+      <!-- Delete confirmation modal -->
       <div
         v-if="showDeleteModal"
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
@@ -790,7 +790,7 @@ export default {
           }));
         }
 
-        // Ensure variants is parsed if it comes as a string
+        // Parse variants when returned as a JSON string
         if (this.product.variants && typeof this.product.variants === "string") {
           try {
             this.product.variants = JSON.parse(this.product.variants);
@@ -800,7 +800,7 @@ export default {
           }
         }
 
-        // Ensure variant_pricing is parsed if it comes as a string
+        // Parse variant_pricing when returned as a JSON string
         if (
           this.product.variant_pricing &&
           typeof this.product.variant_pricing === "string"
