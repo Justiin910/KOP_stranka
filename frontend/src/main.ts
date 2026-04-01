@@ -3,6 +3,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import '../src/assets/main.css'
+import 'flag-icons/css/flag-icons.min.css'
 
 import App from './App.vue'
 import router from './router'

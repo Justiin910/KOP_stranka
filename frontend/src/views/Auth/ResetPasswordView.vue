@@ -5,22 +5,8 @@
     <div class="w-full max-w-md">
       <!-- Logo/Header -->
       <div class="text-center mb-8">
-        <div
-          class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl shadow-lg mb-4"
-        >
-          <svg
-            class="w-10 h-10 text-white"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-            />
-          </svg>
+        <div class="inline-flex items-center justify-center mb-4">
+          <img src="/favicon.svg" alt="TechShop logo" class="w-10 h-10 object-contain" />
         </div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
           {{ $t("reset.title") }}

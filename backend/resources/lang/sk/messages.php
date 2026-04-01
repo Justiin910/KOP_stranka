@@ -33,6 +33,10 @@ return [
         'review_not_found_delete' => 'Recenzia nenájdená',
         'review_unauthorized_delete' => 'Nemáte oprávnenie na vymazanie tejto recenzie',
         'review_deleted' => 'Recenzia bola úspešne vymazaná.',
+        'comment_not_found' => 'Komentár nenájdený',
+        'comment_unauthorized_update' => 'Nemáte oprávnenie upraviť tento komentár',
+        'comment_unauthorized_delete' => 'Nemáte oprávnenie vymazať tento komentár',
+        'comment_deleted' => 'Komentár bol úspešne vymazaný.',
     ],
     'cart' => [
         'item_added' => 'Položka bola pridaná do košíka',

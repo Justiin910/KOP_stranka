@@ -419,6 +419,134 @@ class ProductController extends Controller
         ]);
     }
 
+    /**
+     * Update a review discussion comment - only comment author can edit.
+     */
+    public function updateReviewComment(Request $request, $id, $reviewId, $commentId)
+    {
+        if (!auth()->check()) {
+            return response()->json(['message' => __('messages.product.unauthorized')], 401);
+        }
+
+        if (!Schema::hasTable('product_review_comments')) {
+            return response()->json(['message' => 'Review comments are not available yet.'], 503);
+        }
+
+        $validated = $request->validate([
+            'comment' => 'required|string|max:2000',
+        ]);
+
+        $review = DB::table('product_reviews')
+            ->where('id', $reviewId)
+            ->where('product_id', $id)
+            ->first();
+
+        if (!$review) {
+            return response()->json(['message' => __('messages.product.review_not_found')], 404);
+        }
+
+        $comment = DB::table('product_review_comments')
+            ->where('id', $commentId)
+            ->where('review_id', $reviewId)
+            ->first();
+
+        if (!$comment) {
+            return response()->json(['message' => __('messages.product.comment_not_found')], 404);
+        }
+
+        if ((int) $comment->user_id !== (int) auth()->id()) {
+            return response()->json(['message' => __('messages.product.comment_unauthorized_update')], 403);
+        }
+
+        DB::table('product_review_comments')
+            ->where('id', $commentId)
+            ->update([
+                'comment' => trim((string) $validated['comment']),
+                'updated_at' => now(),
+            ]);
+
+        $updatedComment = DB::table('product_review_comments')
+            ->leftJoin('users', 'product_review_comments.user_id', '=', 'users.id')
+            ->where('product_review_comments.id', $commentId)
+            ->select(
+                'product_review_comments.id',
+                'product_review_comments.review_id',
+                'product_review_comments.parent_id',
+                'product_review_comments.comment',
+                'product_review_comments.created_at',
+                'product_review_comments.updated_at',
+                'users.id as user_id',
+                'users.name as user_name',
+                'users.avatar as user_avatar'
+            )
+            ->first();
+
+        return response()->json([
+            'success' => true,
+            'comment' => [
+                'id' => (int) $updatedComment->id,
+                'review_id' => (int) $updatedComment->review_id,
+                'parent_id' => $updatedComment->parent_id !== null ? (int) $updatedComment->parent_id : null,
+                'comment' => (string) $updatedComment->comment,
+                'created_at' => $updatedComment->created_at,
+                'updated_at' => $updatedComment->updated_at,
+                'user_id' => $updatedComment->user_id !== null ? (int) $updatedComment->user_id : null,
+                'user_name' => $updatedComment->user_name,
+                'user_avatar' => $updatedComment->user_avatar,
+                'replies' => [],
+            ],
+        ]);
+    }
+
+    /**
+     * Delete a review discussion comment - author can delete own, owner/admin can delete any.
+     */
+    public function deleteReviewComment($id, $reviewId, $commentId)
+    {
+        if (!auth()->check()) {
+            return response()->json(['message' => __('messages.product.unauthorized')], 401);
+        }
+
+        if (!Schema::hasTable('product_review_comments')) {
+            return response()->json(['message' => 'Review comments are not available yet.'], 503);
+        }
+
+        $review = DB::table('product_reviews')
+            ->where('id', $reviewId)
+            ->where('product_id', $id)
+            ->first();
+
+        if (!$review) {
+            return response()->json(['message' => __('messages.product.review_not_found')], 404);
+        }
+
+        $comment = DB::table('product_review_comments')
+            ->where('id', $commentId)
+            ->where('review_id', $reviewId)
+            ->first();
+
+        if (!$comment) {
+            return response()->json(['message' => __('messages.product.comment_not_found')], 404);
+        }
+
+        $user = auth()->user();
+        $isAdmin = $user->role === 'admin' || $user->role === 'owner';
+
+        if ((int) $comment->user_id !== (int) auth()->id() && !$isAdmin) {
+            return response()->json(['message' => __('messages.product.comment_unauthorized_delete')], 403);
+        }
+
+        DB::table('product_review_comments')
+            ->where('id', $commentId)
+            ->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => __('messages.product.comment_deleted'),
+            'deleted_comment_id' => (int) $commentId,
+        ]);
+    }
+
     private function attachCommentsToReviews(Collection $reviews): Collection
     {
         if ($reviews->isEmpty()) {

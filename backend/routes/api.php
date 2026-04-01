@@ -56,6 +56,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/products/{id}/reviews/{reviewId}', [ProductController::class, 'updateReview']);
     Route::delete('/products/{id}/reviews/{reviewId}', [ProductController::class, 'deleteReview']);
     Route::post('/products/{id}/reviews/{reviewId}/comments', [ProductController::class, 'storeReviewComment']);
+    Route::put('/products/{id}/reviews/{reviewId}/comments/{commentId}', [ProductController::class, 'updateReviewComment']);
+    Route::delete('/products/{id}/reviews/{reviewId}/comments/{commentId}', [ProductController::class, 'deleteReviewComment']);
 });
 
 // User profile management

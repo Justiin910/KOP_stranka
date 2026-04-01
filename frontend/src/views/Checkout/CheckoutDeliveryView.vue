@@ -172,16 +172,11 @@
                     >{{ $t("pages.checkout.delivery.phone") }}</label
                   >
                   <div class="flex gap-2">
-                    <select
+                    <CountryCodeSelect
                       v-model="phoneCountryCode"
-                      class="px-2 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm"
-                    >
-                      <option value="+421">+421 SK</option>
-                      <option value="+420">+420 CZ</option>
-                      <option value="+43">+43 AT</option>
-                      <option value="+48">+48 PL</option>
-                      <option value="+36">+36 HU</option>
-                    </select>
+                      :options="phoneCountryOptions"
+                      class="w-32"
+                    />
                     <input
                       v-model="phoneNumber"
                       type="tel"
@@ -342,9 +337,14 @@
 import { useRouter } from "vue-router";
 import { useCartStore } from "../../stores/cartStore";
 import api from "../../api";
+import CountryCodeSelect from "../../components/CountryCodeSelect.vue";
+import { PHONE_COUNTRY_OPTIONS } from "../../utils/localeCountryData";
 
 export default {
   name: "CheckoutDeliveryView",
+  components: {
+    CountryCodeSelect,
+  },
   setup() {
     const router = useRouter();
     const cartStore = useCartStore();
@@ -382,6 +382,7 @@ export default {
       loading: false,
       phoneNumber: "",
       phoneCountryCode: "+421",
+      phoneCountryOptions: PHONE_COUNTRY_OPTIONS,
     };
   },
   computed: {

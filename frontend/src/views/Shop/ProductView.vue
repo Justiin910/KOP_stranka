@@ -362,17 +362,16 @@
                     {{ t("product.review_discussion") }}
                   </h4>
 
-                  <div class="mt-3 flex justify-end">
+                  <div
+                    v-if="!isReviewCommentOpen(rev.id) && !isReplyingTo(rev.id)"
+                    class="mt-3 flex justify-end"
+                  >
                     <button
                       type="button"
-                      @click="toggleReviewCommentComposer(rev.id)"
+                      @click="openReviewCommentComposer(rev.id)"
                       class="text-xs text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium"
                     >
-                      {{
-                        isReviewCommentOpen(rev.id)
-                          ? t("product.hide_review_comment_form")
-                          : t("product.open_review_comment_form")
-                      }}
+                      {{ t("product.open_review_comment_form") }}
                     </button>
                   </div>
 
@@ -421,16 +420,129 @@
                               }}
                             </span>
                           </div>
-                          <p class="text-sm text-gray-700 dark:text-gray-300 mt-1 whitespace-pre-line">
-                            {{ translatedReviewDiscussionComments[item.id] || item.comment }}
-                          </p>
-                          <button
-                            v-if="user"
-                            @click="setReplyTarget(rev.id, item.id, item.user_name)"
-                            class="mt-2 text-xs text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium"
+                          <template v-if="!isEditingReviewComment(rev.id, item.id)">
+                            <p class="text-sm text-gray-700 dark:text-gray-300 mt-1 whitespace-pre-line">
+                              {{ translatedReviewDiscussionComments[item.id] || item.comment }}
+                            </p>
+
+                            <div
+                              v-if="user"
+                              class="mt-2 flex items-center gap-3 flex-wrap"
+                            >
+                              <button
+                                @click="setReplyTarget(rev.id, item.id, item.user_name)"
+                                class="text-xs text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium"
+                              >
+                                {{ t("product.reply") }}
+                              </button>
+                              <button
+                                v-if="canEditReviewComment(item)"
+                                @click="startEditReviewComment(rev.id, item)"
+                                class="text-xs text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium"
+                              >
+                                {{ t("product.edit") }}
+                              </button>
+                              <button
+                                v-if="canDeleteReviewComment(item)"
+                                @click="deleteReviewComment(rev.id, item.id)"
+                                :disabled="isReviewCommentDeleting(item.id)"
+                                class="text-xs text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {{
+                                  isReviewCommentDeleting(item.id)
+                                    ? t("common.deleting")
+                                    : t("product.delete")
+                                }}
+                              </button>
+                            </div>
+                          </template>
+
+                          <div v-else class="mt-2 space-y-2">
+                            <textarea
+                              v-model="editingReviewCommentText"
+                              :ref="(el) => setReviewCommentEditTextareaRef(item.id, el)"
+                              rows="2"
+                              class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                              :placeholder="t('product.review_comment_placeholder')"
+                              :disabled="isReviewCommentUpdating(item.id)"
+                            ></textarea>
+
+                            <div class="flex items-center justify-end gap-2">
+                              <button
+                                type="button"
+                                @click="cancelEditReviewComment"
+                                class="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-sm font-medium transition"
+                              >
+                                {{ t("common.cancel") }}
+                              </button>
+                              <button
+                                type="button"
+                                @click="submitEditReviewComment(rev.id, item.id)"
+                                :disabled="
+                                  isReviewCommentUpdating(item.id) ||
+                                  !editingReviewCommentText.trim().length
+                                "
+                                class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {{
+                                  isReviewCommentUpdating(item.id)
+                                    ? t("product.saving")
+                                    : t("product.save_changes")
+                                }}
+                              </button>
+                            </div>
+                          </div>
+
+                          <div
+                            v-if="isReplyingToComment(rev.id, item.id) && !isEditingReviewComment(rev.id, item.id)"
+                            class="mt-3 space-y-2"
                           >
-                            {{ t("product.reply") }}
-                          </button>
+                            <div
+                              class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400"
+                            >
+                              <span>
+                                {{ t("product.replying_to", { name: getReplyTargetName(rev.id) }) }}
+                              </span>
+                            </div>
+
+                            <textarea
+                              v-model="reviewCommentForms[rev.id]"
+                              :ref="(el) => setReviewCommentTextareaRef(rev.id, el, item.id)"
+                              rows="2"
+                              class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                              :placeholder="
+                                user
+                                  ? t('product.review_comment_placeholder')
+                                  : t('product.login_to_comment_review')
+                              "
+                              :disabled="!user || isReviewCommentSubmitting(rev.id)"
+                            ></textarea>
+
+                            <div class="flex items-center justify-end gap-2">
+                              <button
+                                type="button"
+                                @click="cancelReply(rev.id)"
+                                class="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-sm font-medium transition"
+                              >
+                                {{ t("product.cancel_reply") }}
+                              </button>
+                              <button
+                                v-if="user"
+                                @click="submitReviewComment(rev.id)"
+                                :disabled="
+                                  isReviewCommentSubmitting(rev.id) ||
+                                  !(reviewCommentForms[rev.id] || '').trim().length
+                                "
+                                class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {{
+                                  isReviewCommentSubmitting(rev.id)
+                                    ? t("product.submitting_comment")
+                                    : t("product.submit_review_comment")
+                                }}
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -444,27 +556,12 @@
                   </p>
 
                   <div
-                    v-if="isReviewCommentOpen(rev.id) || isReplyingTo(rev.id)"
+                    v-if="isReviewCommentOpen(rev.id) && !isReplyingTo(rev.id)"
                     class="mt-4"
                   >
-                    <div
-                      v-if="isReplyingTo(rev.id)"
-                      class="mb-2 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400"
-                    >
-                      <span>
-                        {{ t("product.replying_to", { name: getReplyTargetName(rev.id) }) }}
-                      </span>
-                      <button
-                        type="button"
-                        @click="clearReplyTarget(rev.id)"
-                        class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
-                      >
-                        {{ t("product.cancel_reply") }}
-                      </button>
-                    </div>
-
                     <textarea
                       v-model="reviewCommentForms[rev.id]"
+                      :ref="(el) => setReviewCommentTextareaRef(rev.id, el)"
                       rows="2"
                       class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                       :placeholder="
@@ -475,7 +572,7 @@
                       :disabled="!user || isReviewCommentSubmitting(rev.id)"
                     ></textarea>
 
-                    <div class="mt-2 flex items-center justify-between">
+                    <div class="mt-2 flex items-center justify-between gap-2">
                       <p
                         v-if="!user"
                         class="text-xs text-gray-500 dark:text-gray-400"
@@ -489,6 +586,16 @@
                         </router-link>
                         .
                       </p>
+
+                      <div class="ml-auto flex items-center gap-2">
+                        <button
+                          v-if="isReviewCommentOpen(rev.id) && !isReplyingTo(rev.id)"
+                          type="button"
+                          @click="closeReviewCommentComposer(rev.id)"
+                          class="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-sm font-medium transition"
+                        >
+                          {{ t("common.cancel") }}
+                        </button>
 
                       <button
                         v-if="user"
@@ -505,6 +612,7 @@
                             : t("product.submit_review_comment")
                         }}
                       </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -718,6 +826,13 @@ export default {
       reviewCommentSubmitting: {},
       reviewReplyTargets: {},
       reviewCommentComposerOpen: {},
+      reviewCommentTextareaRefs: {},
+      reviewCommentEditTextareaRefs: {},
+      editingReviewCommentId: null,
+      editingReviewCommentReviewId: null,
+      editingReviewCommentText: "",
+      reviewCommentUpdating: {},
+      reviewCommentDeleting: {},
       translatedReviewDiscussionComments: {},
       translatingReviewDiscussionComments: {},
     };
@@ -1154,6 +1269,74 @@ export default {
       if (this.user.role === "admin" || this.user.role === "owner") return true;
       return false;
     },
+    isReviewCommentOwner(comment) {
+      if (!this.user || !comment) return false;
+      return this.isSameUserId(this.user.id, comment.user_id);
+    },
+    canEditReviewComment(comment) {
+      if (!this.user) return false;
+      return this.isReviewCommentOwner(comment);
+    },
+    canDeleteReviewComment(comment) {
+      if (!this.user) return false;
+      if (this.isReviewCommentOwner(comment)) return true;
+      if (this.user.role === "admin" || this.user.role === "owner") return true;
+      return false;
+    },
+    isEditingReviewComment(reviewId, commentId) {
+      return (
+        this.isSameUserId(this.editingReviewCommentReviewId, reviewId) &&
+        this.isSameUserId(this.editingReviewCommentId, commentId)
+      );
+    },
+    isReviewCommentUpdating(commentId) {
+      return !!this.reviewCommentUpdating[commentId];
+    },
+    isReviewCommentDeleting(commentId) {
+      return !!this.reviewCommentDeleting[commentId];
+    },
+    setReviewCommentEditTextareaRef(commentId, element) {
+      const key = String(commentId ?? "");
+      if (element) {
+        this.reviewCommentEditTextareaRefs[key] = element;
+        return;
+      }
+
+      delete this.reviewCommentEditTextareaRefs[key];
+    },
+    focusReviewCommentEditTextarea(commentId) {
+      this.$nextTick(() => {
+        const key = String(commentId ?? "");
+        const textarea = this.reviewCommentEditTextareaRefs[key];
+        if (!textarea || typeof textarea.focus !== "function") {
+          return;
+        }
+
+        textarea.focus();
+
+        if (typeof textarea.value === "string" && textarea.setSelectionRange) {
+          const cursorPosition = textarea.value.length;
+          textarea.setSelectionRange(cursorPosition, cursorPosition);
+        }
+      });
+    },
+    startEditReviewComment(reviewId, comment) {
+      if (!this.canEditReviewComment(comment)) {
+        return;
+      }
+
+      this.clearReplyTarget(reviewId);
+      this.reviewCommentComposerOpen[reviewId] = false;
+      this.editingReviewCommentReviewId = reviewId;
+      this.editingReviewCommentId = comment.id;
+      this.editingReviewCommentText = comment.comment || "";
+      this.focusReviewCommentEditTextarea(comment.id);
+    },
+    cancelEditReviewComment() {
+      this.editingReviewCommentReviewId = null;
+      this.editingReviewCommentId = null;
+      this.editingReviewCommentText = "";
+    },
     normalizeSingleReviewComment(comment) {
       if (!comment || typeof comment !== "object") {
         return {
@@ -1205,27 +1388,80 @@ export default {
     isReviewCommentSubmitting(reviewId) {
       return !!this.reviewCommentSubmitting[reviewId];
     },
-    toggleReviewCommentComposer(reviewId) {
-      this.reviewCommentComposerOpen[reviewId] = !this.isReviewCommentOpen(reviewId);
-      if (!this.reviewCommentComposerOpen[reviewId]) {
-        this.clearReplyTarget(reviewId);
+    getReviewCommentTextareaRefKey(reviewId, parentCommentId = null) {
+      if (parentCommentId) {
+        return `${reviewId}:${parentCommentId}`;
       }
+
+      return `${reviewId}:root`;
+    },
+    setReviewCommentTextareaRef(reviewId, element, parentCommentId = null) {
+      const key = this.getReviewCommentTextareaRefKey(reviewId, parentCommentId);
+      if (element) {
+        this.reviewCommentTextareaRefs[key] = element;
+        return;
+      }
+
+      delete this.reviewCommentTextareaRefs[key];
+    },
+    focusReviewCommentComposer(reviewId) {
+      this.$nextTick(() => {
+        const parentCommentId = this.reviewReplyTargets[reviewId]?.parentId || null;
+        const key = this.getReviewCommentTextareaRefKey(reviewId, parentCommentId);
+        const textarea = this.reviewCommentTextareaRefs[key];
+        if (!textarea || typeof textarea.focus !== "function") {
+          return;
+        }
+
+        textarea.focus();
+
+        if (typeof textarea.value === "string" && textarea.setSelectionRange) {
+          const cursorPosition = textarea.value.length;
+          textarea.setSelectionRange(cursorPosition, cursorPosition);
+        }
+      });
+    },
+    openReviewCommentComposer(reviewId) {
+      this.cancelEditReviewComment();
+      this.reviewCommentComposerOpen[reviewId] = true;
+      this.focusReviewCommentComposer(reviewId);
+    },
+    closeReviewCommentComposer(reviewId) {
+      this.reviewCommentComposerOpen[reviewId] = false;
+      this.clearReplyTarget(reviewId);
+    },
+    toggleReviewCommentComposer(reviewId) {
+      if (this.isReviewCommentOpen(reviewId)) {
+        this.closeReviewCommentComposer(reviewId);
+        return;
+      }
+
+      this.openReviewCommentComposer(reviewId);
     },
     isReviewCommentOpen(reviewId) {
       return !!this.reviewCommentComposerOpen[reviewId];
     },
     setReplyTarget(reviewId, parentCommentId, parentUserName) {
+      this.cancelEditReviewComment();
       this.reviewReplyTargets[reviewId] = {
         parentId: parentCommentId,
         parentUserName: parentUserName || this.t("product.anonymous_user"),
       };
       this.reviewCommentComposerOpen[reviewId] = true;
+      this.focusReviewCommentComposer(reviewId);
+    },
+    cancelReply(reviewId) {
+      this.clearReplyTarget(reviewId);
+      this.reviewCommentComposerOpen[reviewId] = false;
     },
     clearReplyTarget(reviewId) {
       delete this.reviewReplyTargets[reviewId];
     },
     isReplyingTo(reviewId) {
       return !!this.reviewReplyTargets[reviewId]?.parentId;
+    },
+    isReplyingToComment(reviewId, commentId) {
+      return this.isSameUserId(this.reviewReplyTargets[reviewId]?.parentId, commentId);
     },
     getReplyTargetName(reviewId) {
       return (
@@ -1277,6 +1513,237 @@ export default {
       if (!inserted) {
         normalizedComment.parent_id = null;
         review.comments.push(normalizedComment);
+      }
+    },
+    updateCommentInTree(tree, commentId, updatedComment) {
+      if (!Array.isArray(tree)) {
+        return false;
+      }
+
+      for (const item of tree) {
+        if (this.isSameUserId(item.id, commentId)) {
+          item.comment = updatedComment.comment ?? item.comment;
+          item.updated_at = updatedComment.updated_at ?? item.updated_at;
+          item.user_id = updatedComment.user_id ?? item.user_id;
+          item.user_name = updatedComment.user_name ?? item.user_name;
+          if (Object.prototype.hasOwnProperty.call(updatedComment, "user_avatar")) {
+            item.user_avatar = updatedComment.user_avatar;
+          }
+          return true;
+        }
+
+        if (this.updateCommentInTree(item.replies || [], commentId, updatedComment)) {
+          return true;
+        }
+      }
+
+      return false;
+    },
+    updateCommentInReview(reviewId, commentId, updatedComment) {
+      const review = (this.product.latest_reviews || []).find((item) =>
+        this.isSameUserId(item.id, reviewId)
+      );
+
+      if (!review || !Array.isArray(review.comments)) {
+        return false;
+      }
+
+      return this.updateCommentInTree(review.comments, commentId, updatedComment);
+    },
+    collectCommentIds(tree, result = []) {
+      if (!Array.isArray(tree)) {
+        return result;
+      }
+
+      tree.forEach((item) => {
+        if (item?.id !== null && item?.id !== undefined) {
+          result.push(item.id);
+        }
+        this.collectCommentIds(item?.replies || [], result);
+      });
+
+      return result;
+    },
+    removeCommentFromTree(tree, commentId, removedIds = []) {
+      if (!Array.isArray(tree)) {
+        return [];
+      }
+
+      const nextTree = [];
+      tree.forEach((item) => {
+        if (this.isSameUserId(item.id, commentId)) {
+          removedIds.push(item.id);
+          this.collectCommentIds(item.replies || [], removedIds);
+          return;
+        }
+
+        item.replies = this.removeCommentFromTree(item.replies || [], commentId, removedIds);
+        nextTree.push(item);
+      });
+
+      return nextTree;
+    },
+    removeCommentFromReview(reviewId, commentId) {
+      const review = (this.product.latest_reviews || []).find((item) =>
+        this.isSameUserId(item.id, reviewId)
+      );
+
+      if (!review || !Array.isArray(review.comments)) {
+        return [];
+      }
+
+      const removedIds = [];
+      review.comments = this.removeCommentFromTree(review.comments, commentId, removedIds);
+      return removedIds;
+    },
+    findCommentInTree(tree, commentId) {
+      if (!Array.isArray(tree)) {
+        return null;
+      }
+
+      for (const item of tree) {
+        if (this.isSameUserId(item.id, commentId)) {
+          return item;
+        }
+
+        const nested = this.findCommentInTree(item.replies || [], commentId);
+        if (nested) {
+          return nested;
+        }
+      }
+
+      return null;
+    },
+    hasCommentInReview(reviewId, commentId) {
+      const review = (this.product.latest_reviews || []).find((item) =>
+        this.isSameUserId(item.id, reviewId)
+      );
+
+      if (!review || !Array.isArray(review.comments)) {
+        return false;
+      }
+
+      return !!this.findCommentInTree(review.comments, commentId);
+    },
+    clearCommentTranslationCache(commentIds = []) {
+      if (!Array.isArray(commentIds)) {
+        return;
+      }
+
+      commentIds.forEach((commentId) => {
+        delete this.translatedReviewDiscussionComments[commentId];
+        delete this.translatingReviewDiscussionComments[commentId];
+      });
+    },
+    async submitEditReviewComment(reviewId, commentId) {
+      if (!this.isEditingReviewComment(reviewId, commentId)) {
+        return;
+      }
+
+      const text = this.editingReviewCommentText.trim();
+      if (!text) {
+        this.$notify &&
+          this.$notify({ type: "error", text: this.t("product.review_comment_empty") });
+        return;
+      }
+
+      if (this.isReviewCommentUpdating(commentId)) {
+        return;
+      }
+
+      this.reviewCommentUpdating[commentId] = true;
+      try {
+        const response = await api.put(
+          `/api/products/${this.product.id}/reviews/${reviewId}/comments/${commentId}`,
+          {
+            comment: text,
+          }
+        );
+
+        if (response.data?.comment) {
+          const updatedComment = this.normalizeSingleReviewComment(response.data.comment);
+          this.updateCommentInReview(reviewId, commentId, updatedComment);
+          this.clearCommentTranslationCache([commentId]);
+          this.getTranslatedReviewDiscussionComment(commentId, updatedComment.comment);
+          this.cancelEditReviewComment();
+          this.$notify &&
+            this.$notify({
+              type: "success",
+              text: this.t("product.review_comment_updated"),
+            });
+        }
+      } catch (error) {
+        console.error("Failed to update review comment", error);
+        this.$notify &&
+          this.$notify({
+            type: "error",
+            text:
+              error?.response?.data?.message ||
+              this.t("product.review_comment_update_failed"),
+          });
+      } finally {
+        this.reviewCommentUpdating[commentId] = false;
+      }
+    },
+    async deleteReviewComment(reviewId, commentId) {
+      if (!this.user || this.isReviewCommentDeleting(commentId)) {
+        return;
+      }
+
+      if (!window.confirm(this.t("product.review_comment_delete_confirm"))) {
+        return;
+      }
+
+      this.reviewCommentDeleting[commentId] = true;
+      try {
+        const response = await api.delete(
+          `/api/products/${this.product.id}/reviews/${reviewId}/comments/${commentId}`
+        );
+
+        const wasSuccessful =
+          response.status >= 200 &&
+          response.status < 300 &&
+          (response.data?.success ?? true);
+
+        if (wasSuccessful) {
+          const removedIds = this.removeCommentFromReview(reviewId, commentId);
+          this.clearCommentTranslationCache(removedIds);
+
+          const activeReplyTarget = this.reviewReplyTargets[reviewId]?.parentId;
+          if (activeReplyTarget && !this.hasCommentInReview(reviewId, activeReplyTarget)) {
+            this.clearReplyTarget(reviewId);
+            this.reviewCommentComposerOpen[reviewId] = false;
+          }
+
+          if (
+            this.editingReviewCommentId &&
+            this.editingReviewCommentReviewId &&
+            !this.hasCommentInReview(
+              this.editingReviewCommentReviewId,
+              this.editingReviewCommentId
+            )
+          ) {
+            this.cancelEditReviewComment();
+          }
+
+          this.$notify &&
+            this.$notify({
+              type: "success",
+              text:
+                response.data?.message || this.t("product.review_comment_deleted"),
+            });
+        }
+      } catch (error) {
+        console.error("Failed to delete review comment", error);
+        this.$notify &&
+          this.$notify({
+            type: "error",
+            text:
+              error?.response?.data?.message ||
+              this.t("product.review_comment_delete_failed"),
+          });
+      } finally {
+        this.reviewCommentDeleting[commentId] = false;
       }
     },
     async submitReviewComment(reviewId) {

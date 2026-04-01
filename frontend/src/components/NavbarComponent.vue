@@ -7,20 +7,7 @@
         class="flex items-center flex-shrink-0 gap-2 hover:opacity-80 transition-opacity"
         role="banner"
       >
-        <div
-          class="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-lg shadow-lg"
-        >
-          <svg
-            class="w-6 h-6 text-white"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 5h14M10 21a1 1 0 100-2 1 1 0 000 2zm7 0a1 1 0 100-2 1 1 0 000 2z"
-            />
-          </svg>
-        </div>
+        <img src="/favicon.svg" alt="TechShop logo" class="w-10 h-10 object-contain" />
         <div>
           <div class="text-sm font-bold text-white leading-tight">TechShop</div>
           <div class="text-xs text-indigo-300 font-medium leading-tight">Smart Tech</div>
@@ -67,6 +54,11 @@
             @click="showLanguageDropdown = !showLanguageDropdown"
             class="p-2 rounded-full bg-gray-100/70 dark:bg-gray-800/70 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200 flex items-center pl-4 font-medium text-sm"
           >
+            <span
+              v-if="currentLanguageOption"
+              class="fi rounded-sm mr-2"
+              :class="`fi-${currentLanguageOption.flagCode}`"
+            ></span>
             {{ currentLanguage.toUpperCase() }}
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -100,24 +92,19 @@
             class="absolute right-0 mt-2 w-40 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden"
           >
             <button
-              @click="setLanguage('sk')"
+              v-for="lang in languageOptions"
+              :key="lang.code"
+              @click="setLanguage(lang.code)"
               :class="{
-                'bg-indigo-600 text-white': currentLanguage === 'sk',
-                'text-gray-100 hover:bg-gray-700': currentLanguage !== 'sk',
+                'bg-indigo-600 text-white': currentLanguage === lang.code,
+                'text-gray-100 hover:bg-gray-700': currentLanguage !== lang.code,
               }"
-              class="w-full px-4 py-3 text-left text-sm font-medium transition"
+              class="w-full px-4 py-3 text-left text-sm font-medium transition border-t border-gray-700 first:border-t-0"
             >
-              Slovenčina
-            </button>
-            <button
-              @click="setLanguage('en')"
-              :class="{
-                'bg-indigo-600 text-white': currentLanguage === 'en',
-                'text-gray-100 hover:bg-gray-700': currentLanguage !== 'en',
-              }"
-              class="w-full px-4 py-3 text-left text-sm font-medium transition border-t border-gray-700"
-            >
-              English
+              <span class="flex items-center gap-2">
+                <span class="fi rounded-sm" :class="`fi-${lang.flagCode}`"></span>
+                <span>{{ lang.name }}</span>
+              </span>
             </button>
           </div>
         </div>
@@ -209,6 +196,7 @@ import Notification from "./NotificationsComponent.vue";
 import Profile from "./ProfileComponent.vue";
 import api, { setSessionToken, setLocale } from "../api";
 import { useCartStore } from "../stores/cartStore";
+import { LANGUAGE_OPTIONS } from "../utils/localeCountryData";
 
 export default {
   name: "Navbar",
@@ -224,6 +212,7 @@ export default {
       showProfileDropdown: false,
       showLanguageDropdown: false,
       currentLanguage: "sk",
+      languageOptions: LANGUAGE_OPTIONS,
       isLoggedIn: false,
       user: {
         name: "Ján Novák",
@@ -453,6 +442,9 @@ export default {
     },
   },
   computed: {
+    currentLanguageOption() {
+      return this.languageOptions.find((lang) => lang.code === this.currentLanguage) || null;
+    },
     cartCount() {
       try {
         const cartStore = useCartStore();

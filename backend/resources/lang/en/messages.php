@@ -33,6 +33,10 @@ return [
         'review_not_found_delete' => 'Review not found',
         'review_unauthorized_delete' => 'Unauthorized to delete this review',
         'review_deleted' => 'Review deleted successfully.',
+        'comment_not_found' => 'Comment not found',
+        'comment_unauthorized_update' => 'Unauthorized to edit this comment',
+        'comment_unauthorized_delete' => 'Unauthorized to delete this comment',
+        'comment_deleted' => 'Comment deleted successfully.',
     ],
     'cart' => [
         'item_added' => 'Item added to cart',

@@ -324,14 +324,12 @@
 
               <!-- Edit Mode - Country code + input -->
               <div v-if="editMode" class="flex gap-3">
-                <select
+                <CountryCodeSelect
                   v-model="phoneCountryCode"
-                  class="py-3 px-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white w-32 focus:ring-2 focus:ring-blue-500"
-                >
-                  <option v-for="c in countries" :key="c.code" :value="c.code">
-                    {{ c.flag }} {{ c.code }}
-                  </option>
-                </select>
+                  :options="phoneCountryOptions"
+                  button-class="py-3"
+                  class="w-32"
+                />
                 <input
                   v-model="phoneNumber"
                   @input="formatPhoneInput"
@@ -1030,9 +1028,14 @@
 
 <script>
 import api, { setLocale, setSessionToken } from "@/api";
+import CountryCodeSelect from "@/components/CountryCodeSelect.vue";
+import { PHONE_COUNTRY_OPTIONS } from "@/utils/localeCountryData";
 
 export default {
   name: "ProfileView",
+  components: {
+    CountryCodeSelect,
+  },
   data() {
     return {
       loading: true,
@@ -1077,13 +1080,7 @@ export default {
       originalFormData: null,
       phoneCountryCode: "+421",
       phoneNumber: "",
-      countries: [
-        { code: "+421", flag: "🇸🇰", name: "Slovensko" },
-        { code: "+420", flag: "🇨🇿", name: "Česko" },
-        { code: "+48", flag: "🇵🇱", name: "Poľsko" },
-        { code: "+43", flag: "🇦🇹", name: "Rakúsko" },
-        { code: "+36", flag: "🇭🇺", name: "Maďarsko" },
-      ],
+      phoneCountryOptions: PHONE_COUNTRY_OPTIONS,
       passwordForm: {
         current_password: "",
         password: "",

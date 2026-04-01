@@ -33,14 +33,8 @@
 
       <!-- Registration Form -->
       <div class="text-center mb-8">
-        <div
-          class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl shadow-lg mb-4"
-        >
-          <svg class="w-10 h-10 text-white" viewBox="0 0 24 24" fill="currentColor">
-            <path
-              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 5h14M10 21a1 1 0 100-2 1 1 0 000 2zm7 0a1 1 0 100-2 1 1 0 000 2z"
-            />
-          </svg>
+        <div class="inline-flex items-center justify-center mb-4">
+          <img src="/favicon.svg" alt="TechShop logo" class="w-10 h-10 object-contain" />
         </div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{$t('auth.register.title')}}</h1>
         <p class="text-gray-600 dark:text-gray-400 mt-2">{{$t('auth.register.subtitle')}}</p>
@@ -115,14 +109,12 @@
               {{$t('auth.register.phone_label')}} <span class="text-red-600 dark:text-red-400">*</span>
             </label>
             <div class="flex gap-3">
-              <select
+              <CountryCodeSelect
                 v-model="form.country"
-                class="py-3 px-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 w-28 focus:ring-2 focus:ring-indigo-500"
-              >
-                <option v-for="c in countries" :key="c.code" :value="c.code">
-                  {{ c.flag }} {{ c.code }}
-                </option>
-              </select>
+                :options="phoneCountryOptions"
+                button-class="py-3"
+                class="w-32"
+              />
               <input
                 v-model="form.phone"
                 @input="
@@ -339,16 +331,16 @@
 
 <script>
 import api, { setSessionToken } from "@/api";
+import CountryCodeSelect from "@/components/CountryCodeSelect.vue";
+import { PHONE_COUNTRY_OPTIONS } from "@/utils/localeCountryData";
 
 export default {
+  components: {
+    CountryCodeSelect,
+  },
   data() {
     return {
-      countries: [
-        { code: "+421", flag: "🇸🇰" },
-        { code: "+420", flag: "🇨🇿" },
-        { code: "+48", flag: "🇵🇱" },
-        { code: "+43", flag: "🇦🇹" },
-      ],
+      phoneCountryOptions: PHONE_COUNTRY_OPTIONS,
       form: {
         name: "",
         email: "",
