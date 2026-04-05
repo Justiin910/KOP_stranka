@@ -81,12 +81,13 @@
         <div class="flex flex-col sm:flex-row sm:items-start gap-6">
           <div class="relative">
             <div
-              v-if="user.avatar"
+              v-if="showAvatarImage"
               class="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-700"
             >
               <img
                 :src="getAvatarUrl(user.avatar)"
                 :alt="user.name"
+                @error="onAvatarImageError"
                 class="w-full h-full object-cover"
               />
             </div>
@@ -1199,6 +1200,7 @@ export default {
       isResendingEmailChangeCode: false,
       isSavingPaymentCard: false,
       isDeletingPaymentCard: false,
+      avatarLoadFailed: false,
       successMessage: "",
       errorMessage: "",
       activeProfileMiniTab: "overview",
@@ -1317,6 +1319,9 @@ export default {
         { id: "payment", label: this.$t("profile.tabs.payment") },
       ];
     },
+    showAvatarImage() {
+      return Boolean(this.user?.avatar) && !this.avatarLoadFailed;
+    },
   },
   beforeUnmount() {
     this.removeAvatarDragListeners();
@@ -1338,6 +1343,7 @@ export default {
       try {
         const userResponse = await api.get("/api/user");
         this.user = userResponse.data;
+        this.avatarLoadFailed = false;
 
         const preferredLanguage = String(this.user?.language || "").toLowerCase();
         if (["sk", "en"].includes(preferredLanguage)) {
@@ -1812,6 +1818,9 @@ export default {
 
       this.openAvatarCropModal(file);
     },
+    onAvatarImageError() {
+      this.avatarLoadFailed = true;
+    },
     openAvatarCropModal(file) {
       if (this.avatarCropPreviewUrl) {
         URL.revokeObjectURL(this.avatarCropPreviewUrl);
@@ -2048,6 +2057,7 @@ export default {
       try {
         const response = await api.delete("/api/user/avatar");
         this.user = response.data.user;
+        this.avatarLoadFailed = false;
         this.successMessage = response.data.message || this.$t("profile.avatar_reset_success");
         this.scrollToMessages();
       } catch (error) {
@@ -2079,6 +2089,7 @@ export default {
 
         // Update user data
         this.user = response.data.user;
+        this.avatarLoadFailed = false;
         this.successMessage = response.data.message;
         this.scrollToMessages();
 
