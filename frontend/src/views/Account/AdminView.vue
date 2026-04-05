@@ -1020,7 +1020,7 @@
               <p>{{ selectedOrder.address.zip }} {{ selectedOrder.address.city }}</p>
               <p>{{ selectedOrder.address.country }}</p>
               <p class="pt-2">
-                {{ $t("admin.orders.phone_label") }} {{ selectedOrder.address.phone }}
+                {{ $t("admin.orders.phone_label") }} {{ formatPhone(selectedOrder.address.phone) }}
               </p>
               <p>
                 {{ $t("admin.orders.email_label") }} {{ selectedOrder.address.email }}
@@ -1509,7 +1509,7 @@
                       <input
                         v-model.number="item.price"
                         type="number"
-                        step="0.01"
+                        step="1"
                         min="0"
                         class="w-24 px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded border border-gray-300 dark:border-gray-600 text-right"
                       />
@@ -2934,25 +2934,25 @@ export default {
     },
     formatPhone(value) {
       if (!value) return "";
-      // keep leading + if present
-      const hasPlus = value.trim().startsWith("+");
-      let digits = value.replace(/\D/g, "");
-      // Handle Slovak country code +421
+      let digits = String(value).replace(/\D/g, "");
+
+      // Normalize common variants: 00421..., 421..., 09...
+      if (digits.startsWith("00")) {
+        digits = digits.slice(2);
+      }
       if (digits.startsWith("421")) {
-        const rest = digits.slice(3);
-        // format as +421 XXX XXX XXX
-        const groups = rest.replace(/(\d{3})(?=\d)/g, "$1 ");
-        return (hasPlus ? "+" : "+") + "421 " + groups;
+        digits = digits.slice(3);
+      } else if (digits.startsWith("0")) {
+        digits = digits.slice(1);
       }
-      // If starts with 0 (local), group as 3-3-3
-      if (digits.startsWith("0")) {
-        // e.g., 0912345678 -> 091 234 5678
-        if (digits.length <= 3) return digits;
-        if (digits.length <= 6) return digits.replace(/(\d{3})(\d+)/, "$1 $2");
-        return digits.replace(/(\d{3})(\d{3})(\d+)/, "$1 $2 $3");
-      }
-      // Generic grouping by 3
-      return digits.replace(/(\d{3})(?=\d)/g, "$1 ");
+
+      if (!digits) return "";
+
+      // Keep only local 9 digits to prevent accidental long numbers.
+      const local = digits.slice(0, 9);
+      const grouped = local.replace(/(\d{3})(?=\d)/g, "$1 ");
+
+      return `+421 ${grouped}`.trim();
     },
     formatItems(count) {
       const n = Number(count) || 0;
@@ -3018,7 +3018,7 @@ export default {
       draftOrder.address.fullName =
         draftOrder.address.fullName || draftOrder.customerName || "";
       draftOrder.address.email = draftOrder.address.email || draftOrder.email || "";
-      draftOrder.address.phone = draftOrder.address.phone || "";
+      draftOrder.address.phone = this.formatPhone(draftOrder.address.phone || "");
       draftOrder.address.street = draftOrder.address.street || "";
       draftOrder.address.city = draftOrder.address.city || "";
       draftOrder.address.zip = draftOrder.address.zip || "";
@@ -3058,7 +3058,7 @@ export default {
       const normalizedAddress = {
         fullName: this.editingOrder.address?.fullName || "",
         email: this.editingOrder.address?.email || "",
-        phone: this.editingOrder.address?.phone || "",
+        phone: this.formatPhone(this.editingOrder.address?.phone || ""),
         street: this.editingOrder.address?.street || "",
         city: this.editingOrder.address?.city || "",
         zip: this.editingOrder.address?.zip || "",
@@ -4150,11 +4150,7 @@ export default {
 
       // Format phone for display
       if (newVal.address.phone) {
-        // Convert +421900123456 to +421 900 123 456 for display
-        newVal.address.phone = newVal.address.phone.replace(
-          /^(\+\d{3})(\d{3})(\d{3})(\d{3})$/,
-          "$1 $2 $3 $4"
-        );
+        newVal.address.phone = this.formatPhone(newVal.address.phone);
       }
 
       // Handle country mapping
