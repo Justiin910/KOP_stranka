@@ -21,7 +21,7 @@ export default defineConfig({
     allowedHosts: ['techstore.lznet.work'],
     proxy: {
       '/api': {
-        target: 'https://techstore.lznet.work',
+        target: 'https://backend.techstore.lznet.work',
         changeOrigin: true,
       }
     }

@@ -447,7 +447,7 @@ export default {
       if (!src) return placeholder;
       if (src.startsWith("http://") || src.startsWith("https://")) return src;
 
-      const base = import.meta.env.VITE_API_URL || "http://localhost:8000";
+      const base = import.meta.env.VITE_API_URL || "https://backend.techstore.lznet.work";
       if (src.startsWith("/storage/")) return `${base}${src}`;
       if (src.startsWith("storage/")) return `${base}/${src}`;
       return `${base}/storage/${src.replace(/^\/+/, "")}`;

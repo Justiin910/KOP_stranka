@@ -4118,7 +4118,7 @@ export default {
     getAvatarUrl(avatar) {
       if (!avatar) return "";
       if (typeof avatar === "string" && avatar.startsWith("http")) return avatar;
-      const base = import.meta.env.VITE_API_URL || "http://localhost:8000";
+      const base = import.meta.env.VITE_API_URL || "https://backend.techstore.lznet.work";
       return `${base}/storage/${avatar}`;
     },
     getInitials(name) {

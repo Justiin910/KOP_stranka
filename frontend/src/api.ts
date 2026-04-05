@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+const backendBaseUrl = (import.meta.env.VITE_API_URL || 'https://backend.techstore.lznet.work').replace(/\/+$/, '');
+
 // Store token in memory (not in storage) for session-only authentication
 // We also persist it to `sessionStorage` so a session-only login survives a page reload
 let sessionToken: string | null = null;
@@ -43,7 +45,7 @@ try {
 }
 
 const api = axios.create({
-    baseURL: 'http://localhost:8000',
+    baseURL: backendBaseUrl,
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',

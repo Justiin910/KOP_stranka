@@ -2126,7 +2126,7 @@ export default {
       if (avatar.startsWith("http")) return avatar;
       // Otherwise, construct the storage URL
       return `${
-        import.meta.env.VITE_API_URL || "http://localhost:8000"
+        import.meta.env.VITE_API_URL || "https://backend.techstore.lznet.work"
       }/storage/${avatar}`;
     },
     getInitials(name) {
