@@ -18,8 +18,11 @@ WORKDIR /var/www/html
 
 COPY . .
 
+RUN chmod +x /var/www/html/docker-entrypoint.sh
+
 RUN if [ -f composer.json ]; then composer install --no-interaction --prefer-dist --no-scripts; fi
 
 EXPOSE 8000
 
+ENTRYPOINT ["/var/www/html/docker-entrypoint.sh"]
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
