@@ -394,7 +394,9 @@
     "reset_link_sent": "Link na resetovanie hesla bol odoslaný na váš email!",
     "reset_link_failed": "Nepodarilo sa odoslať reset link.",
     "verification_resent": "Overovací email bol znovu odoslaný.",
-    "verification_failed": "Nepodarilo sa odoslať overenie."
+    "verification_failed": "Nepodarilo sa odoslať overenie.",
+    "account_deleted": "Účet bol úspešne zmazaný.",
+    "delete_failed": "Nepodarilo sa zmazať účet."
   },
   "roles": {
     "admin": "Admin",

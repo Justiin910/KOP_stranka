@@ -388,7 +388,9 @@
     "reset_link_sent": "A password reset link was sent to your email!",
     "reset_link_failed": "Failed to send reset link.",
     "verification_resent": "Verification email resent.",
-    "verification_failed": "Failed to resend verification."
+    "verification_failed": "Failed to resend verification.",
+    "account_deleted": "Your account has been deleted successfully.",
+    "delete_failed": "Failed to delete account."
   },
   "roles": {
     "admin": "Admin",
