@@ -388,12 +388,25 @@ export default {
           const errors = err.response.data.errors || {};
           if (errors?.email?.[0]) {
             const m = errors.email[0];
-            if (m === "The email field is required.")
+            if (m === "The email field is required." || m === "Pole e-mail je povinné.") {
               this.fieldErrors.email = "Pole e-mail je povinné.";
-            else if (m === "The email must be a valid email address.")
+              this.loginError = this.fieldErrors.email;
+            } else if (
+              m === "The email must be a valid email address." ||
+              m === "E-mail musí byť platná e-mailová adresa."
+            ) {
               this.fieldErrors.email = "E-mail musí byť platná e-mailová adresa.";
-            else this.fieldErrors.email = "Neplatný e-mail.";
-            this.loginError = this.fieldErrors.email;
+              this.loginError = this.fieldErrors.email;
+            } else if (
+              m === "These credentials do not match our records." ||
+              m === "Nesprávny email alebo heslo." ||
+              m === "Nezodpovedajúce prihlasovacie údaje."
+            ) {
+              this.loginError = "Nesprávny email alebo heslo.";
+            } else {
+              // Preserve backend-provided message (e.g., rate limit) instead of forcing invalid-email text.
+              this.loginError = m;
+            }
           } else if (errors?.password?.[0]) {
             const m = errors.password[0];
             if (m === "The password field is required.")
