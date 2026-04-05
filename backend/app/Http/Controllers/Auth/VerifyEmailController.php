@@ -16,6 +16,10 @@ class VerifyEmailController extends Controller
     public function __invoke(Request $request): RedirectResponse
     {
         $user = $request->user();
+        $isGuest = is_null($user);
+
+        $frontendUrl = rtrim((string) config('app.frontend_url', config('app.url')), '/');
+        $redirectPath = $isGuest ? '/login?verified=1' : '/profile?verified=1';
 
         // If there's no authenticated user (clicked link while logged out),
         // attempt to resolve the user by the route `id` and validate the hash.
@@ -35,13 +39,13 @@ class VerifyEmailController extends Controller
         }
 
         if ($user->hasVerifiedEmail()) {
-            return redirect()->intended(config('app.frontend_url').'/profile?verified=1');
+            return redirect($frontendUrl . $redirectPath);
         }
 
         if ($user->markEmailAsVerified()) {
             event(new Verified($user));
         }
 
-        return redirect()->intended(config('app.frontend_url').'/profile?verified=1');
+        return redirect($frontendUrl . $redirectPath);
     }
 }

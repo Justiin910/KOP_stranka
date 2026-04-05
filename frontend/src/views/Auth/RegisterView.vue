@@ -208,6 +208,77 @@
                 {{ fieldErrors.password || $t('auth.register.password_min') }}
               </p>
             </Transition>
+
+            <!-- Password Requirements -->
+            <div
+              class="mt-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4"
+            >
+              <p class="text-sm font-medium text-blue-900 dark:text-blue-400 mb-3">
+                {{ $t("reset.requirements_title") }}
+              </p>
+              <ul class="space-y-2">
+                <li class="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-300">
+                  <svg
+                    class="w-4 h-4"
+                    :class="{ 'text-green-600 dark:text-green-400': form.password.length >= 8 }"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                  {{ $t("reset.requirements.min_length") }}
+                </li>
+                <li class="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-300">
+                  <svg
+                    class="w-4 h-4"
+                    :class="{ 'text-green-600 dark:text-green-400': /[a-z]/.test(form.password) }"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                  {{ $t("reset.requirements.lowercase") }}
+                </li>
+                <li class="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-300">
+                  <svg
+                    class="w-4 h-4"
+                    :class="{ 'text-green-600 dark:text-green-400': /[A-Z]/.test(form.password) }"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                  {{ $t("reset.requirements.uppercase") }}
+                </li>
+                <li class="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-300">
+                  <svg
+                    class="w-4 h-4"
+                    :class="{ 'text-green-600 dark:text-green-400': /[0-9]/.test(form.password) }"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                  {{ $t("reset.requirements.digits") }}
+                </li>
+              </ul>
+            </div>
           </div>
 
           <!-- Confirm Password -->
@@ -375,6 +446,9 @@ export default {
         this.validEmail &&
         this.phoneDigits === 9 &&
         this.form.password.length >= 8 &&
+        /[a-z]/.test(this.form.password) &&
+        /[A-Z]/.test(this.form.password) &&
+        /[0-9]/.test(this.form.password) &&
         this.form.password === this.form.confirmPassword &&
         this.form.acceptTerms
       );
