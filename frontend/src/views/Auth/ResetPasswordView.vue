@@ -80,8 +80,19 @@
                 id="password"
                 v-model="password"
                 :type="showPassword ? 'text' : 'password'"
+                @input="
+                  () => {
+                    fieldErrors.password = '';
+                    errorMessage = '';
+                  }
+                "
                 :placeholder="$t('reset.password_placeholder')"
-                class="w-full pl-10 pr-12 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                :class="[
+                  'w-full pl-10 pr-12 py-3 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all',
+                  fieldErrors.password
+                    ? 'border-red-400 dark:border-red-500'
+                    : 'border-gray-300 dark:border-gray-600',
+                ]"
               />
               <button
                 type="button"
@@ -124,6 +135,9 @@
                 </svg>
               </button>
             </div>
+            <p v-if="fieldErrors.password" class="text-sm text-red-600 dark:text-red-400 mt-2">
+              {{ fieldErrors.password }}
+            </p>
           </div>
 
           <!-- Confirm Password Input -->
@@ -156,8 +170,19 @@
                 id="password_confirmation"
                 v-model="passwordConfirmation"
                 :type="showPasswordConfirm ? 'text' : 'password'"
+                @input="
+                  () => {
+                    fieldErrors.password_confirmation = '';
+                    errorMessage = '';
+                  }
+                "
                 :placeholder="$t('reset.confirm_password_placeholder')"
-                class="w-full pl-10 pr-12 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                :class="[
+                  'w-full pl-10 pr-12 py-3 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all',
+                  fieldErrors.password_confirmation
+                    ? 'border-red-400 dark:border-red-500'
+                    : 'border-gray-300 dark:border-gray-600',
+                ]"
               />
               <button
                 type="button"
@@ -200,6 +225,12 @@
                 </svg>
               </button>
             </div>
+            <p
+              v-if="fieldErrors.password_confirmation"
+              class="text-sm text-red-600 dark:text-red-400 mt-2"
+            >
+              {{ fieldErrors.password_confirmation }}
+            </p>
           </div>
 
           <!-- Password Requirements -->
@@ -290,7 +321,7 @@
           <!-- Submit Button -->
           <button
             type="submit"
-            :disabled="!isValid || submitting"
+            :disabled="submitting"
             class="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 text-white font-semibold py-3 rounded-lg transition-colors shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed"
           >
             <span v-if="submitting" class="flex items-center justify-center gap-2">
@@ -347,6 +378,10 @@ export default {
       loading: true,
       submitting: false,
       errorMessage: "",
+      fieldErrors: {
+        password: "",
+        password_confirmation: "",
+      },
       token: "",
       email: "",
     };
@@ -379,12 +414,48 @@ export default {
 
       this.loading = false;
     },
+    resetFieldErrors() {
+      this.fieldErrors.password = "";
+      this.fieldErrors.password_confirmation = "";
+    },
+    validateForm() {
+      this.resetFieldErrors();
+
+      let valid = true;
+      const passwordMeetsRequirements =
+        this.password.length >= 8 &&
+        /[a-z]/.test(this.password) &&
+        /[A-Z]/.test(this.password) &&
+        /[0-9]/.test(this.password);
+
+      if (!this.password) {
+        this.fieldErrors.password = this.$t("profile.validation.required_field", {
+          field: this.$t("reset.new_password_label"),
+        });
+        valid = false;
+      } else if (!passwordMeetsRequirements) {
+        this.fieldErrors.password = this.$t("reset.password_requirements_failed");
+        valid = false;
+      }
+
+      if (!this.passwordConfirmation) {
+        this.fieldErrors.password_confirmation = this.$t("profile.validation.required_field", {
+          field: this.$t("reset.confirm_password_label"),
+        });
+        valid = false;
+      } else if (this.password !== this.passwordConfirmation) {
+        this.fieldErrors.password_confirmation = this.$t("profile.validation.passwords_mismatch");
+        valid = false;
+      }
+
+      return valid;
+    },
 
     async handleSubmit() {
       this.errorMessage = "";
+      this.resetFieldErrors();
 
-      if (!this.isValid) {
-        this.errorMessage = this.$t("reset.password_requirements_failed");
+      if (!this.validateForm()) {
         return;
       }
 
@@ -407,15 +478,30 @@ export default {
         });
       } catch (error) {
         console.error("Error resetting password:", error);
-        this.errorMessage =
-          error.response?.data?.message ||
-          error.response?.data?.errors?.email?.[0] ||
-          this.$t("reset.reset_failed");
+
+        const errors = error.response?.data?.errors;
+        if (errors) {
+          if (errors.password?.[0]) {
+            this.fieldErrors.password = errors.password[0];
+          }
+
+          if (errors.password_confirmation?.[0]) {
+            this.fieldErrors.password_confirmation = errors.password_confirmation[0];
+          }
+
+          if (!this.fieldErrors.password && !this.fieldErrors.password_confirmation) {
+            this.errorMessage =
+              error.response?.data?.message ||
+              errors.email?.[0] ||
+              this.$t("reset.reset_failed");
+          }
+        } else {
+          this.errorMessage = error.response?.data?.message || this.$t("reset.reset_failed");
+        }
 
         // If token is invalid, show specific message
         if (error.response?.status === 422) {
-          const errors = error.response.data.errors;
-          if (errors.token) {
+          if (errors?.token) {
             this.errorMessage = this.$t("reset.token_invalid");
           }
         }

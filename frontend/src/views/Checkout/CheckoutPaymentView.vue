@@ -197,7 +197,10 @@
                     placeholder="123"
                   />
                 </div>
-                <label class="col-span-2 flex items-center gap-2 pt-1">
+                <label
+                  v-if="isAuthenticated"
+                  class="col-span-2 flex items-center gap-2 pt-1"
+                >
                   <input
                     v-model="saveCardToProfile"
                     type="checkbox"
@@ -317,6 +320,7 @@ export default {
         expiry: "",
         cvc: "",
       },
+      isAuthenticated: false,
       savedCard: null,
       saveCardToProfile: false,
       orderReference: String(Math.floor(Math.random() * 900000) + 100000),
@@ -346,6 +350,15 @@ export default {
     },
   },
   methods: {
+    syncAuthState() {
+      this.isAuthenticated = !!(
+        localStorage.getItem("token") || sessionStorage.getItem("token")
+      );
+
+      if (!this.isAuthenticated) {
+        this.saveCardToProfile = false;
+      }
+    },
     loadDelivery() {
       const raw = sessionStorage.getItem("checkoutDelivery");
       if (!raw) {
@@ -396,8 +409,7 @@ export default {
       this.card.expiry = yearPart.length > 0 ? monthPart + "/" + yearPart : monthPart;
     },
     async loadSavedCard() {
-      const hasToken = !!(localStorage.getItem("token") || sessionStorage.getItem("token"));
-      if (!hasToken) return;
+      if (!this.isAuthenticated) return;
 
       try {
         const response = await api.get("/api/user/payment-card");
@@ -699,6 +711,9 @@ export default {
         localStorage.setItem("checkoutOrder", JSON.stringify(orderWithVariantPrices));
 
         // Call backend API to create order
+        const shouldSaveCard =
+          this.selectedPayment === "card" && this.isAuthenticated && this.saveCardToProfile;
+
         const response = await api.post("/api/orders", {
           reference: order.reference,
           delivery_method: order.delivery.method,
@@ -707,15 +722,14 @@ export default {
           payment_method: order.payment.method,
           payment_token: order.payment.token,
           total: parseFloat(order.total),
-          save_card: this.selectedPayment === "card" ? this.saveCardToProfile : false,
-          card_details:
-            this.selectedPayment === "card" && this.saveCardToProfile
-              ? {
-                  cardholder_name: this.card.name,
-                  card_number: this.card.number,
-                  expiry: this.card.expiry,
-                }
-              : null,
+          save_card: shouldSaveCard,
+          card_details: shouldSaveCard
+            ? {
+                cardholder_name: this.card.name,
+                card_number: this.card.number,
+                expiry: this.card.expiry,
+              }
+            : null,
           items: items,
         });
 
@@ -777,6 +791,7 @@ export default {
     },
   },
   mounted() {
+    this.syncAuthState();
     this.loadDelivery();
     this.loadSavedCard();
     // Initialize payment providers

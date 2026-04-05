@@ -170,7 +170,7 @@
         <!-- Submit -->
         <button
           type="submit"
-          :disabled="!isFormValid || isSubmitting"
+          :disabled="isSubmitting"
           class="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition-colors shadow-lg hover:shadow-xl"
         >
           {{ isSubmitting ? "Prebieha..." : "Obnoviť heslo" }}
@@ -261,15 +261,17 @@ export default {
     },
     async handleSubmit() {
       // spusti validácie pred odoslaním
+      if (this.isSubmitting) return;
+
+      this.errorMessage = "";
       this.validatePassword();
       this.validateConfirmation();
-      if (!this.isFormValid || this.isSubmitting) return;
+      if (!this.isFormValid) return;
 
       const email = this.$route.query.email;
       const token = this.$route.params.hash;
 
       this.isSubmitting = true;
-      this.errorMessage = "";
 
       try {
         await api.post("/reset-password", {
@@ -290,8 +292,19 @@ export default {
         // zobraz prvú chybu z Breeze API, ak existuje
         if (error.response?.data?.errors) {
           const errors = error.response.data.errors;
-          const first = Object.values(errors)[0];
-          this.errorMessage = Array.isArray(first) ? first[0] : String(first);
+
+          if (errors.password?.[0]) {
+            this.passwordError = errors.password[0];
+          }
+
+          if (errors.password_confirmation?.[0]) {
+            this.confirmationError = errors.password_confirmation[0];
+          }
+
+          if (!this.passwordError && !this.confirmationError) {
+            const first = Object.values(errors)[0];
+            this.errorMessage = Array.isArray(first) ? first[0] : String(first);
+          }
         } else {
           this.errorMessage =
             error.response?.data?.message || "Nepodarilo sa obnoviť heslo.";

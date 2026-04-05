@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\RateLimiter;
@@ -77,7 +78,6 @@ class AdminController extends Controller
             // Use RFC + DNS checks for admin email updates
             'email' => 'required|email:rfc,dns|max:255|unique:users,email,' . $id,
             'phone' => 'nullable|string|max:20',
-            'password' => ['nullable', 'confirmed', Password::defaults()],
             'remove_avatar' => 'nullable|boolean',
             'two_factor_enabled' => 'nullable|boolean',
         ];
@@ -96,7 +96,9 @@ class AdminController extends Controller
             if ($domain) {
                 $hasMx = function_exists('checkdnsrr') && checkdnsrr($domain, 'MX');
                 if (!$hasMx) {
-                    return response()->json(['message' => __('admin.user.invalid_domain')], 422);
+                    throw ValidationException::withMessages([
+                        'email' => [__('admin.user.invalid_domain')],
+                    ]);
                 }
             }
         }
@@ -131,16 +133,12 @@ class AdminController extends Controller
             $user->role = $validated['role'];
         }
 
-        if (!empty($validated['password'])) {
-            $user->password = Hash::make($validated['password']);
-        }
-
         $user->save();
 
         $afterSnapshot = $this->snapshotUserProfileForEmail($user);
         $changeLines = $this->buildUserProfileChangeLines($beforeSnapshot, $afterSnapshot, [
             'avatar_removed' => ($validated['remove_avatar'] ?? false) && !empty($beforeSnapshot['avatar_path']),
-            'password_changed' => !empty($validated['password']),
+            'password_changed' => false,
         ]);
 
         if (!empty($changeLines)) {
@@ -427,7 +425,7 @@ class AdminController extends Controller
         $user = User::findOrFail($id);
         
         $validated = $request->validate([
-            'password' => 'required|string|min:8',
+            'password' => ['required', Password::defaults()],
         ]);
 
         \Log::info('Setting password for user ' . $id . ' (email: ' . $user->email . ')');

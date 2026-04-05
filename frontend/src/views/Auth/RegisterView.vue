@@ -96,7 +96,7 @@
                 v-if="fieldErrors.email || (form.email && !validEmail)"
                 class="text-sm text-red-600 mt-2 flex items-center gap-2 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-md border border-red-200 dark:border-red-800"
               >
-                {{$t('auth.register.invalid_email')}}
+                {{ fieldErrors.email || $t('auth.register.invalid_email') }}
               </p>
             </Transition>
           </div>
@@ -202,10 +202,10 @@
             </div>
             <Transition name="slideDown">
               <p
-                v-if="fieldErrors.password || (form.password && form.password.length < 8)"
+                v-if="fieldErrors.password || (form.password && !passwordRequirementsMet)"
                 class="text-sm text-red-600 mt-2 flex items-center gap-2 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-md border border-red-200 dark:border-red-800"
               >
-                {{ fieldErrors.password || $t('auth.register.password_min') }}
+                {{ fieldErrors.password || $t('auth.register.password_requirements') }}
               </p>
             </Transition>
 
@@ -366,6 +366,7 @@
                 v-model="form.acceptTerms"
                 @change="
                   () => {
+                    fieldErrors.acceptTerms = null;
                     registerError = '';
                   }
                 "
@@ -373,11 +374,19 @@
               />
               {{$t('auth.register.terms')}}<span class="text-red-600 dark:text-red-400">*</span>
             </label>
+            <Transition name="slideDown">
+              <p
+                v-if="fieldErrors.acceptTerms"
+                class="text-sm text-red-600 mt-2 flex items-center gap-2 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-md border border-red-200 dark:border-red-800"
+              >
+                {{ fieldErrors.acceptTerms }}
+              </p>
+            </Transition>
           </div>
 
           <button
             type="submit"
-            :disabled="!isFormValid || isSubmitting"
+            :disabled="isSubmitting"
             class="w-full btn-primary-lg py-3 rounded-lg shadow-lg disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             <span v-if="isSubmitting">{{$t('auth.register.creating')}}</span>
@@ -427,6 +436,7 @@ export default {
         phone: null,
         password: null,
         confirmPassword: null,
+        acceptTerms: null,
       },
       validEmail: true,
       showPassword: false,
@@ -440,21 +450,34 @@ export default {
     phoneDigits() {
       return this.form.phone.replace(/\D/g, "").length;
     },
-    isFormValid() {
+    passwordRequirementsMet() {
       return (
-        this.form.name &&
-        this.validEmail &&
-        this.phoneDigits === 9 &&
         this.form.password.length >= 8 &&
         /[a-z]/.test(this.form.password) &&
         /[A-Z]/.test(this.form.password) &&
-        /[0-9]/.test(this.form.password) &&
+        /[0-9]/.test(this.form.password)
+      );
+    },
+    isFormValid() {
+      return (
+        this.form.name.trim() &&
+        this.validEmail &&
+        this.phoneDigits === 9 &&
+        this.passwordRequirementsMet &&
         this.form.password === this.form.confirmPassword &&
         this.form.acceptTerms
       );
     },
   },
   methods: {
+    resetFieldErrors() {
+      this.fieldErrors.name = null;
+      this.fieldErrors.email = null;
+      this.fieldErrors.phone = null;
+      this.fieldErrors.password = null;
+      this.fieldErrors.confirmPassword = null;
+      this.fieldErrors.acceptTerms = null;
+    },
     validateEmail() {
       const regex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
       this.validEmail = regex.test(this.form.email);
@@ -467,9 +490,64 @@ export default {
       if (num.length > 6) parts.push(num.substring(6));
       this.form.phone = parts.join(" ");
     },
+    validateForm() {
+      this.resetFieldErrors();
+      this.validateEmail();
+
+      let isValid = true;
+
+      if (!this.form.name.trim()) {
+        this.fieldErrors.name = this.$t("auth.register.name_required");
+        isValid = false;
+      }
+
+      if (!this.form.email.trim()) {
+        this.fieldErrors.email = this.$t("auth.register.email_required");
+        isValid = false;
+      } else if (!this.validEmail) {
+        this.fieldErrors.email = this.$t("auth.register.invalid_email");
+        isValid = false;
+      }
+
+      if (!this.form.phone.trim()) {
+        this.fieldErrors.phone = this.$t("auth.register.phone_required");
+        isValid = false;
+      } else if (this.phoneDigits !== 9) {
+        this.fieldErrors.phone = this.$t("auth.register.phone_digits");
+        isValid = false;
+      }
+
+      if (!this.form.password) {
+        this.fieldErrors.password = this.$t("auth.register.password_required");
+        isValid = false;
+      } else if (!this.passwordRequirementsMet) {
+        this.fieldErrors.password = this.$t("auth.register.password_requirements");
+        isValid = false;
+      }
+
+      if (!this.form.confirmPassword) {
+        this.fieldErrors.confirmPassword = this.$t("auth.register.confirm_password_required");
+        isValid = false;
+      } else if (this.form.password !== this.form.confirmPassword) {
+        this.fieldErrors.confirmPassword = this.$t("auth.register.passwords_mismatch");
+        isValid = false;
+      }
+
+      if (!this.form.acceptTerms) {
+        this.fieldErrors.acceptTerms = this.$t("auth.register.terms_required");
+        isValid = false;
+      }
+
+      return isValid;
+    },
     async handleRegister() {
+      if (this.isSubmitting) return;
+
       this.registerError = "";
-      if (!this.isFormValid || this.isSubmitting) return;
+
+      if (!this.validateForm()) {
+        return;
+      }
 
       this.isSubmitting = true;
 
@@ -478,8 +556,8 @@ export default {
         const fullPhone = `${this.form.country}${this.form.phone.replace(/\D/g, "")}`;
 
         const response = await api.post("/api/register", {
-          name: this.form.name,
-          email: this.form.email,
+          name: this.form.name.trim(),
+          email: this.form.email.trim(),
           phone: fullPhone,
           password: this.form.password,
           password_confirmation: this.form.confirmPassword,
@@ -505,11 +583,14 @@ export default {
       } catch (err) {
         console.error("Registration error:", err);
         const errors = err.response?.data?.errors || {};
+
+        this.resetFieldErrors();
         this.fieldErrors.name = errors.name?.[0] || null;
         this.fieldErrors.email = errors.email?.[0] || null;
         this.fieldErrors.phone = errors.phone?.[0] || null;
         this.fieldErrors.password = errors.password?.[0] || null;
-        this.fieldErrors.confirmPassword = errors.password?.[0] || null;
+        this.fieldErrors.confirmPassword =
+          errors.password_confirmation?.[0] || errors.password?.[0] || null;
 
         if (err.response?.status === 422) {
           this.registerError = err.response?.data?.message || null;

@@ -50,6 +50,30 @@
         </div>
       </div>
 
+      <!-- Error Message -->
+      <div
+        v-if="errorMessage"
+        ref="messageContainer"
+        class="mb-6 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg p-4"
+      >
+        <div class="flex items-center gap-3">
+          <svg
+            class="w-6 h-6 text-red-600 dark:text-red-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <p class="text-sm text-red-800 dark:text-red-200">{{ errorMessage }}</p>
+        </div>
+      </div>
+
       <!-- Profile Header -->
       <div
         class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 mb-6"
@@ -685,8 +709,20 @@
               <input
                 v-model="passwordForm.current_password"
                 type="password"
-                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                @input="onCurrentPasswordInput"
+                :class="[
+                  'w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+                  passwordFieldErrors.current_password
+                    ? 'border-red-400 dark:border-red-500'
+                    : 'border-gray-300 dark:border-gray-600',
+                ]"
               />
+              <p
+                v-if="passwordFieldErrors.current_password"
+                class="text-sm text-red-600 dark:text-red-400 mt-2"
+              >
+                {{ passwordFieldErrors.current_password }}
+              </p>
             </div>
             <div>
               <label
@@ -696,8 +732,105 @@
               <input
                 v-model="passwordForm.password"
                 type="password"
-                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                @input="onNewPasswordInput"
+                :class="[
+                  'w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+                  passwordFieldErrors.password
+                    ? 'border-red-400 dark:border-red-500'
+                    : 'border-gray-300 dark:border-gray-600',
+                ]"
               />
+              <p
+                v-if="passwordFieldErrors.password"
+                class="text-sm text-red-600 dark:text-red-400 mt-2"
+              >
+                {{ passwordFieldErrors.password }}
+              </p>
+
+              <div
+                class="mt-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4"
+              >
+                <p class="text-sm font-medium text-blue-900 dark:text-blue-400 mb-3">
+                  {{ $t("reset.requirements_title") }}
+                </p>
+                <ul class="space-y-2">
+                  <li class="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-300">
+                    <svg
+                      class="w-4 h-4"
+                      :class="{
+                        'text-green-600 dark:text-green-400':
+                          passwordForm.password.length >= 8,
+                      }"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                    {{ $t("reset.requirements.min_length") }}
+                  </li>
+                  <li class="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-300">
+                    <svg
+                      class="w-4 h-4"
+                      :class="{
+                        'text-green-600 dark:text-green-400': /[a-z]/.test(
+                          passwordForm.password
+                        ),
+                      }"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                    {{ $t("reset.requirements.lowercase") }}
+                  </li>
+                  <li class="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-300">
+                    <svg
+                      class="w-4 h-4"
+                      :class="{
+                        'text-green-600 dark:text-green-400': /[A-Z]/.test(
+                          passwordForm.password
+                        ),
+                      }"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                    {{ $t("reset.requirements.uppercase") }}
+                  </li>
+                  <li class="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-300">
+                    <svg
+                      class="w-4 h-4"
+                      :class="{
+                        'text-green-600 dark:text-green-400': /[0-9]/.test(
+                          passwordForm.password
+                        ),
+                      }"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                    {{ $t("reset.requirements.digits") }}
+                  </li>
+                </ul>
+              </div>
             </div>
             <div>
               <label
@@ -707,8 +840,20 @@
               <input
                 v-model="passwordForm.password_confirmation"
                 type="password"
-                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                @input="onConfirmPasswordInput"
+                :class="[
+                  'w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+                  passwordFieldErrors.password_confirmation
+                    ? 'border-red-400 dark:border-red-500'
+                    : 'border-gray-300 dark:border-gray-600',
+                ]"
               />
+              <p
+                v-if="passwordFieldErrors.password_confirmation"
+                class="text-sm text-red-600 dark:text-red-400 mt-2"
+              >
+                {{ passwordFieldErrors.password_confirmation }}
+              </p>
             </div>
             <button
               type="submit"
@@ -1091,6 +1236,11 @@ export default {
         email: null,
         phone: null,
       },
+      passwordFieldErrors: {
+        current_password: null,
+        password: null,
+        password_confirmation: null,
+      },
       orders: [],
       showDeleteConfirmation: false,
       deleteAccountPassword: "",
@@ -1410,31 +1560,91 @@ export default {
       const re = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
       return re.test(email);
     },
+    resetPasswordFieldErrors() {
+      this.passwordFieldErrors = {
+        current_password: null,
+        password: null,
+        password_confirmation: null,
+      };
+    },
+    onCurrentPasswordInput() {
+      this.passwordFieldErrors.current_password = null;
+      this.errorMessage = "";
+    },
+    onNewPasswordInput() {
+      this.passwordFieldErrors.password = null;
+      if (this.passwordForm.password_confirmation) {
+        this.passwordFieldErrors.password_confirmation = null;
+      }
+      this.errorMessage = "";
+    },
+    onConfirmPasswordInput() {
+      this.passwordFieldErrors.password_confirmation = null;
+      this.errorMessage = "";
+    },
+    passwordMeetsRequirements(value) {
+      if (!value) return false;
+
+      return (
+        value.length >= 8 &&
+        /[a-z]/.test(value) &&
+        /[A-Z]/.test(value) &&
+        /[0-9]/.test(value)
+      );
+    },
+    validatePasswordForm() {
+      this.resetPasswordFieldErrors();
+
+      let isValid = true;
+      const currentPassword = this.passwordForm.current_password || "";
+      const newPassword = this.passwordForm.password || "";
+      const confirmation = this.passwordForm.password_confirmation || "";
+
+      if (!currentPassword.trim()) {
+        this.passwordFieldErrors.current_password = this.$t("profile.validation.required_field", {
+          field: this.$t("profile.current_password_label"),
+        });
+        isValid = false;
+      }
+
+      if (!newPassword.trim()) {
+        this.passwordFieldErrors.password = this.$t("profile.validation.required_field", {
+          field: this.$t("profile.new_password_label"),
+        });
+        isValid = false;
+      } else if (!this.passwordMeetsRequirements(newPassword)) {
+        this.passwordFieldErrors.password = this.$t("profile.validation.password_requirements");
+        isValid = false;
+      }
+
+      if (!confirmation.trim()) {
+        this.passwordFieldErrors.password_confirmation = this.$t(
+          "profile.validation.required_field",
+          {
+            field: this.$t("profile.confirm_password_label"),
+          }
+        );
+        isValid = false;
+      } else if (newPassword !== confirmation) {
+        this.passwordFieldErrors.password_confirmation = this.$t(
+          "profile.validation.passwords_mismatch"
+        );
+        isValid = false;
+      }
+
+      if (currentPassword && newPassword && currentPassword === newPassword) {
+        this.passwordFieldErrors.password = this.$t("profile.validation.password_same_as_current");
+        isValid = false;
+      }
+
+      return isValid;
+    },
     async changePassword() {
       if (this.isChangingPassword) return;
 
-      if (
-        !this.passwordForm.current_password ||
-        !this.passwordForm.password ||
-        !this.passwordForm.password_confirmation
-      ) {
-        this.errorMessage = this.$t("profile.validation.password_fields_required");
-        return;
-      }
+      this.errorMessage = "";
 
-      if (this.passwordForm.password !== this.passwordForm.password_confirmation) {
-        this.errorMessage = this.$t("profile.validation.passwords_mismatch");
-        this.scrollToMessages();
-        return;
-      }
-
-      if (this.passwordForm.password.length < 8) {
-        this.errorMessage = this.$t("profile.validation.password_min_length", { min: 8 });
-        this.scrollToMessages();
-        return;
-      }
-      if (this.passwordForm.current_password === this.passwordForm.password) {
-        this.errorMessage = this.$t("profile.validation.password_same_as_current");
+      if (!this.validatePasswordForm()) {
         this.scrollToMessages();
         return;
       }
@@ -1464,8 +1674,28 @@ export default {
 
         if (error.response?.data?.errors) {
           const errors = error.response.data.errors;
-          const firstError = Object.values(errors)[0];
-          this.errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
+          this.resetPasswordFieldErrors();
+
+          if (errors.current_password?.[0]) {
+            this.passwordFieldErrors.current_password = errors.current_password[0];
+          }
+
+          if (errors.password?.[0]) {
+            this.passwordFieldErrors.password = errors.password[0];
+          }
+
+          if (errors.password_confirmation?.[0]) {
+            this.passwordFieldErrors.password_confirmation = errors.password_confirmation[0];
+          }
+
+          if (
+            !this.passwordFieldErrors.current_password &&
+            !this.passwordFieldErrors.password &&
+            !this.passwordFieldErrors.password_confirmation
+          ) {
+            const firstError = Object.values(errors)[0];
+            this.errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
+          }
         } else {
           this.errorMessage =
             error.response?.data?.message || this.$t("profile.password_change_failed");

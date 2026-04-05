@@ -382,8 +382,12 @@
       "avatar_too_large": "Avatar je príliš veľký. Maximálna veľkosť je 5MB.",
       "passwords_mismatch": "Heslá sa nezhodujú.",
       "password_min_length": "Heslo musí mať minimálne {min} znakov.",
+      "password_requirements": "Heslo musí spĺňať všetky požiadavky (8 znakov, malé a veľké písmeno, číslo).",
       "password_same_as_current": "Nové heslo sa nemôže zhodovať so súčasným heslom."
     },
+    "password_changed": "Heslo bolo úspešne zmenené.",
+    "password_change_failed": "Nepodarilo sa zmeniť heslo.",
+    "invalid_password": "Nesprávne heslo.",
     "save_success": "Profil bol úspešne aktualizovaný!",
     "save_failed": "Nepodarilo sa uložiť zmeny.",
     "avatar_upload_error": "Chyba pri nahrávaní avatara.",
@@ -776,10 +780,17 @@
       "sign_in": "Prihlásiť sa",
       "success_title": "Účet vytvorený!",
       "success_sent": "Overovací email bol odoslaný na {email}",
+      "name_required": "Meno a priezvisko je povinné",
+      "email_required": "Email je povinný",
       "invalid_email": "Neplatný email",
+      "phone_required": "Telefón je povinný",
+      "password_required": "Heslo je povinné",
       "password_min": "Heslo musí mať aspoň 8 znakov",
+      "password_requirements": "Heslo musí spĺňať všetky požiadavky",
       "phone_digits": "Telefón musí mať 9 číslic",
-      "passwords_mismatch": "Heslá sa nezhodujú"
+      "confirm_password_required": "Potvrdenie hesla je povinné",
+      "passwords_mismatch": "Heslá sa nezhodujú",
+      "terms_required": "Musíte súhlasiť s podmienkami"
     }
     ,
     "password_reset": {

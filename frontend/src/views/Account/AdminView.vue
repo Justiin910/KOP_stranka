@@ -1834,9 +1834,18 @@
               v-model="editingUser.name"
               type="text"
               required
+              @input="clearEditFieldError('name')"
               :placeholder="$t('auth.register.name_placeholder')"
-              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+              :class="[
+                'w-full px-4 py-3 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all',
+                editFieldErrors.name
+                  ? 'border-red-400 dark:border-red-500'
+                  : 'border-gray-300 dark:border-gray-600',
+              ]"
             />
+            <p v-if="editFieldErrors.name" class="text-sm text-red-600 dark:text-red-400 mt-2">
+              {{ editFieldErrors.name }}
+            </p>
           </div>
 
           <!-- Email -->
@@ -1850,9 +1859,18 @@
               v-model="editingUser.email"
               type="email"
               required
+              @input="clearEditFieldError('email')"
               placeholder="vas.email@priklad.sk"
-              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+              :class="[
+                'w-full px-4 py-3 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all',
+                editFieldErrors.email
+                  ? 'border-red-400 dark:border-red-500'
+                  : 'border-gray-300 dark:border-gray-600',
+              ]"
             />
+            <p v-if="editFieldErrors.email" class="text-sm text-red-600 dark:text-red-400 mt-2">
+              {{ editFieldErrors.email }}
+            </p>
           </div>
 
           <!-- Phone -->
@@ -1867,8 +1885,16 @@
               @input="onEditUserPhoneInput"
               type="tel"
               placeholder="+421 123 456 789"
-              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+              :class="[
+                'w-full px-4 py-3 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all',
+                editFieldErrors.phone
+                  ? 'border-red-400 dark:border-red-500'
+                  : 'border-gray-300 dark:border-gray-600',
+              ]"
             />
+            <p v-if="editFieldErrors.phone" class="text-sm text-red-600 dark:text-red-400 mt-2">
+              {{ editFieldErrors.phone }}
+            </p>
           </div>
 
           <!-- Avatar controls -->
@@ -1988,9 +2014,21 @@
             <input
               v-model="editingUser.password"
               type="password"
+              @input="clearEditFieldError('password')"
               :placeholder="$t('admin.users.set_password')"
-              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+              :class="[
+                'w-full px-4 py-3 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all',
+                editFieldErrors.password
+                  ? 'border-red-400 dark:border-red-500'
+                  : 'border-gray-300 dark:border-gray-600',
+              ]"
             />
+            <p
+              v-if="editFieldErrors.password"
+              class="text-sm text-red-600 dark:text-red-400 mt-2"
+            >
+              {{ editFieldErrors.password }}
+            </p>
             <div class="flex flex-wrap gap-3 mt-3">
               <button
                 type="button"
@@ -2657,6 +2695,12 @@ export default {
       editingUser: null,
       editingSaving: false,
       editError: "",
+      editFieldErrors: {
+        name: null,
+        email: null,
+        phone: null,
+        password: null,
+      },
       usersLoading: false,
       usersError: null,
       generatedPassword: "",
@@ -3442,8 +3486,93 @@ export default {
         two_factor_enabled: !!user.two_factor_enabled,
       };
       this.editError = "";
+      this.resetEditFieldErrors();
       this.generatedPassword = "";
       this.showGeneratedPassword = false;
+    },
+    resetEditFieldErrors() {
+      this.editFieldErrors = {
+        name: null,
+        email: null,
+        phone: null,
+        password: null,
+      };
+    },
+    clearEditFieldError(field) {
+      this.editFieldErrors[field] = null;
+      this.editError = "";
+    },
+    isValidEmail(email) {
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return re.test(String(email || "").trim());
+    },
+    isStrongPassword(password) {
+      const value = String(password || "");
+      return (
+        value.length >= 8 &&
+        /[a-z]/.test(value) &&
+        /[A-Z]/.test(value) &&
+        /[0-9]/.test(value)
+      );
+    },
+    validateEditUserForm() {
+      this.resetEditFieldErrors();
+
+      let isValid = true;
+      const name = String(this.editingUser?.name || "").trim();
+      const email = String(this.editingUser?.email || "").trim();
+      const phone = String(this.editingUser?.phone || "").trim();
+
+      if (!name) {
+        this.editFieldErrors.name = this.$t("profile.validation.required_field", {
+          field: this.$t("profile.name_label"),
+        });
+        isValid = false;
+      }
+
+      if (!email) {
+        this.editFieldErrors.email = this.$t("profile.validation.required_field", {
+          field: this.$t("profile.email_label"),
+        });
+        isValid = false;
+      } else if (!this.isValidEmail(email)) {
+        this.editFieldErrors.email = this.$t("profile.validation.email_invalid");
+        isValid = false;
+      }
+
+      if (phone) {
+        const digits = phone.replace(/\D/g, "");
+        let localDigits = digits;
+        if (digits.startsWith("00421")) {
+          localDigits = digits.slice(5);
+        } else if (digits.startsWith("421")) {
+          localDigits = digits.slice(3);
+        } else if (digits.startsWith("0")) {
+          localDigits = digits.slice(1);
+        }
+
+        if (localDigits.length !== 9) {
+          this.editFieldErrors.phone = this.$t("profile.validation.phone_digits");
+          isValid = false;
+        }
+      }
+
+      return isValid;
+    },
+    applyEditErrors(errors) {
+      this.resetEditFieldErrors();
+
+      if (errors.name?.[0]) this.editFieldErrors.name = errors.name[0];
+      if (errors.email?.[0]) this.editFieldErrors.email = errors.email[0];
+      if (errors.phone?.[0]) this.editFieldErrors.phone = errors.phone[0];
+      if (errors.password?.[0]) this.editFieldErrors.password = errors.password[0];
+
+      return Boolean(
+        this.editFieldErrors.name ||
+          this.editFieldErrors.email ||
+          this.editFieldErrors.phone ||
+          this.editFieldErrors.password
+      );
     },
     toggleAvatarRemoval() {
       if (!this.editingUser) return;
@@ -3492,6 +3621,8 @@ export default {
       if (!this.generatedPassword || !this.editingUser) return;
 
       try {
+        this.editError = "";
+        this.resetEditFieldErrors();
         const response = await api.post(
           `api/admin/users/${this.editingUser.id}/set-password`,
           {
@@ -3502,21 +3633,33 @@ export default {
         console.log("Password set response:", response.data);
       } catch (error) {
         console.error("Error setting password:", error);
-        const errorMsg =
-          error.response?.data?.message || error.response?.data?.errors || error.message;
-        console.error("Full error:", errorMsg);
-        this.editError =
-          this.$t("admin.messages.password_set_error") + ": " + JSON.stringify(errorMsg);
+
+        if (error.response?.data?.errors && this.applyEditErrors(error.response.data.errors)) {
+          this.editError = "";
+          return;
+        }
+
+        const errorMsg = error.response?.data?.message || this.$t("admin.messages.password_set_error");
+        this.editError = `${this.$t("admin.messages.password_set_error")}: ${errorMsg}`;
       }
     },
     async saveUserPassword() {
       if (!this.editingUser || !this.editingUser.id) return;
-      if (!this.editingUser.password) {
-        this.editError = this.$t("admin.messages.enter_new_password");
+
+      this.editError = "";
+      this.resetEditFieldErrors();
+
+      if (!this.editingUser.password || !String(this.editingUser.password).trim()) {
+        this.editFieldErrors.password = this.$t("admin.messages.enter_new_password");
         return;
       }
+
+      if (!this.isStrongPassword(this.editingUser.password)) {
+        this.editFieldErrors.password = this.$t("auth.register.password_requirements");
+        return;
+      }
+
       this.editingSaving = true;
-      this.editError = "";
       try {
         const response = await api.post(
           `api/admin/users/${this.editingUser.id}/set-password`,
@@ -3530,10 +3673,13 @@ export default {
         this.generatedPassword = "";
       } catch (error) {
         console.error("Error setting password:", error);
-        const errorMsg =
-          error.response?.data?.message || error.response?.data?.errors || error.message;
-        this.editError =
-          this.$t("admin.messages.password_set_error") + ": " + JSON.stringify(errorMsg);
+
+        if (error.response?.data?.errors && this.applyEditErrors(error.response.data.errors)) {
+          this.editError = "";
+        } else {
+          const errorMsg = error.response?.data?.message || this.$t("admin.messages.password_set_error");
+          this.editError = `${this.$t("admin.messages.password_set_error")}: ${errorMsg}`;
+        }
       } finally {
         this.editingSaving = false;
       }
@@ -3544,6 +3690,7 @@ export default {
     onEditUserPhoneInput() {
       if (!this.editingUser) return;
       this.editingUser.phone = this.formatPhoneNumber(this.editingUser.phone);
+      this.clearEditFieldError("phone");
     },
     formatPhoneNumber(phone) {
       if (!phone) return "";
@@ -3573,8 +3720,16 @@ export default {
       return `+421 ${grouped}`.trim();
     },
     saveUserChanges() {
+      if (!this.editingUser) return;
+
       this.editingSaving = true;
       this.editError = "";
+      this.resetEditFieldErrors();
+
+      if (!this.validateEditUserForm()) {
+        this.editingSaving = false;
+        return;
+      }
 
       // Prevent owner from demoting themselves
       if (
@@ -3588,8 +3743,8 @@ export default {
       }
 
       const data = {
-        name: this.editingUser.name,
-        email: this.editingUser.email,
+        name: this.editingUser.name.trim(),
+        email: this.editingUser.email.trim(),
         phone: this.editingUser.phone,
         two_factor_enabled: !!this.editingUser.two_factor_enabled,
       };
@@ -3624,8 +3779,13 @@ export default {
         })
         .catch((error) => {
           console.error("Error:", error);
-          this.editError =
-            error.response?.data?.message || this.$t("admin.messages.user_save_error");
+
+          if (error.response?.data?.errors && this.applyEditErrors(error.response.data.errors)) {
+            this.editError = "";
+          } else {
+            this.editError =
+              error.response?.data?.message || this.$t("admin.messages.user_save_error");
+          }
         })
         .finally(() => {
           this.editingSaving = false;
@@ -4319,13 +4479,13 @@ export default {
       if (countryCode) {
         const countryObj = this.countryOptionsCodes.find((c) => c.code === countryCode);
         if (countryObj) {
-          newVal.address.country = this.$t(`admin.orders.${countryObj.key}`);
+          newVal.address.country = this.$t(`admin.countries.${countryObj.key}`);
         }
       } else {
         // If no country code, try to find it from country name
         const countryName = newVal.address.country;
         const matchedCountry = this.countryOptionsCodes.find(
-          (c) => this.$t(`admin.orders.${c.key}`) === countryName
+          (c) => this.$t(`admin.countries.${c.key}`) === countryName
         );
         if (matchedCountry) {
           newVal.address.country_code = matchedCountry.code;
