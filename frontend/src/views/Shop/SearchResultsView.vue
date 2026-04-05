@@ -1,14 +1,14 @@
 <template>
   <div class="flex bg-gray-50 dark:bg-gray-900 min-h-screen">
     <!-- Sidebar -->
-    <aside>
+    <aside class="hidden md:block md:w-64 md:flex-shrink-0">
       <SideBarComponent />
     </aside>
 
     <!-- Results -->
-    <section class="flex-1 px-6 py-10">
+    <section class="flex-1 px-4 sm:px-6 md:px-8 py-8 sm:py-10">
       <div class="max-w-6xl mx-auto">
-        <h1 class="text-2xl font-semibold mb-4 text-gray-900 dark:text-gray-100">{{ $t("search.results_title") }}</h1>
+        <h1 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-900 dark:text-gray-100">{{ $t("search.results_title") }}</h1>
         <p v-if="!query" class="text-gray-700 dark:text-gray-300 mb-4">{{ $t("search.enter_query") }}</p>
         <p v-else class="text-gray-700 dark:text-gray-300 mb-4">{{ $t("search.searching") }}: <strong class="text-gray-900 dark:text-gray-100">{{ query }}</strong></p>
 

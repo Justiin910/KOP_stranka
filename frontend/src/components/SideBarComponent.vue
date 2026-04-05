@@ -1,12 +1,13 @@
 <template>
   <aside
-    class="w-64 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 h-full top-15"
+    class="h-full bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800"
   >
     <nav :aria-label="$t('sidebar.heading')">
-      <ul class="space-y-1 pt-5 px-3">
+      <ul class="space-y-1 pt-4 pb-4 px-3">
         <li v-for="item in items" :key="item.key">
           <router-link
             :to="'/category/' + item.key"
+            @click="$emit('navigate')"
             class="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors rounded-lg"
             :title="item.label"
           >
@@ -23,6 +24,7 @@
 import api from "@/api";
 
 export default {
+  emits: ["navigate"],
   data() {
     return {
       items: [],

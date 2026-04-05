@@ -1,11 +1,11 @@
 <template>
   <div class="flex bg-gray-100 dark:bg-gray-900 min-h-screen">
     <!-- Sidebar -->
-    <aside>
+    <aside class="hidden md:block md:w-64 md:flex-shrink-0">
       <SideBarComponent />
     </aside>
     <!-- Products Section -->
-    <section class="flex-1 px-10 py-12">
+    <section class="flex-1 px-4 sm:px-6 md:px-8 lg:px-10 py-8 sm:py-10 md:py-12 overflow-x-hidden">
       <!-- SORT BAR (Alza style) -->
       <!-- BREADCRUMBS -->
       <nav class="text-sm text-gray-600 dark:text-gray-300 mb-3 flex items-center gap-2">
@@ -163,9 +163,4 @@ export default {
 </script>
 
 <style scoped>
-@media (max-width: 768px) {
-  .ml-64 {
-    margin-left: 0;
-  }
-}
 </style>

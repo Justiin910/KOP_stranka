@@ -1,6 +1,6 @@
 <template>
 	<div class="min-h-screen bg-white dark:bg-gray-900">
-		<div class="max-w-6xl mx-auto px-6 py-12">
+		<div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
 			<div class="mb-8">
 				<h1 class="text-3xl font-bold text-gray-900 dark:text-white">
 					{{ $t("pages.orders.list.title") }}
@@ -33,7 +33,7 @@
 					class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow"
 				>
 					<div class="p-6">
-						<div class="flex items-start justify-between mb-4">
+						<div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
 							<div>
 								<div class="flex items-center gap-3 mb-2">
 									<h3 class="text-lg font-bold text-gray-900 dark:text-white">
@@ -50,7 +50,7 @@
 									{{ order.date }}
 								</p>
 							</div>
-							<div class="text-right">
+							<div class="text-left sm:text-right">
 								<p class="text-2xl font-bold text-gray-900 dark:text-white">
 									{{ formatPrice(order.total) }} €
 								</p>
@@ -66,11 +66,11 @@
 								:key="index"
 								:src="item.image"
 								:alt="item.name"
-								class="w-16 h-16 object-cover rounded-lg flex-shrink-0"
+								class="w-14 h-14 sm:w-16 sm:h-16 object-cover rounded-lg flex-shrink-0"
 							/>
 							<div
 								v-if="order.items.length > 4"
-								class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center flex-shrink-0"
+								class="w-14 h-14 sm:w-16 sm:h-16 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center flex-shrink-0"
 							>
 								<span class="text-sm font-semibold text-gray-600 dark:text-gray-400">
 									+{{ order.items.length - 4 }}
@@ -78,10 +78,10 @@
 							</div>
 						</div>
 
-						<div class="flex gap-3">
+						<div class="flex flex-wrap gap-2 sm:gap-3">
 							<button
 								@click="viewOrderDetail(order.id)"
-								class="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
+								class="w-full sm:flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
 							>
 								{{
 									order.status_key === "delivered"
@@ -91,27 +91,27 @@
 							</button>
 							<button
 								v-if="order.status_key === 'delivered'"
-								class="px-4 py-2 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-medium transition-colors"
+								class="px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-medium transition-colors"
 							>
 								{{ $t("pages.orders.list.action_buy_again") }}
 							</button>
 							<button
 								v-if="order.status_key === 'delivered'"
-								class="px-4 py-2 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-medium transition-colors"
+								class="px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-medium transition-colors"
 							>
 								{{ $t("pages.orders.list.action_download_invoice") }}
 							</button>
 							<button
 								v-if="order.status_key === 'pending'"
 								@click="cancelOrder(order.id)"
-								class="px-4 py-2 border border-red-300 dark:border-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg font-medium transition-colors"
+								class="px-4 py-2 text-sm border border-red-300 dark:border-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg font-medium transition-colors"
 							>
 								{{ $t("pages.orders.list.action_cancel") }}
 							</button>
 							<button
 								v-if="order.status_key === 'delivered'"
 								@click="refundOrder(order.id)"
-								class="px-4 py-2 border border-purple-300 dark:border-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg font-medium transition-colors"
+								class="px-4 py-2 text-sm border border-purple-300 dark:border-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg font-medium transition-colors"
 							>
 								{{ $t("pages.orders.list.action_refund") }}
 							</button>

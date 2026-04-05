@@ -1,8 +1,8 @@
 <template>
   <div class="min-h-screen bg-white dark:bg-gray-900">
-    <div class="max-w-7xl mx-auto px-6 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
       <div class="mb-8">
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
             <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
               {{ $t("favorites.title") }}
@@ -55,7 +55,7 @@
         <!-- Total Price Bar -->
         <div
           v-if="favorites.length > 0"
-          class="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border border-green-200 dark:border-green-800 rounded-lg p-4 flex items-center justify-between"
+          class="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border border-green-200 dark:border-green-800 rounded-lg p-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
         >
           <div class="flex items-center gap-6">
             <div>
@@ -207,7 +207,7 @@
           :key="item.id"
           class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow"
         >
-          <div class="flex gap-6">
+          <div class="flex flex-col sm:flex-row gap-4 sm:gap-6">
             <div class="relative flex-shrink-0">
               <img
                 :src="item.image"

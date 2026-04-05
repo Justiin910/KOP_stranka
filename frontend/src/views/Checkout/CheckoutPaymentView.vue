@@ -1,13 +1,13 @@
 <template>
   <div class="page-checkout-payment-bg">
-    <div class="max-w-7xl mx-auto px-6 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
       <!-- Progress Steps -->
-      <div class="mb-12">
-        <div class="flex items-center justify-center">
-          <div v-for="(step, index) in steps" :key="index" class="flex items-center">
+      <div class="mb-8 sm:mb-12">
+        <div class="flex items-start justify-start sm:justify-center overflow-x-auto pb-2">
+          <div v-for="(step, index) in steps" :key="index" class="flex items-start flex-shrink-0">
             <div class="flex flex-col items-center">
               <div
-                class="w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-colors"
+                class="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm sm:text-base font-semibold transition-colors"
                 :class="
                   step.active
                     ? 'bg-blue-600 text-white'
@@ -17,7 +17,7 @@
                 {{ index + 1 }}
               </div>
               <span
-                class="mt-2 text-sm font-medium"
+                class="mt-2 text-xs sm:text-sm font-medium text-center whitespace-nowrap"
                 :class="
                   step.active
                     ? 'text-blue-600 dark:text-blue-400'
@@ -29,7 +29,7 @@
             </div>
             <div
               v-if="index < steps.length - 1"
-              class="w-24 h-1 mx-4 mb-6"
+              class="w-10 sm:w-16 md:w-24 h-1 mx-2 sm:mx-4 mt-4 sm:mt-5"
               :class="
                 steps[index + 1].active ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
               "
@@ -38,7 +38,7 @@
         </div>
       </div>
 
-      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">
+      <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-8">
         {{ $t("pages.checkout.payment.title") }}
       </h1>
 
@@ -169,7 +169,7 @@
                   placeholder="1234 5678 9012 3456"
                 />
               </div>
-              <div class="grid grid-cols-2 gap-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1">
                     {{ $t("pages.checkout.payment.card_expiry") }}

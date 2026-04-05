@@ -1,17 +1,17 @@
 <template>
   <div class="page-home-bg">
     <!-- Sidebar -->
-    <aside class="left-0 top-0 h-auto z-50">
+    <aside class="hidden md:block md:w-64 md:flex-shrink-0">
       <SideBarComponent />
     </aside>
 
     <!-- Main Content -->
-    <main class="ml-12 mr-12 flex-1 px-6 py-8 overflow-x-hidden">
+    <main class="flex-1 px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 overflow-x-hidden">
       <!-- Header Section -->
       <section class="mb-12">
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
           <div>
-            <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-2">
               {{ $t("home.mega_sale.title") }}
             </h1>
             <p class="text-gray-600 dark:text-gray-300">
@@ -29,7 +29,7 @@
 
       <!-- Products Grid -->
       <section>
-        <div v-if="saleProducts.length > 0" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div v-if="saleProducts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           <ProductCard
             v-for="product in saleProducts"
             :key="product.id"
@@ -97,9 +97,4 @@ export default {
 </script>
 
 <style scoped>
-@media (max-width: 768px) {
-  .ml-12 {
-    margin-left: 0;
-  }
-}
 </style>

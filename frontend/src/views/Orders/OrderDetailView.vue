@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-white dark:bg-gray-900">
-    <div class="max-w-4xl mx-auto px-6 py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
       <!-- Loading State -->
       <div v-if="loading" class="flex items-center justify-center py-20">
         <div class="text-center">
@@ -45,7 +45,7 @@
       <!-- Order Details -->
       <div v-else-if="order">
         <!-- Header with Back Button -->
-        <div class="flex items-center justify-between mb-8">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
             <button
               @click="$router.back()"
@@ -120,7 +120,59 @@
             {{ $t("pages.orders.detail.items_title") }}
           </h2>
 
-          <div class="overflow-x-auto">
+          <div class="space-y-3 md:hidden">
+            <div
+              v-for="item in order.items"
+              :key="`mobile-${item.id}`"
+              class="rounded-lg border border-gray-200 dark:border-gray-700 p-4"
+            >
+              <div class="flex items-start gap-3">
+                <img
+                  :src="getProductImageUrl(item.product_image)"
+                  :alt="item.product_name"
+                  class="w-14 h-14 object-cover rounded-lg flex-shrink-0"
+                />
+                <div class="min-w-0 flex-1">
+                  <p class="font-medium text-gray-900 dark:text-white">
+                    {{ item.product_name }}
+                  </p>
+                  <p
+                    v-if="item.variant_options && Object.keys(item.variant_options).length > 0"
+                    class="text-xs text-gray-600 dark:text-gray-400 mt-1"
+                  >
+                    {{ formatVariantOptions(item.variant_options) }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="mt-3 grid grid-cols-3 gap-2 text-xs">
+                <div>
+                  <p class="text-gray-500 dark:text-gray-400">
+                    {{ $t("pages.orders.detail.quantity") }}
+                  </p>
+                  <p class="font-semibold text-gray-900 dark:text-white">{{ item.quantity }}</p>
+                </div>
+                <div>
+                  <p class="text-gray-500 dark:text-gray-400">
+                    {{ $t("pages.orders.detail.unit_price") }}
+                  </p>
+                  <p class="font-semibold text-gray-900 dark:text-white">
+                    {{ formatPrice(item.price) }} €
+                  </p>
+                </div>
+                <div class="text-right">
+                  <p class="text-gray-500 dark:text-gray-400">
+                    {{ $t("pages.orders.detail.total") }}
+                  </p>
+                  <p class="font-semibold text-gray-900 dark:text-white">
+                    {{ formatPrice(item.quantity * item.price) }} €
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hidden md:block overflow-x-auto">
             <table class="w-full text-sm">
               <thead class="bg-gray-50 dark:bg-gray-700">
                 <tr>
@@ -271,7 +323,7 @@
         </div>
 
         <!-- Actions -->
-        <div class="flex gap-3">
+        <div class="flex flex-col sm:flex-row gap-3">
           <button
             @click="$router.back()"
             class="px-6 py-2 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-medium transition-colors"

@@ -1,6 +1,6 @@
 <template>
 	<div class="min-h-screen bg-white dark:bg-gray-900">
-		<div class="max-w-5xl mx-auto px-6 py-12">
+		<div class="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
 			<!-- Back Button -->
 			<button 
 				@click="$router.push('/orders')"
@@ -14,9 +14,9 @@
 
 			<!-- Order Header -->
 			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
-				<div class="flex items-start justify-between mb-4">
+				<div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
 					<div>
-						<h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+						<h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">
 							Objednávka #{{ order.id }}
 						</h1>
 						<p class="text-gray-600 dark:text-gray-400">
@@ -57,7 +57,7 @@
 					<div 
 						v-for="(step, index) in statusSteps" 
 						:key="index"
-						class="flex gap-4"
+						class="flex gap-3 sm:gap-4"
 					>
 						<!-- Timeline Line -->
 						<div class="flex flex-col items-center">
@@ -111,7 +111,7 @@
 					<div 
 						v-for="item in order.items" 
 						:key="item.id"
-						class="flex gap-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-0 last:pb-0"
+						class="flex flex-col sm:flex-row gap-3 sm:gap-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-0 last:pb-0"
 					>
 						<img :src="item.image" :alt="item.name" class="w-20 h-20 object-cover rounded-lg" />
 						<div class="flex-1">

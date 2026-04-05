@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-white dark:bg-gray-900">
-    <div class="max-w-4xl mx-auto px-6 py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
       <!-- Back Button -->
       <button
         @click="$router.push('/')"
@@ -100,7 +100,7 @@
           <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6 text-center">
             {{ $t("pages.aboutus.stats_title") }}
           </h2>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             <div v-for="stat in stats" :key="stat.id" class="text-center">
               <div class="text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-1">
                 {{ stat.value }}

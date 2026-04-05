@@ -24,7 +24,7 @@
     >
       <div
         v-if="showDropdown"
-        class="absolute right-0 mt-2 w-96 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50"
+        class="absolute right-0 mt-2 w-[calc(100vw-1rem)] max-w-sm sm:w-96 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50"
       >
         <!-- Header -->
         <div

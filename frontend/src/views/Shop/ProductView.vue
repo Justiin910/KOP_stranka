@@ -2,12 +2,12 @@
   <div class="flex bg-white dark:bg-gray-900 min-h-screen">
     <!-- SIDEBAR -->
     <aside
-      class="w-64 h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800"
+      class="hidden md:block md:w-64 md:flex-shrink-0 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800"
     >
       <SideBarComponent />
     </aside>
 
-    <main class="flex-1 p-8">
+    <main class="flex-1 p-4 sm:p-6 md:p-8">
       <div v-if="loading" class="flex items-center justify-center py-20">
         <div class="text-center">
           <div
@@ -46,7 +46,7 @@
 
         <div class="border-t border-gray-200 dark:border-gray-800 mb-8"></div>
 
-        <div class="max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
+        <div class="max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 md:gap-12 mb-12">
           <div class="flex flex-col items-center">
             <img
               :src="product.image"
@@ -59,7 +59,7 @@
           </div>
 
           <div>
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-3">
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-3">
               {{ product.title || product.name }}
             </h1>
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
@@ -73,7 +73,7 @@
             </p>
 
             <div class="mb-6">
-              <div class="text-4xl font-bold text-indigo-600">
+              <div class="text-3xl sm:text-4xl font-bold text-indigo-600">
                 {{ formatPrice(calculateCurrentPrice()) }} €
               </div>
               <div
@@ -141,7 +141,7 @@
                         ? 'bg-indigo-600 text-white border-indigo-600'
                         : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 hover:border-indigo-600 dark:hover:border-indigo-600',
                     ]"
-                    class="px-4 py-2 border-2 rounded-lg font-medium transition-colors cursor-pointer"
+                    class="max-w-full px-4 py-2 border-2 rounded-lg font-medium transition-colors cursor-pointer"
                   >
                     {{ option }}
                   </button>

@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-white dark:bg-gray-900">
-    <div class="max-w-4xl mx-auto px-6 py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
       <!-- Loading State -->
       <div v-if="loading" class="flex items-center justify-center py-20">
         <div class="text-center">
@@ -54,7 +54,7 @@
       <div
         class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 mb-6"
       >
-        <div class="flex items-start gap-6">
+        <div class="flex flex-col sm:flex-row sm:items-start gap-6">
           <div class="relative">
             <div
               v-if="user.avatar"
@@ -168,7 +168,7 @@
               </span>
             </div>
 
-            <div class="flex gap-2 mt-3">
+            <div class="flex flex-wrap gap-2 mt-3">
               <span
                 class="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm font-medium rounded-full"
                 >{{ formatMemberSince(user.created_at) }}</span
@@ -372,7 +372,7 @@
             </div>
 
             <!-- City and ZIP -->
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label
                   class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
@@ -660,7 +660,7 @@
         v-if="activeProfileMiniTab === 'security'"
         class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 mt-6"
       >
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
           <h2 class="text-xl font-bold text-gray-900 dark:text-white">
             {{ $t("profile.change_password_title") }}
           </h2>
@@ -730,7 +730,7 @@
         v-if="activeProfileMiniTab === 'overview'"
         class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 mt-6"
       >
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
           <h2 class="text-xl font-bold text-gray-900 dark:text-white">
             {{ $t("profile.order_history") }}
           </h2>

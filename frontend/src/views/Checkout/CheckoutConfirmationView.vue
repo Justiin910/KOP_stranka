@@ -1,13 +1,13 @@
 <template>
   <div class="page-checkout-confirmation-bg">
-    <div class="max-w-7xl mx-auto px-6 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
       <!-- Progress Steps -->
-      <div class="mb-12">
-        <div class="flex items-center justify-center">
-          <div v-for="(step, index) in steps" :key="index" class="flex items-center">
+      <div class="mb-8 sm:mb-12">
+        <div class="flex items-start justify-start sm:justify-center overflow-x-auto pb-2">
+          <div v-for="(step, index) in steps" :key="index" class="flex items-start flex-shrink-0">
             <div class="flex flex-col items-center">
               <div
-                class="w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-colors"
+                class="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm sm:text-base font-semibold transition-colors"
                 :class="
                   step.active
                     ? 'bg-blue-600 text-white'
@@ -17,7 +17,7 @@
                 {{ index + 1 }}
               </div>
               <span
-                class="mt-2 text-sm font-medium whitespace-nowrap"
+                class="mt-2 text-xs sm:text-sm font-medium whitespace-nowrap text-center"
                 :class="
                   step.active
                     ? 'text-blue-600 dark:text-blue-400'
@@ -29,7 +29,7 @@
             </div>
             <div
               v-if="index < steps.length - 1"
-              class="w-16 h-1 mx-4 mb-6"
+              class="w-10 sm:w-16 h-1 mx-2 sm:mx-4 mt-4 sm:mt-5"
               :class="
                 steps[index + 1].active ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
               "
@@ -45,7 +45,7 @@
         >
           <i class="fas fa-check-circle text-3xl text-green-600 dark:text-green-400"></i>
         </div>
-        <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+        <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-2">
           {{ $t('pages.checkout.confirmation.title') }}
         </h1>
         <p class="text-gray-600 dark:text-gray-400">{{ $t('pages.checkout.confirmation.thank_you') }}</p>
@@ -56,7 +56,7 @@
         class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 mb-8 border border-blue-200 dark:border-blue-800"
       >
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">{{ $t('pages.checkout.confirmation.order_reference') }}</p>
-        <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">
+        <p class="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400 break-all">
           {{ order?.reference }}
         </p>
       </div>
@@ -245,7 +245,7 @@
       </div>
 
       <!-- Action buttons -->
-      <div class="flex gap-4 mt-12">
+      <div class="flex flex-col sm:flex-row gap-4 mt-12">
         <router-link to="/" class="flex-1 text-center btn-primary-lg">
           {{ $t('pages.checkout.confirmation.continue_shopping') }}
         </router-link>

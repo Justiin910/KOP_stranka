@@ -1,28 +1,44 @@
 <template>
   <nav class="bg-gray-900 text-gray-100 sticky top-0 z-40 navbar-bottom-shadow">
-    <div class="mx-auto px-4 py-3 flex items-center gap-4">
+    <div class="mx-auto px-3 sm:px-4 py-3 flex flex-wrap md:flex-nowrap items-center gap-3 md:gap-4">
+      <button
+        v-if="showSidebarToggle"
+        @click="toggleMobileSidebar"
+        class="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100/70 dark:bg-gray-800/70 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+        aria-label="Open menu"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 6h16M4 12h16M4 18h16"
+          ></path>
+        </svg>
+      </button>
+
       <!-- left: logo / store name -->
       <router-link
         to="/"
-        class="flex items-center flex-shrink-0 gap-2 hover:opacity-80 transition-opacity"
+        class="flex items-center flex-shrink-0 gap-2 hover:opacity-80 transition-opacity min-w-0"
         role="banner"
       >
         <img src="/favicon.svg" alt="TechShop logo" class="w-10 h-10 object-contain" />
-        <div>
+        <div class="hidden sm:block">
           <div class="text-sm font-bold text-white leading-tight">TechShop</div>
           <div class="text-xs text-indigo-300 font-medium leading-tight">Smart Tech</div>
         </div>
       </router-link>
 
       <!-- center: search -->
-      <div class="flex-1 flex justify-center">
-        <div class="relative max-w-auto w-full md:w-160">
+      <div class="order-3 w-full md:order-none md:flex-1 md:flex md:justify-center">
+        <div class="relative w-full md:max-w-2xl">
           <input
             v-model="query"
             @keydown.enter.prevent="onSearch"
             type="search"
             :placeholder="$t('search.placeholder')"
-            class="w-full bg-gray-800 placeholder-gray-400 text-gray-100 rounded-md py-2 pl-10 pr-24 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow duration-200 text-sm"
+            class="w-full bg-gray-800 placeholder-gray-400 text-gray-100 rounded-md py-2 pl-10 pr-20 sm:pr-24 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow duration-200 text-sm"
             aria-label="Search"
           />
           <div
@@ -39,7 +55,7 @@
           </div>
           <button
             @click="onSearch"
-            class="absolute right-1 top-1/2 -translate-y-1/2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-3 py-1 rounded text-sm shadow-md transition transform hover:scale-110"
+            class="absolute right-1 top-1/2 -translate-y-1/2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-2.5 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-md transition transform hover:scale-105"
           >
             {{ $t("search.button") }}
           </button>
@@ -47,19 +63,19 @@
       </div>
 
       <!-- right: icons -->
-      <div class="flex items-center gap-2 flex-shrink-0">
+      <div class="ml-auto flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
         <!-- Language Dropdown -->
         <div class="relative group" ref="languageDropdown">
           <button
             @click="showLanguageDropdown = !showLanguageDropdown"
-            class="p-2 rounded-full bg-gray-100/70 dark:bg-gray-800/70 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200 flex items-center pl-4 font-medium text-sm"
+            class="px-2.5 py-2 sm:pl-4 rounded-full bg-gray-100/70 dark:bg-gray-800/70 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200 flex items-center font-medium text-xs sm:text-sm"
           >
             <span
               v-if="currentLanguageOption"
-              class="fi rounded-sm mr-2"
+              class="fi rounded-sm mr-0 sm:mr-2"
               :class="`fi-${currentLanguageOption.flagCode}`"
             ></span>
-            {{ currentLanguage.toUpperCase() }}
+            <span class="hidden sm:inline">{{ currentLanguage.toUpperCase() }}</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="h-4 w-4 ml-1"
@@ -89,7 +105,7 @@
           <!-- Language Dropdown Menu -->
           <div
             v-if="showLanguageDropdown"
-            class="absolute right-0 mt-2 w-40 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden"
+            class="absolute right-0 mt-2 w-36 sm:w-40 max-w-[calc(100vw-1rem)] bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden"
           >
             <button
               v-for="lang in languageOptions"
@@ -125,7 +141,7 @@
         <!--     <span v-if="isLoggedIn" class="ml-2 text-sm text-gray-200 hidden md:inline">{{ user.name }}</span>
 
         <!-- Wishlist with counter -->
-        <div class="relative group">
+        <div class="relative group hidden sm:block">
           <button
             @click="$router.push('/favorites')"
             class="relative inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-100/70 dark:bg-gray-800/70 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200 focus:outline-none"
@@ -149,7 +165,7 @@
           </div>
         </div>
 
-        <div class="relative group">
+        <div class="relative group hidden sm:block">
           <Notification />
           <!-- Tooltip -->
           <div
@@ -285,6 +301,9 @@ export default {
     }
   },
   methods: {
+    toggleMobileSidebar() {
+      window.dispatchEvent(new CustomEvent("mobile-sidebar-toggle"));
+    },
     onSearch() {
       const q = (this.query || "").trim();
       if (!q) return;
@@ -442,6 +461,10 @@ export default {
     },
   },
   computed: {
+    showSidebarToggle() {
+      const name = String(this.$route?.name || "");
+      return ["home", "megaSale", "category", "search", "product"].includes(name);
+    },
     currentLanguageOption() {
       return this.languageOptions.find((lang) => lang.code === this.currentLanguage) || null;
     },
@@ -460,6 +483,10 @@ export default {
 
 <style scoped>
 /* only bottom shadow */
+.navbar-bottom-shadow {
+  position: relative;
+}
+
 .navbar-bottom-shadow::after {
   content: "";
   position: absolute;
@@ -467,7 +494,13 @@ export default {
   right: 0;
   bottom: -8px;
   height: 10px;
+  z-index: 0;
   pointer-events: none;
   background: linear-gradient(180deg, rgba(2, 6, 23, 0.35) 0%, rgba(2, 6, 23, 0) 100%);
+}
+
+.navbar-bottom-shadow > * {
+  position: relative;
+  z-index: 1;
 }
 </style>

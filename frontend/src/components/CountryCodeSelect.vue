@@ -216,38 +216,3 @@ export default {
 };
 </script>
 
-<style scoped>
-.country-code-menu {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(148, 163, 184, 0.55) transparent;
-}
-
-.country-code-menu::-webkit-scrollbar {
-  width: 6px;
-}
-
-.country-code-menu::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.country-code-menu::-webkit-scrollbar-thumb {
-  border-radius: 9999px;
-  background-color: rgba(148, 163, 184, 0.55);
-}
-
-.country-code-menu::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(100, 116, 139, 0.75);
-}
-
-.dark .country-code-menu {
-  scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
-}
-
-.dark .country-code-menu::-webkit-scrollbar-thumb {
-  background-color: rgba(148, 163, 184, 0.45);
-}
-
-.dark .country-code-menu::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(148, 163, 184, 0.68);
-}
-</style>

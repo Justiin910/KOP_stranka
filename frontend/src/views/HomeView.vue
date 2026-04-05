@@ -1,16 +1,16 @@
 <template>
   <div class="page-home-bg">
     <!-- Sidebar -->
-    <aside class="left-0 top-0 h-auto z-50">
+    <aside class="hidden md:block md:w-64 md:flex-shrink-0">
       <SideBarComponent />
     </aside>
 
     <!-- Main Content -->
-    <main class="ml-12 mr-12 flex-1 px-6 py-8 overflow-x-hidden">
+    <main class="flex-1 px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 overflow-x-hidden">
       <!-- Hero Banner Section -->
       <section class="mb-8">
         <div
-          class="relative rounded-2xl overflow-hidden p-8 md:p-12 h-72 md:h-96 flex items-center"
+          class="relative rounded-2xl overflow-hidden p-6 sm:p-8 md:p-12 h-64 sm:h-72 md:h-96 flex items-center"
         >
           <img
             src="@/assets/saleBanner2.png"
@@ -19,13 +19,13 @@
           <div class="absolute inset-0 bg-black/40"></div>
 
           <div class="relative z-10">
-            <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4">
               {{ $t("home.hero.title") }}
             </h1>
-            <p class="text-xl text-white/90 mb-6">{{ $t("home.hero.subtitle") }}</p>
+            <p class="text-base sm:text-lg md:text-xl text-white/90 mb-6">{{ $t("home.hero.subtitle") }}</p>
             <button
               @click="goToMegaSale"
-              class="bg-white text-indigo-600 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition"
+              class="bg-white text-indigo-600 px-6 sm:px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition"
             >
               {{ $t("home.hero.cta") }}
             </button>
@@ -35,13 +35,13 @@
 
       <!-- Recommended Products Section -->
       <section class="mb-12">
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
           <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
             {{ $t("home.recommended.title") }}
           </h2>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
           <ProductCard
             v-for="product in recommendedProducts"
             :key="product.id"
@@ -53,7 +53,7 @@
 
       <!-- Mega Sale Section -->
       <section class="mb-12">
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
           <h2 class="text-2xl font-bold text-red-600 dark:text-white">
             {{ $t("home.mega_sale.title") }}
           </h2>
@@ -66,14 +66,14 @@
         </div>
 
         <div class="mx-auto relative">
-          <div ref="saleScroll" class="overflow-x-auto scrollbar-hide py-4">
+          <div ref="saleScroll" class="overflow-x-auto py-4">
             <div class="flex gap-3">
               <ProductCard
                 v-for="product in saleProducts"
                 :key="`sale-${product.id}`"
                 :product="product"
                 @add-to-cart="addToCart"
-                class="w-1/6 flex-shrink-0"
+                class="w-64 sm:w-56 md:w-1/3 lg:w-1/4 xl:w-1/6 flex-shrink-0"
               />
             </div>
           </div>
@@ -363,19 +363,3 @@ export default {
 };
 </script>
 
-<style scoped>
-@media (max-width: 768px) {
-  .ml-64 {
-    margin-left: 0;
-  }
-}
-
-/* hide horizontal scrollbar for sale carousel */
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-.scrollbar-hide {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-}
-</style>

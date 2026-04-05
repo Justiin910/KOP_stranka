@@ -1,7 +1,7 @@
 <template>
   <div class="page-admin-bg">
     <!-- Sidebar -->
-    <aside class="w-64 bg-white dark:bg-gray-800 shadow-lg h-auto">
+    <aside class="hidden md:block md:w-64 bg-white dark:bg-gray-800 shadow-lg h-auto">
       <div class="p-6">
         <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">
           {{ $t("profile.admin_panel") }}
@@ -25,7 +25,43 @@
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 ml-16 mr-16 p-8">
+    <main class="flex-1 p-4 sm:p-6 md:p-8">
+      <div class="md:hidden mb-4">
+        <details
+          ref="mobileTabMenu"
+          class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700"
+        >
+          <summary
+            class="list-none cursor-pointer px-4 py-3 flex items-center justify-between text-sm font-semibold text-gray-800 dark:text-gray-100"
+          >
+            <span>{{ $t("profile.admin_panel") }}</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7"
+              ></path>
+            </svg>
+          </summary>
+          <nav class="space-y-2 p-2 border-t border-gray-200 dark:border-gray-700">
+            <button
+              v-for="tab in tabs"
+              :key="`mobile-${tab.id}`"
+              @click="selectMobileTab(tab.id)"
+              class="w-full text-left px-4 py-3 rounded-lg transition-all duration-200"
+              :class="[
+                activeTab === tab.id
+                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700',
+              ]"
+            >
+              {{ $t(`admin.tabs.${tab.id}`) }}
+            </button>
+          </nav>
+        </details>
+      </div>
+
       <!-- Header -->
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-800 dark:text-white mb-2">
@@ -48,8 +84,67 @@
           />
         </div>
 
+        <!-- Mobile Orders Cards -->
+        <div class="space-y-3 md:hidden">
+          <article
+            v-for="order in filteredOrders"
+            :key="`mobile-order-${order.id}`"
+            class="bg-white dark:bg-gray-800 rounded-lg shadow p-4"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <p class="text-sm font-semibold text-gray-900 dark:text-white">#{{ order.id }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">{{ order.reference }}</p>
+              </div>
+              <span
+                class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
+                :class="getStatusClass(order.status)"
+              >
+                {{ formatStatus(order.status) }}
+              </span>
+            </div>
+
+            <div class="mt-3 space-y-1 text-sm">
+              <p class="text-gray-900 dark:text-white font-medium">{{ order.customerName }}</p>
+              <p class="text-gray-500 dark:text-gray-400 break-all">{{ order.email }}</p>
+            </div>
+
+            <div class="mt-3 grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                  {{ $t("admin.table.products") }}
+                </p>
+                <p class="text-gray-900 dark:text-white font-medium">
+                  {{ formatItems(order.items) }}
+                </p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                  {{ $t("admin.table.total") }}
+                </p>
+                <p class="text-gray-900 dark:text-white font-medium">{{ order.total }} €</p>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700 flex gap-2">
+              <button
+                @click="viewOrder(order)"
+                class="flex-1 px-3 py-2 rounded-lg bg-indigo-50 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 text-sm font-medium"
+              >
+                {{ $t("admin.actions.view") }}
+              </button>
+              <button
+                @click="deleteOrder(order.id)"
+                class="flex-1 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900 text-red-700 dark:text-red-300 text-sm font-medium"
+              >
+                {{ $t("admin.actions.delete") }}
+              </button>
+            </div>
+          </article>
+        </div>
+
         <!-- Orders Table -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        <div class="hidden md:block bg-white dark:bg-gray-800 rounded-lg shadow overflow-x-auto">
           <table class="w-full">
             <thead class="bg-gray-50 dark:bg-gray-700">
               <tr>
@@ -820,8 +915,66 @@
             />
           </div>
 
+          <!-- Mobile Notifications Cards -->
+          <div class="space-y-3 md:hidden">
+            <article
+              v-for="notification in filteredNotifications"
+              :key="`mobile-notification-${notification.id}`"
+              class="rounded-lg border border-gray-200 dark:border-gray-700 p-4"
+            >
+              <div class="flex items-start justify-between gap-3">
+                <p class="text-sm font-semibold text-gray-900 dark:text-white">
+                  #{{ notification.id }}
+                </p>
+                <span
+                  class="px-2 py-1 rounded text-xs font-medium"
+                  :class="getNotificationTypeClass(notification.type)"
+                >
+                  {{ getNotificationTypeName(notification.type) }}
+                </span>
+              </div>
+
+              <h4 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">
+                {{ notification.title }}
+              </h4>
+              <p class="mt-1 text-sm text-gray-600 dark:text-gray-400 line-clamp-3">
+                {{ notification.message }}
+              </p>
+
+              <div class="mt-3 flex items-center justify-between gap-2 text-xs">
+                <span class="text-gray-500 dark:text-gray-400">
+                  {{ formatDate(notification.created_at) }}
+                </span>
+                <span
+                  v-if="notification.isBroadcast"
+                  class="inline-flex items-center px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
+                >
+                  {{ notification.broadcastCount }}
+                  {{ $t("admin.notifications.table_headers.users") }}
+                </span>
+                <span v-else class="text-gray-600 dark:text-gray-400">
+                  1 {{ $t("admin.notifications.table_headers.users") }}
+                </span>
+              </div>
+
+              <button
+                @click="deleteNotificationAdm(notification, $event)"
+                class="mt-3 w-full px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900 text-red-700 dark:text-red-300 text-sm font-medium"
+              >
+                {{ $t("admin.notifications.delete_button") }}
+              </button>
+            </article>
+
+            <div
+              v-if="filteredNotifications.length === 0"
+              class="text-center py-8 text-gray-500 dark:text-gray-400"
+            >
+              {{ $t("admin.notifications.empty") }}
+            </div>
+          </div>
+
           <!-- Notifications Table -->
-          <div class="overflow-x-auto">
+          <div class="hidden md:block overflow-x-auto">
             <table class="w-full text-sm">
               <thead class="bg-gray-50 dark:bg-gray-700">
                 <tr>
@@ -949,7 +1102,7 @@
 
         <div v-if="!editingOrder" class="space-y-6">
           <!-- View Mode -->
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <p class="text-sm text-gray-600 dark:text-gray-400">
                 {{ $t("admin.table.customer") }}
@@ -1032,7 +1185,7 @@
             <p class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
               {{ $t("admin.orders.methods_section") }}
             </p>
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <span class="text-xs text-gray-600 dark:text-gray-400">{{
                   $t("admin.orders.delivery_label")
@@ -1056,8 +1209,8 @@
             <p class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-3">
               {{ $t("admin.orders.items_title") }}
             </p>
-            <div class="overflow-x-auto">
-              <table class="w-full text-sm">
+            <div class="overflow-x-auto order-items-scroll">
+              <table class="w-full min-w-[680px] text-sm">
                 <thead class="bg-gray-50 dark:bg-gray-700">
                   <tr>
                     <th class="px-4 py-2 text-left text-gray-600 dark:text-gray-400">
@@ -1119,7 +1272,7 @@
 
         <!-- Edit Mode -->
         <div v-else class="space-y-6">
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label
                 class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
@@ -1223,7 +1376,7 @@
             <p class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-3">
               {{ $t("admin.orders.delivery_address") }}
             </p>
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label
                   class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"
@@ -1448,8 +1601,8 @@
               </div>
             </transition>
 
-            <div class="overflow-x-auto">
-              <table class="w-full text-sm">
+            <div class="overflow-x-auto order-items-scroll">
+              <table class="w-full min-w-[680px] text-sm">
                 <thead class="bg-gray-50 dark:bg-gray-700">
                   <tr>
                     <th class="px-4 py-2 text-left text-gray-600 dark:text-gray-400">
@@ -1551,7 +1704,7 @@
             </p>
           </div>
 
-          <div class="flex gap-3">
+          <div class="flex flex-wrap gap-3">
             <button
               @click="saveOrderChanges"
               :disabled="orderSaving"
@@ -1624,7 +1777,7 @@
           </div>
         </div>
 
-        <div class="flex gap-3">
+        <div class="flex flex-wrap gap-3">
           <button
             @click="closeEditVariant"
             class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition"
@@ -1838,7 +1991,7 @@
               :placeholder="$t('admin.users.set_password')"
               class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
             />
-            <div class="flex gap-3 mt-3">
+            <div class="flex flex-wrap gap-3 mt-3">
               <button
                 type="button"
                 @click="saveUserPassword"
@@ -1868,7 +2021,7 @@
             >
               {{ $t("admin.users.generate_password") }}
             </label>
-            <div class="flex gap-3 mt-3">
+            <div class="flex flex-wrap gap-3 mt-3">
               <button
                 type="button"
                 @click="generateRandomPassword"
@@ -1901,7 +2054,7 @@
           </div>
 
           <!-- Buttons -->
-          <div class="flex gap-3 mt-6">
+          <div class="flex flex-wrap gap-3 mt-6">
             <button
               type="submit"
               :disabled="editingSaving"
@@ -1950,7 +2103,7 @@
             {{ $t("admin.notifications.delete_single_confirm") }}
           </span>
         </p>
-        <div class="flex gap-3">
+        <div class="flex flex-wrap gap-3">
           <button
             @click="confirmDeleteNotification"
             class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
@@ -1983,7 +2136,7 @@
         <p class="text-gray-600 dark:text-gray-400 mb-6">
           {{ $t("admin.confirm.generate_password") }}
         </p>
-        <div class="flex gap-3">
+        <div class="flex flex-wrap gap-3">
           <button
             @click="confirmAndGeneratePassword"
             class="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
@@ -2810,6 +2963,14 @@ export default {
   },
 
   methods: {
+    selectMobileTab(tabId) {
+      this.activeTab = tabId;
+      const mobileTabMenu = this.$refs.mobileTabMenu;
+      if (mobileTabMenu && mobileTabMenu.open) {
+        mobileTabMenu.open = false;
+      }
+    },
+
     updateBodyScroll() {
       const modalOpen = !!this.showAddProduct || !!this.editingProduct;
       if (modalOpen) {
@@ -4280,29 +4441,42 @@ export default {
 }
 
 /* Custom scrollbar styling */
+.order-items-touch,
+.order-items-scroll {
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
+  overscroll-behavior-x: contain;
+}
+
+.order-items-scroll,
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.order-items-scroll::-webkit-scrollbar,
 .custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
 }
 
+.order-items-scroll::-webkit-scrollbar-track,
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--scrollbar-track);
+  border-radius: 9999px;
 }
 
+.order-items-scroll::-webkit-scrollbar-thumb,
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-  transition: background-color 200ms ease;
+  background-color: var(--scrollbar-thumb);
+  background: var(--scrollbar-thumb);
+  border-radius: 9999px;
+  transition: background-color 160ms ease;
 }
 
+.order-items-scroll::-webkit-scrollbar-thumb:hover,
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-
-.dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #4b5563;
-}
-
-.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background-color: var(--scrollbar-thumb-hover);
+  background: var(--scrollbar-thumb-hover);
 }
 </style>

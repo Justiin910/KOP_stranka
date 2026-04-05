@@ -1,11 +1,11 @@
 <template>
   <div class="page-contact-bg">
-    <div class="max-w-6xl mx-auto px-6">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
         <!-- Contact Info Section -->
         <section class="space-y-8">
           <div>
-            <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               {{ $t("pages.contact.title") }}
             </h1>
             <p class="text-gray-700 dark:text-gray-300 text-lg leading-relaxed">
