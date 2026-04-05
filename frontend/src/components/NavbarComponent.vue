@@ -1,5 +1,5 @@
 <template>
-  <nav class="bg-gray-900 text-gray-100 shadow-sm sticky top-0 z-40">
+  <nav class="bg-gray-900 text-gray-100 sticky top-0 z-40 navbar-bottom-shadow">
     <div class="mx-auto px-4 py-3 flex items-center gap-4">
       <!-- left: logo / store name -->
       <router-link
@@ -459,5 +459,15 @@ export default {
 </script>
 
 <style scoped>
-/* Minimal custom styles; layout driven by Tailwind */
+/* only bottom shadow */
+.navbar-bottom-shadow::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -8px;
+  height: 10px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(2, 6, 23, 0.35) 0%, rgba(2, 6, 23, 0) 100%);
+}
 </style>
