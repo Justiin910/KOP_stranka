@@ -18,6 +18,7 @@ export default defineConfig({
     },
   },
   server: {
+    allowedHosts: ['techstore.lznet.work'],
     proxy: {
       '/api': {
         target: 'https://techstore.lznet.work',
