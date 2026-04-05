@@ -9,6 +9,43 @@ use Illuminate\Support\Facades\Auth;
 
 class FavoriteController extends Controller
 {
+    private function normalizeProductIds($value): array
+    {
+        $items = is_array($value) ? $value : [$value];
+
+        return collect($items)
+            ->map(function ($item) {
+                if (is_array($item)) {
+                    return $item['id'] ?? $item['product_id'] ?? null;
+                }
+
+                if (is_object($item)) {
+                    return $item->id ?? $item->product_id ?? null;
+                }
+
+                return $item;
+            })
+            ->filter(fn ($id) => is_numeric($id))
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn ($id) => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function filterExistingProductIds(array $ids): array
+    {
+        if (empty($ids)) {
+            return [];
+        }
+
+        return Product::whereIn('id', $ids)
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->values()
+            ->all();
+    }
+
     // Return favorites for authenticated user. Returns product objects.
     public function index(Request $request)
     {
@@ -39,10 +76,12 @@ class FavoriteController extends Controller
 
         $ids = [];
         if ($request->has('product_ids')) {
-            $ids = (array) $request->input('product_ids');
+            $ids = $this->normalizeProductIds($request->input('product_ids', []));
         } elseif ($request->has('product_id')) {
-            $ids = [(int) $request->input('product_id')];
+            $ids = $this->normalizeProductIds($request->input('product_id'));
         }
+
+        $ids = $this->filterExistingProductIds($ids);
 
         foreach ($ids as $pid) {
             try {
@@ -79,7 +118,8 @@ class FavoriteController extends Controller
             return response()->json(['message' => __('messages.favorite.unauthenticated')], 401);
         }
 
-        $ids = (array) $request->input('ids', []);
+        $ids = $this->normalizeProductIds($request->input('ids', []));
+        $ids = $this->filterExistingProductIds($ids);
 
         // Remove favorites not in new list, and add missing ones
         try {

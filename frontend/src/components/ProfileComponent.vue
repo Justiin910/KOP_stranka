@@ -284,7 +284,20 @@ export default {
     async mergeLocalFavorites() {
       try {
         const raw = localStorage.getItem("favorites");
-        const ids = raw ? JSON.parse(raw) : [];
+        const parsed = raw ? JSON.parse(raw) : [];
+        const ids = (Array.isArray(parsed) ? parsed : [])
+          .map((item) => {
+            if (item && typeof item === "object") {
+              const candidate = item.id ?? item.product_id;
+              const numeric = Number(candidate);
+              return Number.isInteger(numeric) && numeric > 0 ? numeric : null;
+            }
+
+            const numeric = Number(item);
+            return Number.isInteger(numeric) && numeric > 0 ? numeric : null;
+          })
+          .filter((id, index, arr) => id !== null && arr.indexOf(id) === index);
+
         if (!Array.isArray(ids) || ids.length === 0) return;
 
         // Try a batch sync endpoint first

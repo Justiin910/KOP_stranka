@@ -18,17 +18,28 @@ export interface CartItem {
 export const useCartStore = defineStore('cart', () => {
   const cartItems = ref<CartItem[]>([])
   const isLoggedIn = ref(false)
+  let authInitPromise: Promise<void> | null = null
 
   // Check if user is logged in
   const initializeAuth = async () => {
-    try {
-      const response = await api.get('/api/user')
-      isLoggedIn.value = !!response.data
-      console.log('[Cart] Auth initialized. isLoggedIn:', isLoggedIn.value, 'User:', response.data)
-    } catch (error) {
-      isLoggedIn.value = false
-      console.log('[Cart] Auth check failed:', error)
+    if (authInitPromise) {
+      return authInitPromise
     }
+
+    authInitPromise = (async () => {
+      try {
+        const response = await api.get('/api/user')
+        isLoggedIn.value = !!response.data
+        console.log('[Cart] Auth initialized. isLoggedIn:', isLoggedIn.value, 'User:', response.data)
+      } catch (error) {
+        isLoggedIn.value = false
+        console.log('[Cart] Auth check failed:', error)
+      } finally {
+        authInitPromise = null
+      }
+    })()
+
+    return authInitPromise
   }
 
   // Load cart from localStorage or API
