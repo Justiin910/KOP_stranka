@@ -57,7 +57,7 @@ return [
     'email' => [
         'common' => [
             'regards' => 'S pozdravom,',
-            'rights_reserved' => '&copy; :year :app. Všetky práva vyhradené.',
+            'rights_reserved' => '© :year :app. Všetky práva vyhradené.',
             'automated_notice' => 'Toto je automatizovaná správa. Prosím, neodpovedajte na túto správu.',
         ],
         'verify_email' => [
@@ -105,7 +105,7 @@ return [
             'payment_method' => 'Metóda',
             'thanks' => 'Ďakujeme za vašu objednávku! O stave objednávky vás budeme informovať emailom.',
             'ignore_notice' => 'Ak ste si túto objednávku neobjednali, prosím ignorujte tento email.',
-            'footer_rights' => '&copy; :year TechShop s.r.o. Všetky práva vyhradené.',
+            'footer_rights' => '© :year TechStore s.r.o. Všetky práva vyhradené.',
             'footer_contact' => 'Kontakt: :email',
             'statuses' => [
                 'pending' => 'Čaká na spracovanie',

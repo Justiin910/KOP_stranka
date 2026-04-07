@@ -57,7 +57,7 @@ return [
     'email' => [
         'common' => [
             'regards' => 'Best regards,',
-            'rights_reserved' => '&copy; :year :app. All rights reserved.',
+            'rights_reserved' => '© :year :app. All rights reserved.',
             'automated_notice' => 'This is an automated message. Please do not reply to this message.',
         ],
         'verify_email' => [
@@ -105,7 +105,7 @@ return [
             'payment_method' => 'Method',
             'thanks' => 'Thank you for your order! We will notify you about status updates by email.',
             'ignore_notice' => 'If you did not place this order, please ignore this email.',
-            'footer_rights' => '&copy; :year TechShop s.r.o. All rights reserved.',
+            'footer_rights' => '© :year TechStore s.r.o. All rights reserved.',
             'footer_contact' => 'Contact: :email',
             'statuses' => [
                 'pending' => 'Pending',
