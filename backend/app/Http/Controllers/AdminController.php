@@ -1043,12 +1043,14 @@ class AdminController extends Controller
             $newValue = (string) ($after['address'][$field] ?? '');
             $oldComparable = $this->normalizeAddressFieldValue($field, $oldValue);
             $newComparable = $this->normalizeAddressFieldValue($field, $newValue);
+            $oldDisplayValue = $this->formatAddressFieldValueForEmail($field, $oldValue);
+            $newDisplayValue = $this->formatAddressFieldValueForEmail($field, $newValue);
 
             if ($oldComparable !== $newComparable) {
                 $lines[] = __('messages.email.order_updated.change_address_field', [
                     'field' => __('messages.email.order_updated.address_fields.' . $field),
-                    'old' => $oldValue !== '' ? $oldValue : '—',
-                    'new' => $newValue !== '' ? $newValue : '—',
+                    'old' => $oldDisplayValue !== '' ? $oldDisplayValue : '—',
+                    'new' => $newDisplayValue !== '' ? $newDisplayValue : '—',
                 ]);
             }
         }
@@ -1270,6 +1272,112 @@ class AdminController extends Controller
             'country' => $this->normalizeCountryValue($value),
             default => $this->normalizeComparableText($value),
         };
+    }
+
+    private function formatAddressFieldValueForEmail(string $field, string $value): string
+    {
+        $trimmed = trim($value);
+        if ($trimmed === '') {
+            return '';
+        }
+
+        return match ($field) {
+            'phone' => $this->formatPhoneValueForEmail($trimmed),
+            default => $trimmed,
+        };
+    }
+
+    private function formatPhoneValueForEmail(string $phone): string
+    {
+        $trimmed = trim($phone);
+        $digits = preg_replace('/\D+/', '', $trimmed) ?? '';
+
+        if ($digits === '') {
+            return $trimmed;
+        }
+
+        $isInternational = str_starts_with($trimmed, '+') || str_starts_with($digits, '00');
+
+        if (str_starts_with($digits, '00')) {
+            $digits = substr($digits, 2);
+            $isInternational = true;
+        }
+
+        if (!$isInternational) {
+            return match (strlen($digits)) {
+                9 => $this->formatPhoneDigitGroups($digits, [3, 3, 3]),
+                10 => $this->formatPhoneDigitGroups($digits, [3, 3, 4]),
+                default => $this->formatPhoneDigitGroups($digits),
+            };
+        }
+
+        if (strlen($digits) <= 3) {
+            return '+' . $digits;
+        }
+
+        $countryCodeLength = 3;
+
+        if (strlen($digits) === 11 && str_starts_with($digits, '1')) {
+            $countryCodeLength = 1;
+        } elseif (strlen($digits) === 12 && str_starts_with($digits, '421')) {
+            $countryCodeLength = 3;
+        } elseif (strlen($digits) >= 11 && strlen($digits) <= 13) {
+            // Heuristic split for common E.164 lengths (national part around 10 digits).
+            $countryCodeLength = max(1, min(3, strlen($digits) - 10));
+        }
+
+        $countryCode = substr($digits, 0, $countryCodeLength);
+        $nationalNumber = substr($digits, $countryCodeLength);
+
+        $formattedNational = match (strlen($nationalNumber)) {
+            9 => $this->formatPhoneDigitGroups($nationalNumber, [3, 3, 3]),
+            10 => $this->formatPhoneDigitGroups($nationalNumber, [3, 3, 4]),
+            default => $this->formatPhoneDigitGroups($nationalNumber),
+        };
+
+        return '+' . $countryCode . ($formattedNational !== '' ? ' ' . $formattedNational : '');
+    }
+
+    private function formatPhoneDigitGroups(string $digits, ?array $pattern = null): string
+    {
+        $onlyDigits = preg_replace('/\D+/', '', $digits) ?? '';
+        if ($onlyDigits === '') {
+            return '';
+        }
+
+        if (is_array($pattern) && !empty($pattern)) {
+            $parts = [];
+            $offset = 0;
+
+            foreach ($pattern as $groupSize) {
+                if ($offset >= strlen($onlyDigits)) {
+                    break;
+                }
+
+                $parts[] = substr($onlyDigits, $offset, $groupSize);
+                $offset += $groupSize;
+            }
+
+            if ($offset < strlen($onlyDigits)) {
+                $parts[] = substr($onlyDigits, $offset);
+            }
+
+            return implode(' ', array_filter($parts, static fn ($part) => $part !== ''));
+        }
+
+        $parts = [];
+        $remaining = $onlyDigits;
+
+        while (strlen($remaining) > 4) {
+            $parts[] = substr($remaining, 0, 3);
+            $remaining = substr($remaining, 3);
+        }
+
+        if ($remaining !== '') {
+            $parts[] = $remaining;
+        }
+
+        return implode(' ', $parts);
     }
 
     private function prepareVariantOptions($variantOptions): array
