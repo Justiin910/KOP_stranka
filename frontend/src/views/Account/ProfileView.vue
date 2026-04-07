@@ -1331,6 +1331,7 @@ export default {
       avatarCropOffsetX: 0,
       avatarCropOffsetY: 0,
       avatarCropStageSize: 288,
+      avatarCropFrameInset: 12,
       avatarCropBaseWidth: 288,
       avatarCropBaseHeight: 288,
       avatarCropNaturalWidth: 0,
@@ -1390,6 +1391,9 @@ export default {
         left: `${left}px`,
         top: `${top}px`,
       };
+    },
+    avatarCropFrameSize() {
+      return Math.max(1, this.avatarCropStageSize - this.avatarCropFrameInset * 2);
     },
     profileMiniTabs() {
       return [
@@ -2006,8 +2010,9 @@ export default {
     clampAvatarCropOffset() {
       const renderedWidth = this.avatarCropBaseWidth * this.avatarCropZoom;
       const renderedHeight = this.avatarCropBaseHeight * this.avatarCropZoom;
-      const maxOffsetX = Math.max(0, (renderedWidth - this.avatarCropStageSize) / 2);
-      const maxOffsetY = Math.max(0, (renderedHeight - this.avatarCropStageSize) / 2);
+      const frameSize = this.avatarCropFrameSize;
+      const maxOffsetX = Math.max(0, (renderedWidth - frameSize) / 2);
+      const maxOffsetY = Math.max(0, (renderedHeight - frameSize) / 2);
       this.avatarCropOffsetX = Math.min(
         maxOffsetX,
         Math.max(-maxOffsetX, this.avatarCropOffsetX)
@@ -2028,24 +2033,35 @@ export default {
     calculateCropRectangle(image) {
       const renderedWidth = this.avatarCropBaseWidth * this.avatarCropZoom;
       const renderedHeight = this.avatarCropBaseHeight * this.avatarCropZoom;
+      const frameSize = this.avatarCropFrameSize;
+
+      if (!renderedWidth || !renderedHeight) {
+        return {
+          x: 0,
+          y: 0,
+          width: image.naturalWidth,
+          height: image.naturalHeight,
+        };
+      }
 
       let sourceX =
-        ((this.avatarCropStageSize / 2 - this.avatarCropOffsetX) - renderedWidth / 2) /
+        ((renderedWidth - frameSize) / 2 - this.avatarCropOffsetX) /
         renderedWidth *
         image.naturalWidth;
       let sourceY =
-        ((this.avatarCropStageSize / 2 - this.avatarCropOffsetY) - renderedHeight / 2) /
+        ((renderedHeight - frameSize) / 2 - this.avatarCropOffsetY) /
         renderedHeight *
         image.naturalHeight;
       let sourceWidth =
-        (this.avatarCropStageSize / renderedWidth) * image.naturalWidth;
+        (frameSize / renderedWidth) * image.naturalWidth;
       let sourceHeight =
-        (this.avatarCropStageSize / renderedHeight) * image.naturalHeight;
+        (frameSize / renderedHeight) * image.naturalHeight;
+
+      sourceWidth = Math.max(1, Math.min(image.naturalWidth, sourceWidth));
+      sourceHeight = Math.max(1, Math.min(image.naturalHeight, sourceHeight));
 
       sourceX = Math.max(0, Math.min(image.naturalWidth - sourceWidth, sourceX));
       sourceY = Math.max(0, Math.min(image.naturalHeight - sourceHeight, sourceY));
-      sourceWidth = Math.max(1, Math.min(image.naturalWidth, sourceWidth));
-      sourceHeight = Math.max(1, Math.min(image.naturalHeight, sourceHeight));
 
       return {
         x: Math.round(sourceX),
