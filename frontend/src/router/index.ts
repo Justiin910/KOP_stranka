@@ -73,11 +73,13 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: LoginView,
+      meta: { guestOnly: true },
     },
     {
       path: '/register',
       name: 'register',
       component: RegisterView,
+      meta: { guestOnly: true },
     },
     {
       path: '/password-reset',
@@ -176,16 +178,22 @@ import { getSessionToken } from '@/api'
 router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some(record => (record.meta as any)?.requiresAuth)
   const requiresAdmin = to.matched.some(record => (record.meta as any)?.requiresAdmin)
+  const guestOnly = to.matched.some(record => (record.meta as any)?.guestOnly)
+
+  // Check for persistent token in localStorage or session token
+  const persistentToken = localStorage.getItem('token')
+  const sessionToken = getSessionToken()
+  const isAuthenticated = Boolean(persistentToken || sessionToken)
+
+  if (guestOnly && isAuthenticated) {
+    return next({ name: 'profile' })
+  }
 
   if (!requiresAuth && !requiresAdmin) {
     return next()
   }
 
-  // Check for persistent token in localStorage or session token
-  const persistentToken = localStorage.getItem('token')
-  const sessionToken = getSessionToken()
-
-  if (!persistentToken && !sessionToken) {
+  if (!isAuthenticated) {
     // Not authenticated — redirect to home
     return next({ name: 'home' })
   }
