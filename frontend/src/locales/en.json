@@ -70,7 +70,7 @@
     "banners": {
       "free_shipping": {
         "title": "Free shipping",
-        "desc": "Free shipping on orders over €50!",
+        "desc": "Free shipping on orders over €900!",
         "cta": "Learn more"
       },
       "warranty": {
@@ -1000,7 +1000,7 @@
       "free_title": "Free Shipping",
       "free_amount": "On orders over",
       "free_text": "shipping is completely free!",
-      "free_description": "On orders over 50 € you don't pay any shipping costs.",
+      "free_description": "On orders over 900 € you don't pay any shipping costs.",
       "tracking_title": "Track Your Shipment",
       "tracking_text": "You'll receive a tracking number via email after your order is sent.",
       "tracking_status": "Order Status",

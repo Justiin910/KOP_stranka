@@ -134,12 +134,13 @@
         <div
           v-for="item in favorites"
           :key="item.id"
-          class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden group hover:shadow-lg transition-shadow"
+          @click="openFavoriteProduct(item)"
+          class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden group hover:shadow-lg transition-shadow cursor-pointer"
         >
           <div class="relative">
             <img :src="item.image" :alt="item.name" class="w-full h-48 object-cover" />
             <button
-              @click="removeFromFavorites(item.id)"
+              @click.stop="removeFromFavorites(item.id)"
               class="absolute top-3 right-3 w-10 h-10 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-lg hover:bg-red-50 dark:hover:bg-red-900 transition-colors"
             >
               <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 24 24">
@@ -177,7 +178,7 @@
                 </p>
               </div>
               <button
-                @click="addToCart(item.id)"
+                @click.stop="addToCart(item.id)"
                 :disabled="!item.inStock"
                 class="px-4 py-2 btn-primary rounded-lg font-medium disabled:bg-gray-300 disabled:cursor-not-allowed dark:disabled:bg-gray-700"
               >
@@ -205,7 +206,8 @@
         <div
           v-for="item in favorites"
           :key="item.id"
-          class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow"
+          @click="openFavoriteProduct(item)"
+          class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow cursor-pointer"
         >
           <div class="flex flex-col sm:flex-row gap-4 sm:gap-6">
             <div class="relative flex-shrink-0">
@@ -236,7 +238,7 @@
                   </p>
                 </div>
                 <button
-                  @click="removeFromFavorites(item.id)"
+                  @click.stop="removeFromFavorites(item.id)"
                   class="ml-4 p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900 rounded-lg transition-colors"
                 >
                   <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -260,7 +262,7 @@
                   </p>
                 </div>
                 <button
-                  @click="addToCart(item.id)"
+                  @click.stop="addToCart(item.id)"
                   :disabled="!item.inStock"
                   class="px-6 py-2 btn-primary rounded-lg font-medium disabled:bg-gray-300 disabled:cursor-not-allowed dark:disabled:bg-gray-700 flex items-center gap-2"
                 >
@@ -313,6 +315,36 @@ export default {
   methods: {
     formatPrice(price) {
       return Number(price).toFixed(2);
+    },
+
+    getProductRouteTarget(item) {
+      if (!item || typeof item !== "object") return null;
+
+      const slugCandidate =
+        (typeof item.slug === "string" ? item.slug : null) ||
+        (typeof item.product_slug === "string" ? item.product_slug : null) ||
+        (typeof item._raw?.slug === "string" ? item._raw.slug : null) ||
+        (typeof item._raw?.product_slug === "string" ? item._raw.product_slug : null);
+
+      const slug = slugCandidate ? slugCandidate.trim() : "";
+      if (slug) return slug;
+
+      const idCandidate = item.id ?? item.product_id ?? item._raw?.id ?? item._raw?.product_id;
+      if (idCandidate === null || typeof idCandidate === "undefined") return null;
+
+      return String(idCandidate);
+    },
+
+    openFavoriteProduct(item) {
+      const target = this.getProductRouteTarget(item);
+      if (!target) return;
+
+      this.$router
+        .push({
+          name: "product",
+          params: { slug: target },
+        })
+        .catch(() => {});
     },
 
     productCountLabel(count) {
@@ -438,6 +470,7 @@ export default {
           ) {
             this.favorites = data.map((p) => ({
               id: p.id,
+              slug: p.slug || p.product_slug || null,
               name:
                 p.title ||
                 p.name ||
@@ -470,6 +503,7 @@ export default {
           const results = await Promise.all(promises);
           this.favorites = results.filter(Boolean).map((p) => ({
             id: p.id,
+            slug: p.slug || p.product_slug || null,
             name:
               p.title ||
               p.name ||
@@ -505,6 +539,7 @@ export default {
       if (Array.isArray(ids) && ids.length > 0 && typeof ids[0] === "object") {
         this.favorites = ids.map((p) => ({
           id: p.id,
+          slug: p.slug || p.product_slug || null,
           name:
             p.title || p.name || p.product_name || this.$t("favorites.product_fallback"),
           description: p.description || p.short_description || "",
@@ -529,6 +564,7 @@ export default {
         const results = await Promise.all(promises);
         this.favorites = results.filter(Boolean).map((p) => ({
           id: p.id,
+          slug: p.slug || p.product_slug || null,
           name: p.title || p.name || p.product_name || "Produkt",
           description: p.description || p.short_description || "",
           category: p.category?.name || p.category_name || "",

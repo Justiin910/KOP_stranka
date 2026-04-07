@@ -526,13 +526,13 @@
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div
               v-for="stat in stats"
-              :key="stat.label"
+              :key="stat.key"
               class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6"
             >
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                    {{ stat.label }}
+                    {{ $t("admin.stats." + stat.key) }}
                   </p>
                   <p class="text-3xl font-bold text-gray-900 dark:text-white">
                     {{ stat.value }}
@@ -3802,28 +3802,28 @@ export default {
           // Build stats array with real data
           this.stats = [
             {
-              label: this.$t("admin.stats.total_revenue"),
+              key: "total_revenue",
               value: data.totalRevenue.toLocaleString("sk-SK") + " €",
               trend: data.revenueTrend,
               icon: "💰",
               color: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
             },
             {
-              label: this.$t("admin.stats.total_orders"),
+              key: "total_orders",
               value: data.totalOrders.toString(),
               trend: data.ordersTrend,
               icon: "📦",
               color: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
             },
             {
-              label: this.$t("admin.stats.total_users"),
+              key: "total_users",
               value: data.totalUsers.toString(),
               trend: data.usersTrend,
               icon: "👥",
               color: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
             },
             {
-              label: this.$t("admin.stats.avg_order_value"),
+              key: "avg_order_value",
               value: data.avgOrderValue.toLocaleString("sk-SK") + " €",
               trend: data.avgOrderTrend,
               icon: "📊",

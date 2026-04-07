@@ -70,7 +70,7 @@
     "banners": {
       "free_shipping": {
         "title": "Doprava zdarma",
-        "desc": "Pri nákupe nad 50€ doprava úplne zadarmo!",
+        "desc": "Pri nákupe nad 900€ doprava úplne zadarmo!",
         "cta": "Zistiť viac"
       },
       "warranty": {
@@ -1010,7 +1010,7 @@
       "free_title": "Doprava zdarma",
       "free_amount": "Pri objednávke nad",
       "free_text": "je doprava úplne zadarmo!",
-      "free_description": "Pri objednávke nad 50 € neplatíte žiadne poplatky za doručenie.",
+      "free_description": "Pri objednávke nad 900 € neplatíte žiadne poplatky za doručenie.",
       "tracking_title": "Sledovanie zásielky",
       "tracking_text": "Po odoslaní objednávky vám na e-mail príde sledovacie číslo zásielky.",
       "tracking_status": "Stav objednávky",

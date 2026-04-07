@@ -91,7 +91,9 @@
           <div class="space-y-3 text-gray-600 dark:text-gray-400">
             <p>
               {{ $t("pages.delivery.free_amount") }}
-              <strong class="text-gray-900 dark:text-white">50 €</strong>
+              <strong class="text-gray-900 dark:text-white"
+                >{{ freeShippingThreshold }} €</strong
+              >
               {{ $t("pages.delivery.free_text") }}
             </p>
             <div
@@ -168,9 +170,14 @@
 </template>
 
 <script>
+import { FREE_SHIPPING_THRESHOLD } from "@/utils/shipping";
+
 export default {
   name: "DeliveryView",
   computed: {
+    freeShippingThreshold() {
+      return FREE_SHIPPING_THRESHOLD;
+    },
     deliveryMethods() {
       const msgs =
         this.$i18n && this.$i18n.getLocaleMessage

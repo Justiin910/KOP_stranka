@@ -188,9 +188,9 @@
 <script>
 export default {
   name: "AboutusView",
-  data() {
-    return {
-      values: [
+  computed: {
+    values() {
+      return [
         {
           id: 1,
           title: this.$t("pages.aboutus.values_item1_title"),
@@ -212,15 +212,19 @@ export default {
           icon:
             '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>',
         },
-      ],
-      stats: [
+      ];
+    },
+    stats() {
+      return [
         { id: 1, value: "100 000+", label: this.$t("pages.aboutus.stats_item1") },
         { id: 2, value: "1", label: this.$t("pages.aboutus.stats_item2") },
         { id: 3, value: "200+", label: this.$t("pages.aboutus.stats_item3") },
         { id: 4, value: "3", label: this.$t("pages.aboutus.stats_item4") },
-      ],
-      partners: ["Huawei", "Dell", "HP"],
-    };
+      ];
+    },
+    partners() {
+      return ["Apple", "Samsung", "Xiaomi"];
+    },
   },
   mounted() {
     window.scrollTo({ top: 0, behavior: "smooth" });

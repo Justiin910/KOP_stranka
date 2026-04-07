@@ -216,6 +216,7 @@ import { defineComponent } from "vue";
 import { useRouter } from "vue-router";
 import { useCartStore } from "../../stores/cartStore";
 import api from "../../api";
+import { calculateShippingFee } from "@/utils/shipping";
 
 interface Step {
   label: string;
@@ -230,13 +231,11 @@ export default defineComponent({
     return { router, cartStore };
   },
   data(): {
-    shipping: number;
     currentStep: number;
     editingItem: any;
     editingVariants: Record<string, string>;
   } {
     return {
-      shipping: 4.99,
       currentStep: 0,
       editingItem: null,
       editingVariants: {},
@@ -251,6 +250,9 @@ export default defineComponent({
         this.$t('cart.steps.confirmation'),
       ];
       return labels.map((label, idx) => ({ label, active: idx === this.currentStep }));
+    },
+    shipping(): number {
+      return calculateShippingFee("standard", this.cartStore?.subtotal ?? 0);
     },
     total(): number {
       return (this.cartStore?.subtotal ?? 0) + this.shipping;

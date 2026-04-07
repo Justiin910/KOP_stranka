@@ -84,7 +84,8 @@
                   {{ $t('pages.checkout.confirmation.delivery_fee') }}
                 </p>
                 <p class="font-medium text-gray-900 dark:text-white">
-                  {{ getDeliveryFee(order.delivery?.method).toFixed(2) }} €
+                  {{ getDeliveryFee(order.delivery?.method, getOrderItemsSubtotal()).toFixed(2) }}
+                  €
                 </p>
               </div>
             </div>
@@ -189,16 +190,14 @@
           <div class="space-y-3 mb-6 border-b border-gray-200 dark:border-gray-700 pb-6">
             <div class="flex justify-between text-gray-600 dark:text-gray-400">
               <span>{{ $t('pages.checkout.confirmation.items_total_label') }}</span>
-              <span
-                >{{
-                  (order.total - getDeliveryFee(order.delivery?.method)).toFixed(2)
-                }}
-                €</span
-              >
+              <span>{{ getOrderItemsSubtotal().toFixed(2) }} €</span>
             </div>
             <div class="flex justify-between text-gray-600 dark:text-gray-400">
               <span>{{ $t('pages.checkout.payment.shipping') }}</span>
-              <span>{{ getDeliveryFee(order.delivery?.method).toFixed(2) }} €</span>
+              <span
+                >{{ getDeliveryFee(order.delivery?.method, getOrderItemsSubtotal()).toFixed(2) }}
+                €</span
+              >
             </div>
             <div
               class="flex justify-between text-lg font-bold text-gray-900 dark:text-white"
@@ -263,6 +262,7 @@
 
 <script>
 import api from "@/api.ts";
+import { calculateShippingFee } from "@/utils/shipping";
 import { useRouter } from "vue-router";
 import { useCartStore } from '../../stores/cartStore';
 
@@ -334,19 +334,28 @@ export default {
       }
     },
 
+    getOrderItemsSubtotal() {
+      if (!this.order || !Array.isArray(this.order.items)) return 0;
+
+      return this.order.items.reduce((sum, item) => {
+        const price = parseFloat(String(item?.price || 0));
+        const quantity = Number(item?.quantity || 0);
+        return sum + price * quantity;
+      }, 0);
+    },
+
     getDeliveryMethodLabel(method) {
       const map = { standard: 'method1', express: 'method2', pickup: 'method3' };
       const key = map[method] || null;
       if (!key) return method;
       const name = this.$t(`pages.delivery.delivery_methods.${key}.name`);
-      const price = this.$t(`pages.delivery.delivery_methods.${key}.price`);
-      return `${name} ${price}`;
+      const subtotal = this.getOrderItemsSubtotal();
+      const fee = this.getDeliveryFee(method, subtotal);
+      return `${name} ${fee.toFixed(2)} €`;
     },
 
-    getDeliveryFee(method) {
-      if (method === "express") return 9.99;
-      if (method === "pickup") return 0;
-      return 4.99;
+    getDeliveryFee(method, subtotal = this.getOrderItemsSubtotal()) {
+      return calculateShippingFee(method, subtotal);
     },
 
     getPaymentMethodLabel(method) {

@@ -298,6 +298,7 @@
 
 <script>
 import api from "@/api.ts";
+import { calculateShippingFee } from "@/utils/shipping";
 import { useCartStore } from "../../stores/cartStore";
 import { useRouter } from "vue-router";
 
@@ -342,11 +343,8 @@ export default {
       return this.cartStore.subtotal || 0;
     },
     deliveryFee() {
-      // map delivery method to fee (same as delivery view)
       if (!this.delivery) return 0;
-      if (this.delivery.method === "express") return 9.99;
-      if (this.delivery.method === "pickup") return 0;
-      return 4.99;
+      return calculateShippingFee(this.delivery.method, this.cartSubtotal);
     },
   },
   methods: {

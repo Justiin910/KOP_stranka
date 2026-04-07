@@ -86,7 +86,7 @@
                     }}
                   </p>
                   <p class="text-sm font-semibold text-gray-900 dark:text-white mt-2">
-                    {{ option.price }} €
+                    {{ getDeliveryOptionPrice(option.id).toFixed(2) }} €
                   </p>
                   <p
                     v-if="option.deliveryTime"
@@ -285,7 +285,7 @@
               </div>
               <div class="flex justify-between text-gray-600 dark:text-gray-400">
                 <span>{{ $t("pages.checkout.payment.shipping") }}</span>
-                <span>{{ selectedDeliveryPrice }} €</span>
+                <span>{{ selectedDeliveryPrice.toFixed(2) }} €</span>
               </div>
               <div
                 class="flex justify-between text-lg font-bold text-gray-900 dark:text-white"
@@ -339,6 +339,7 @@ import { useCartStore } from "../../stores/cartStore";
 import api from "../../api";
 import CountryCodeSelect from "../../components/CountryCodeSelect.vue";
 import { PHONE_COUNTRY_OPTIONS } from "../../utils/localeCountryData";
+import { calculateShippingFee } from "@/utils/shipping";
 
 export default {
   name: "CheckoutDeliveryView",
@@ -358,14 +359,12 @@ export default {
         {
           id: "standard",
           methodKey: "method1",
-          price: 4.99,
           deliveryTime: "do 3 pracovných dní",
         },
 
         {
           id: "pickup",
           methodKey: "method3",
-          price: 0,
           deliveryTime: "od nasledujúceho pracovného dňa",
         },
       ],
@@ -396,8 +395,7 @@ export default {
       return labels.map((label, idx) => ({ label, active: idx === this.currentStep }));
     },
     selectedDeliveryPrice() {
-      const option = this.deliveryOptions.find((o) => o.id === this.selectedDelivery);
-      return option ? option.price : 0;
+      return calculateShippingFee(this.selectedDelivery, this.cartStore.subtotal || 0);
     },
     total() {
       return this.cartStore.subtotal + this.selectedDeliveryPrice;
@@ -407,6 +405,9 @@ export default {
     },
   },
   methods: {
+    getDeliveryOptionPrice(methodId) {
+      return calculateShippingFee(methodId, this.cartStore.subtotal || 0);
+    },
     proceedToPayment() {
       // Validate address
       if (
