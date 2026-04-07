@@ -2349,7 +2349,7 @@
                 <input
                   v-model.number="currentProduct.oldPrice"
                   type="number"
-                  step="1.00"
+                  step="0.01"
                   placeholder="0.00"
                   required
                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -2388,7 +2388,7 @@
                   <input
                     v-model.number="currentProduct.discount_value"
                     type="number"
-                    step="1.00"
+                    step="0.01"
                     min="0"
                     placeholder="0"
                     :max="currentProduct.discount_type === 'percent' ? 100 : undefined"
