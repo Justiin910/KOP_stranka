@@ -347,7 +347,7 @@ class ProfileController extends Controller
     {
         try {
             $validated = $request->validate([
-                'avatar' => ['required', 'image', 'mimes:jpeg,png,jpg,gif', 'max:5120'], // 5MB max
+                'avatar' => ['required', 'image', 'mimes:jpeg,png,jpg,gif', 'max:12288'], // 12MB max
                 'crop_x' => ['nullable', 'integer', 'min:0'],
                 'crop_y' => ['nullable', 'integer', 'min:0'],
                 'crop_width' => ['nullable', 'integer', 'min:1'],
@@ -369,7 +369,7 @@ class ProfileController extends Controller
                 Storage::disk('public')->makeDirectory('avatars');
             }
 
-            // Store new avatar (with optional GIF crop for animated images)
+            // Store new avatar 
             if ($isGif && $hasCrop) {
                 if (!class_exists('Imagick')) {
                     return response()->json([

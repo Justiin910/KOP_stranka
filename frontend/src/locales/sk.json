@@ -379,7 +379,7 @@
       "phone_digits": "Telefón musí mať presne 9 číslic.",
       "email_invalid": "Neplatný email.",
       "avatar_invalid_format": "Avatar musí byť obrázok (JPEG, PNG, JPG alebo GIF).",
-      "avatar_too_large": "Avatar je príliš veľký. Maximálna veľkosť je 5MB.",
+      "avatar_too_large": "Avatar je príliš veľký. Maximálna veľkosť je 12MB.",
       "passwords_mismatch": "Heslá sa nezhodujú.",
       "password_min_length": "Heslo musí mať minimálne {min} znakov.",
       "password_requirements": "Heslo musí spĺňať všetky požiadavky (8 znakov, malé a veľké písmeno, číslo).",

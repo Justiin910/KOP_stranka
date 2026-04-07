@@ -1802,7 +1802,7 @@ export default {
 
       // Validate file
       const validTypes = ["image/jpeg", "image/png", "image/jpg", "image/gif"];
-      const maxSize = 5 * 1024 * 1024; // 5MB
+      const maxSize = 12 * 1024 * 1024; // 12MB
 
       if (!validTypes.includes(file.type)) {
         this.errorMessage = this.$t("profile.validation.avatar_invalid_format");

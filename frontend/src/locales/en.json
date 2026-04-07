@@ -373,7 +373,7 @@
       "phone_digits": "Phone must have exactly 9 digits.",
       "email_invalid": "Invalid email.",
       "avatar_invalid_format": "Avatar must be an image (JPEG, PNG, JPG or GIF).",
-      "avatar_too_large": "Avatar is too large. Maximum size is 5MB.",
+      "avatar_too_large": "Avatar is too large. Maximum size is 12MB.",
       "passwords_mismatch": "Passwords do not match.",
       "password_min_length": "Password must be at least {min} characters long.",
       "password_requirements": "Password must meet all requirements (8 characters, lowercase, uppercase, number).",
