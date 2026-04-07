@@ -9,7 +9,6 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 
@@ -20,9 +19,7 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): JsonResponse
     {
-        $request->authenticate();
-
-        $user = Auth::user();
+        $user = $request->authenticate();
 
         if ($user->two_factor_enabled && $user->email_verified_at) {
             $this->sendTwoFactorCode($user, 'login', $request->boolean('resend_2fa'));

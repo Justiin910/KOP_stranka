@@ -363,7 +363,7 @@ export default {
       this.isSubmitting = true;
 
       try {
-        const response = await api.post("/login", {
+        const response = await api.post("/api/login", {
           email: this.form.email,
           password: this.form.password,
         });
@@ -445,7 +445,7 @@ export default {
       this.isSubmitting = true;
       this.loginError = "";
       try {
-        const response = await api.post("/login/verify-2fa", {
+        const response = await api.post("/api/login/verify-2fa", {
           email: this.twoFactorEmail || this.form.email,
           code: this.twoFactorCode,
         });
@@ -479,7 +479,7 @@ export default {
       this.isSubmitting = true;
       this.loginError = "";
       try {
-        const response = await api.post("/login", {
+        const response = await api.post("/api/login", {
           email: this.form.email,
           password: this.form.password,
           resend_2fa: true,

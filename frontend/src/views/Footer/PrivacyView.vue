@@ -7,7 +7,7 @@
           {{ $t("pages.privacy.title") }}
         </h1>
         <p class="text-gray-600 dark:text-gray-400">
-          {{ $t("pages.privacy.last_updated") }} 17. november 2025
+          {{ $t("pages.privacy.last_updated") }} {{ $t("pages.privacy.last_updated_date") }}
         </p>
       </div>
 

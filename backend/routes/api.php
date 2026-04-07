@@ -24,9 +24,9 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 });
 
 // Authentication
-Route::post('/login', [AuthenticatedSessionController::class, 'store'])->middleware('guest');
-Route::post('/login/verify-2fa', [AuthenticatedSessionController::class, 'verifyTwoFactor'])->middleware('guest');
-Route::post('/register', [RegisteredUserController::class, 'store'])->middleware('guest');
+Route::post('/login', [AuthenticatedSessionController::class, 'store']);
+Route::post('/login/verify-2fa', [AuthenticatedSessionController::class, 'verifyTwoFactor']);
+Route::post('/register', [RegisteredUserController::class, 'store']);
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth:sanctum');
 
 // Email verification
@@ -101,8 +101,8 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // Password reset (Breeze Auth)
-Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])->middleware('guest');
-Route::post('/reset-password', [NewPasswordController::class, 'store'])->middleware('guest');
+Route::post('/forgot-password', [PasswordResetLinkController::class, 'store']);
+Route::post('/reset-password', [NewPasswordController::class, 'store']);
 
 // Admin routes
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {

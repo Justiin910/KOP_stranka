@@ -374,6 +374,14 @@
               />
               {{$t('auth.register.terms')}}<span class="text-red-600 dark:text-red-400">*</span>
             </label>
+            <p class="ml-6 mt-1 text-xs text-gray-600 dark:text-gray-400">
+              <router-link
+                to="/privacy-policy"
+                class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 underline underline-offset-2"
+              >
+                {{ $t('auth.register.terms_link') }}
+              </router-link>
+            </p>
             <Transition name="slideDown">
               <p
                 v-if="fieldErrors.acceptTerms"
