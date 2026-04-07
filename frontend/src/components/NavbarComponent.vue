@@ -23,9 +23,9 @@
         class="flex items-center flex-shrink-0 gap-2 hover:opacity-80 transition-opacity min-w-0"
         role="banner"
       >
-        <img src="/favicon.svg" alt="TechShop logo" class="w-10 h-10 object-contain" />
+        <img src="/favicon.svg" alt="TechStore logo" class="w-10 h-10 object-contain" />
         <div class="hidden sm:block">
-          <div class="text-sm font-bold text-white leading-tight">TechShop</div>
+          <div class="text-sm font-bold text-white leading-tight">TechStore</div>
           <div class="text-xs text-indigo-300 font-medium leading-tight">Smart Tech</div>
         </div>
       </router-link>
