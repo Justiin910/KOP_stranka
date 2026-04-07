@@ -468,7 +468,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'id' => 17,
-                'title' => '    ',
+                'title' => 'Lenovo ThinkPad X1',
                 'brand' => 'Lenovo',
                 'price' => 1599.00,
                 'oldPrice' => 1899.00,
