@@ -306,11 +306,12 @@
               <div
                 class="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center"
               >
-                <template v-if="user.avatar">
+                <template v-if="hasUserAvatar(user)">
                   <img
                     :src="getAvatarUrl(user.avatar)"
                     :alt="user.name"
                     class="w-full h-full object-cover"
+                    @error="onUserAvatarError(user)"
                   />
                 </template>
                 <template v-else>
@@ -1908,11 +1909,14 @@
               <div
                 class="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-700"
               >
-                <template v-if="editingUser.avatar && !editingUser.remove_avatar">
+                <template
+                  v-if="editingUser.avatar && !editingUser.remove_avatar && !editAvatarLoadFailed"
+                >
                   <img
                     :src="getAvatarUrl(editingUser.avatar)"
                     :alt="editingUser.name"
                     class="w-full h-full object-cover"
+                    @error="onEditUserAvatarError"
                   />
                 </template>
                 <template v-else>
@@ -2703,6 +2707,8 @@ export default {
       },
       usersLoading: false,
       usersError: null,
+      failedUserAvatars: {},
+      editAvatarLoadFailed: false,
       generatedPassword: "",
       showGeneratedPassword: false,
       showPasswordConfirmation: false,
@@ -3485,10 +3491,28 @@ export default {
         remove_avatar: false,
         two_factor_enabled: !!user.two_factor_enabled,
       };
+      this.editAvatarLoadFailed = false;
       this.editError = "";
       this.resetEditFieldErrors();
       this.generatedPassword = "";
       this.showGeneratedPassword = false;
+    },
+    hasUserAvatar(user) {
+      if (!user?.avatar) return false;
+      const key = String(user.id ?? "");
+      if (!key) return true;
+      return !this.failedUserAvatars[key];
+    },
+    onUserAvatarError(user) {
+      const key = String(user?.id ?? "");
+      if (!key || this.failedUserAvatars[key]) return;
+      this.failedUserAvatars = {
+        ...this.failedUserAvatars,
+        [key]: true,
+      };
+    },
+    onEditUserAvatarError() {
+      this.editAvatarLoadFailed = true;
     },
     resetEditFieldErrors() {
       this.editFieldErrors = {
@@ -3859,6 +3883,7 @@ export default {
         .then((response) => {
           console.log("Users fetched:", response.data);
           this.users = response.data;
+          this.failedUserAvatars = {};
           this.usersError = null;
         })
         .catch((error) => {
