@@ -207,7 +207,7 @@
                 type="button"
                 :disabled="isResettingAvatar"
                 class="px-3 py-1 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 text-sm font-medium rounded-full disabled:opacity-50"
-                @click="resetAvatarToDefault"
+                @click="openAvatarResetConfirmation"
               >
                 {{
                   isResettingAvatar
@@ -1078,6 +1078,84 @@
         </div>
       </div>
 
+      <!-- Avatar Reset Confirmation Modal -->
+      <div
+        v-if="showAvatarResetConfirmation"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+        @click.self="closeAvatarResetConfirmation"
+      >
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+          <div class="flex items-start gap-4 mb-6">
+            <div
+              class="flex-shrink-0 w-12 h-12 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center"
+            >
+              <svg
+                class="w-6 h-6 text-red-600 dark:text-red-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M12 22a10 10 0 100-20 10 10 0 000 20z"
+                />
+              </svg>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                {{ $t("profile.avatar_reset_confirm_title") }}
+              </h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {{ $t("profile.avatar_reset_confirm_desc") }}
+              </p>
+            </div>
+          </div>
+
+          <div class="flex gap-3">
+            <button
+              @click="closeAvatarResetConfirmation"
+              :disabled="isResettingAvatar"
+              class="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+            >
+              {{ $t("profile.cancel") }}
+            </button>
+            <button
+              @click="resetAvatarToDefault"
+              :disabled="isResettingAvatar"
+              class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              <svg
+                v-if="isResettingAvatar"
+                class="animate-spin h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+              {{
+                isResettingAvatar
+                  ? $t("profile.avatar_resetting")
+                  : $t("profile.avatar_reset_confirm_button")
+              }}
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Delete Confirmation Modal -->
       <div
         v-if="showDeleteConfirmation"
@@ -1203,6 +1281,7 @@ export default {
       avatarLoadFailed: false,
       successMessage: "",
       errorMessage: "",
+      showAvatarResetConfirmation: false,
       activeProfileMiniTab: "overview",
       twoFactorEnabled: false,
       pendingEmailChange: false,
@@ -2048,6 +2127,14 @@ export default {
         this.isCroppingAvatar = false;
       }
     },
+    openAvatarResetConfirmation() {
+      if (this.isResettingAvatar) return;
+      this.showAvatarResetConfirmation = true;
+    },
+    closeAvatarResetConfirmation() {
+      if (this.isResettingAvatar) return;
+      this.showAvatarResetConfirmation = false;
+    },
     async resetAvatarToDefault() {
       if (this.isResettingAvatar) return;
       this.isResettingAvatar = true;
@@ -2058,6 +2145,7 @@ export default {
         const response = await api.delete("/api/user/avatar");
         this.user = response.data.user;
         this.avatarLoadFailed = false;
+        this.showAvatarResetConfirmation = false;
         this.successMessage = response.data.message || this.$t("profile.avatar_reset_success");
         this.scrollToMessages();
       } catch (error) {

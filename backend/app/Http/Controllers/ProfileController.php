@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rules\Password;
 
 class ProfileController extends Controller
@@ -542,21 +541,6 @@ class ProfileController extends Controller
         if ($email === '') {
             return;
         }
-
-        $throttleKey = 'email:two-factor-status:' . (int) $user->id;
-        $maxAttempts = 1;
-        $cooldownSeconds = 300;
-
-        if (RateLimiter::tooManyAttempts($throttleKey, $maxAttempts)) {
-            Log::info('Two-factor status email skipped due to cooldown', [
-                'user_id' => $user->id,
-                'enabled' => $enabled,
-                'available_in' => RateLimiter::availableIn($throttleKey),
-            ]);
-            return;
-        }
-
-        RateLimiter::hit($throttleKey, $cooldownSeconds);
 
         $locale = $this->resolveEmailLocale($user->language ?? null);
 

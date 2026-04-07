@@ -369,6 +369,9 @@
     "avatar_gif_notice": "GIF ostane animovaný a oreže sa podľa vybraného kruhu.",
     "avatar_reset": "Obnoviť avatar",
     "avatar_resetting": "Obnovujem...",
+    "avatar_reset_confirm_title": "Obnoviť avatar?",
+    "avatar_reset_confirm_desc": "Táto akcia odstráni vašu profilovú fotku a nastaví predvolený avatar.",
+    "avatar_reset_confirm_button": "Áno, obnoviť avatar",
     "avatar_reset_success": "Avatar bol obnovený na predvolený.",
     "avatar_reset_error": "Nepodarilo sa obnoviť avatar.",
     "validation": {

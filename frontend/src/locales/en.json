@@ -363,6 +363,9 @@
     "avatar_gif_notice": "GIF stays animated and will be cropped using your selected circle area.",
     "avatar_reset": "Reset avatar",
     "avatar_resetting": "Resetting...",
+    "avatar_reset_confirm_title": "Reset avatar?",
+    "avatar_reset_confirm_desc": "This action will remove your profile picture and set the default avatar.",
+    "avatar_reset_confirm_button": "Yes, reset avatar",
     "avatar_reset_success": "Avatar reset to default.",
     "avatar_reset_error": "Failed to reset avatar.",
     "validation": {
