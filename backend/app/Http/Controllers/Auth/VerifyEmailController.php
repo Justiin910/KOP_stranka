@@ -19,7 +19,7 @@ class VerifyEmailController extends Controller
         $isGuest = is_null($user);
 
         $frontendUrl = rtrim((string) config('app.frontend_url', config('app.url')), '/');
-        $redirectPath = $isGuest ? '/' : '/profile?verified=1';
+        $redirectPath = $isGuest ? '/?verified=1' : '/profile?verified=1';
 
         // If there's no authenticated user (clicked link while logged out),
         // attempt to resolve the user by the route `id` and validate the hash.
